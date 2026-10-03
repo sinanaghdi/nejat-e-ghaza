@@ -16,6 +16,7 @@ import { MerchantDashboard } from "./components/merchant/MerchantDashboard";
 import { MerchantProfileForm } from "./components/merchant/MerchantProfileForm";
 import { OfferForm } from "./components/merchant/OfferForm";
 import { OrdersPage } from "./pages/OrdersPage";
+import { ProfilePage } from "./pages/ProfilePage";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 
 type AuthMode = "login" | "register";
@@ -308,7 +309,24 @@ function App() {
   );
 
   if (location.pathname === "/orders") {
-    if (location.pathname === "/merchant") {
+    if (location.pathname === "/profile") {
+    return (
+      <>
+        <ProfilePage
+          user={user}
+          onLogin={() => openAuth("login")}
+          onLogout={() => {
+            clearToken();
+            setUser(null);
+          }}
+        />
+        <MobileBottomNav cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)} userRole={user?.role || null} onCart={() => setCartOpen(true)} />
+        <AuthModal open={authOpen} mode={authMode} loading={authLoading} error={authError} success={authSuccess} name={name} email={email} password={password} onClose={closeAuth} onModeChange={(mode) => { setAuthMode(mode); setAuthError(""); setAuthSuccess(""); }} onNameChange={setName} onEmailChange={setEmail} onPasswordChange={setPassword} onSubmit={handleAuthSubmit} />
+      </>
+    );
+  }
+
+  if (location.pathname === "/merchant") {
     const token = getToken();
     if (!token && !authOpen) {
       openAuth("login");

@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from fastapi import HTTPException
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.models.order import Order
@@ -17,7 +18,7 @@ def create_payment(db: Session, user: User, order_id: int) -> Payment:
     if user.role != UserRole.CUSTOMER:
         raise HTTPException(status_code=403, detail="Customer access required")
 
-    order = order_repository.get_by_id(db, order_id)
+    order = db.scalar(select(Order).where(Order.id == order_id).with_for_update())
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     if order.customer_id != user.id:
@@ -46,7 +47,7 @@ def create_payment(db: Session, user: User, order_id: int) -> Payment:
 
 
 def verify_payment(db: Session, authority: str) -> Payment:
-    payment = db.query(Payment).filter(Payment.authority == authority).first()
+    payment = db.scalar(select(Payment).where(Payment.authority == authority).with_for_update())
     if not payment:
         raise HTTPException(status_code=404, detail="Payment not found")
 

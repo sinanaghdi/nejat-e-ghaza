@@ -185,24 +185,25 @@ function App() {
     setOrderError("");
   }
 
-  function addToCart() {
-    if (!selectedOffer) return;
+  function addToCart(offerOverride?: FoodOffer) {
+    const offerToAdd = offerOverride || selectedOffer;
+    if (!offerToAdd) return;
     const existingMerchantId = cart[0]?.offer.merchant_id;
-    if (existingMerchantId !== undefined && existingMerchantId !== selectedOffer.merchant_id) {
+    if (existingMerchantId !== undefined && existingMerchantId !== offerToAdd.merchant_id) {
       setOrderError("در هر سفارش فقط می‌توانی از یک فروشنده خرید کنی.");
       return;
     }
-    const quantity = Math.min(selectedQuantity, selectedOffer.available_quantity);
+    const quantity = Math.min(selectedQuantity, offerToAdd.available_quantity);
     setCart((current) => {
-      const existing = current.find((item) => item.offer.id === selectedOffer.id);
+      const existing = current.find((item) => item.offer.id === offerToAdd.id);
       if (existing) {
         return current.map((item) =>
-          item.offer.id === selectedOffer.id
-            ? { ...item, quantity: Math.min(item.quantity + quantity, selectedOffer.available_quantity) }
+          item.offer.id === offerToAdd.id
+            ? { ...item, quantity: Math.min(item.quantity + quantity, offerToAdd.available_quantity) }
             : item,
         );
       }
-      return [...current, { offer: selectedOffer, quantity }];
+      return [...current, { offer: offerToAdd, quantity }];
     });
     setSelectedOffer(null);
     setCartOpen(true);
@@ -324,7 +325,7 @@ function App() {
           cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
           quantity={selectedQuantity}
           onQuantityChange={setSelectedQuantity}
-          onAddToCart={() => { if (detailOffer) { setSelectedOffer(detailOffer); addToCart(); } }}
+          onAddToCart={() => { if (detailOffer) addToCart(detailOffer); }}
           onBack={() => window.history.back()}
           onCart={() => setCartOpen(true)}
         />

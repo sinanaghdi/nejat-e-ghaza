@@ -21,3 +21,13 @@ def list_by_customer(db: Session, customer_id: int) -> list[Order]:
         .order_by(Order.created_at.desc())
     )
     return list(db.scalars(statement).all())
+
+
+def list_by_merchant(db: Session, merchant_id: int) -> list[Order]:
+    statement = (
+        select(Order)
+        .options(selectinload(Order.items))
+        .where(Order.merchant_id == merchant_id)
+        .order_by(Order.created_at.desc())
+    )
+    return list(db.scalars(statement).all())

@@ -6,11 +6,14 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@db:5432/nejat_e_ghaza
+      REDIS_URL: redis://redis:6379/0
     depends_on:
       db:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     command: >
       sh -c "alembic upgrade head &&
       uvicorn app.main:app --host 0.0.0.0 --port 8000"
@@ -20,11 +23,14 @@ services:
       context: .
     env_file:
       - .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@db:5432/nejat_e_ghaza
+      REDIS_URL: redis://redis:6379/0
     depends_on:
       db:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     command: celery -A app.workers.celery_app.celery_app worker --loglevel=INFO
 
   beat:
@@ -32,9 +38,11 @@ services:
       context: .
     env_file:
       - .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
     depends_on:
       redis:
-        condition: service_started
+        condition: service_healthy
     command: celery -A app.workers.celery_app.celery_app beat --loglevel=INFO
 
   db:
@@ -57,6 +65,8 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -65,3 +75,4 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:

@@ -1,3 +1,4 @@
+import { Link, NavLink } from "react-router-dom";
 import type { User } from "../lib/api";
 
 type Props = {
@@ -13,10 +14,10 @@ type Props = {
 export function Header({ user, cartCount, onCart, onOrders, onMerchant, onLogin, onLogout }: Props) {
   return (
     <nav className="nav">
-      <a className="brand" href="/" aria-label="صفحه اصلی نجات غذا">نجات غذا</a>
+      <Link className="brand" to="/" aria-label="صفحه اصلی نجات غذا">نجات غذا</Link>
       <div className="nav-links">
-        <a href="#offers">پیشنهادها</a>
-        <a href="#how-it-works">چطور کار می‌کند؟</a>
+        <NavLink to="/offers">پیشنهادها</NavLink>
+        <NavLink to="/#how-it-works">چطور کار می‌کند؟</NavLink>
         <button className="cart-button" type="button" onClick={onCart}>
           سبد خرید{cartCount > 0 && <span>{cartCount}</span>}
         </button>

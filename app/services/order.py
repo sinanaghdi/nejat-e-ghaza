@@ -72,6 +72,16 @@ def list_customer_orders(db: Session, user: User) -> list[Order]:
         raise HTTPException(status_code=403, detail="Customer access required")
     return order_repository.list_by_customer(db, user.id)
 
+def list_merchant_orders(db: Session, user: User) -> list[Order]:
+    if user.role != UserRole.MERCHANT:
+        raise HTTPException(status_code=403, detail="Merchant access required")
+    from app.repositories.merchant import get_by_user_id
+    merchant = get_by_user_id(db, user.id)
+    if not merchant:
+        raise HTTPException(status_code=404, detail="Merchant profile not found")
+    return order_repository.list_by_merchant(db, merchant.id)
+
+
 def update_order_status(db: Session, user: User, order_id: int, new_status: OrderStatus) -> Order:
     order = order_repository.get_by_id(db, order_id)
     if not order:

@@ -17,6 +17,7 @@ import { MerchantProfileForm } from "./components/merchant/MerchantProfileForm";
 import { OfferForm } from "./components/merchant/OfferForm";
 import { OrdersPage } from "./pages/OrdersPage";
 import { ProfilePage } from "./pages/ProfilePage";
+import { HomePage } from "./pages/HomePage";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 
 type AuthMode = "login" | "register";
@@ -392,91 +393,21 @@ function App() {
   }
 
   return (
-    <main className="app">
-      <Header
+    <>
+      <HomePage
         user={user}
         cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
+        loading={loading}
+        error={error}
+        availableOffers={availableOffers}
         onCart={() => setCartOpen(true)}
         onOrders={() => void openOrders()}
         onMerchant={() => void openMerchantDashboard()}
         onLogin={() => openAuth("login")}
         onLogout={handleLogout}
+        onRetry={() => void loadOffers()}
+        onOffer={openOffer}
       />
-      <Hero />     <section id="offers" className="section">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">تازه و نزدیک</p>
-            <h2>پیشنهادهای امروز</h2>
-          </div>
-          <span className="offer-count">
-            {loading ? "در حال دریافت..." : `${availableOffers.length} پیشنهاد فعال`}
-          </span>
-        </div>
-
-        {loading && (
-          <div className="offer-grid" aria-label="در حال بارگذاری">
-            {[1, 2, 3].map((item) => (
-              <div className="offer-card skeleton-card" key={item}>
-                <div className="skeleton skeleton-image" />
-                <div className="offer-content">
-                  <div className="skeleton skeleton-line short" />
-                  <div className="skeleton skeleton-line" />
-                  <div className="skeleton skeleton-line price" />
-                  <div className="skeleton skeleton-button" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {!loading && error && (
-          <div className="state-card error-state">
-            <div className="state-icon">!</div>
-            <h3>پیشنهادها بارگذاری نشدند</h3>
-            <p>{error}</p>
-            <button className="secondary-button compact" type="button" onClick={() => void loadOffers()}>تلاش دوباره</button>
-          </div>
-        )}
-
-        {!loading && !error && availableOffers.length === 0 && (
-          <div className="state-card">
-            <div className="state-icon">🍽️</div>
-            <h3>فعلاً پیشنهادی پیدا نشد</h3>
-            <p>پیشنهادهای جدید به‌زودی اینجا نمایش داده می‌شوند.</p>
-          </div>
-        )}
-
-        {!loading && !error && availableOffers.length > 0 && (
-          <div className="offer-grid">
-            {availableOffers.map((offer) => (
-              <article className="offer-card" key={offer.id}>
-                <div className="offer-image">
-                  {offer.image_url ? <img src={offer.image_url} alt={offer.title} /> : <span aria-hidden="true">🍱</span>}
-                  {discountPercent(offer) > 0 && <span className="discount-badge">{discountPercent(offer)}٪ تخفیف</span>}
-                </div>
-                <div className="offer-content">
-                  <span className="merchant">فروشنده #{offer.merchant_id}</span>
-                  <h3>{offer.title}</h3>
-                  {offer.description && <p className="description">{offer.description}</p>}
-                  <div className="price-row">
-                    <div><strong>{formatToman(offer.sale_price)}</strong><del>{formatToman(offer.original_price)}</del></div>
-                  </div>
-                  <div className="offer-meta">
-                    <span>🕐 دریافت تا {formatPickupTime(offer.pickup_end)}</span>
-                    <span>📦 {offer.available_quantity} عدد باقی‌مانده</span>
-                  </div>
-                  <button className="secondary-button" type="button" onClick={() => openOffer(offer)}>
-                    مشاهده و رزرو
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <HowItWorks />
-      <MobileBottomNav cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)} userRole={user?.role || null} onCart={() => setCartOpen(true)} />
       <MerchantDashboard
         open={merchantOpen}
         loading={merchantLoading}
@@ -576,8 +507,7 @@ function App() {
         onPasswordChange={setPassword}
         onSubmit={handleAuthSubmit}
       />
-    </main>
-  );
-}
+    </>
+  );}
 
 export default App;

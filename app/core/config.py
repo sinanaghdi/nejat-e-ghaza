@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     frontend_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
     redis_url: str = "redis://localhost:6379/0"
     order_payment_timeout_minutes: int = 15
+    rate_limit_requests: int = 120
+    rate_limit_window_seconds: int = 60
+    payment_webhook_secret: str = "change-me"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

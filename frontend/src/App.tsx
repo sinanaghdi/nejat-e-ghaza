@@ -19,6 +19,7 @@ import { OrdersPage } from "./pages/OrdersPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { HomePage } from "./pages/HomePage";
 import { OfferDetailPage } from "./pages/OfferDetailPage";
+import { PaymentResultPage } from "./pages/PaymentResultPage";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 
 type AuthMode = "login" | "register";
@@ -338,6 +339,15 @@ function App() {
     () => offers.filter((offer) => offer.is_active && offer.available_quantity > 0),
     [offers],
   );
+
+  if (location.pathname === "/payment/result") {
+    return (
+      <>
+        <PaymentResultPage user={user} cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)} onCart={() => setCartOpen(true)} />
+        <CartDrawer cart={cart} open={cartOpen} loading={orderLoading} error={orderError} onClose={() => setCartOpen(false)} onUpdateQuantity={updateCartQuantity} onSubmit={() => void submitOrder()} />
+      </>
+    );
+  }
 
   if (location.pathname.startsWith("/offers/") && offerId) {
     const id = Number(offerId);

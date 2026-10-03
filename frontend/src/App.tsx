@@ -5,6 +5,9 @@ import { formatPickupTime, formatToman } from "./lib/formatters";
 import { OfferCard } from "./components/OfferCard";
 import { QuantityControl } from "./components/QuantityControl";
 import { StatusBadge } from "./components/StatusBadge";
+import { Header } from "./components/Header";
+import { Hero } from "./components/Hero";
+import { HowItWorks } from "./components/HowItWorks";
 
 type AuthMode = "login" | "register";
 
@@ -268,40 +271,16 @@ function App() {
 
   return (
     <main className="app">
-      <nav className="nav">
-        <a className="brand" href="/" aria-label="صفحه اصلی نجات غذا">نجات غذا</a>
-        <div className="nav-links">
-          <a href="#offers">پیشنهادها</a>
-          <a href="#how-it-works">چطور کار می‌کند؟</a>
-          {user ? (
-            <>
-              <button className="cart-button" type="button" onClick={() => setCartOpen(true)}>سبد خرید{cart.length > 0 && <span>{cart.reduce((sum, item) => sum + item.quantity, 0)}</span>}</button>
-              <button className="orders-button" type="button" onClick={() => void openOrders()}>سفارش‌های من</button>
-              {user.role === "MERCHANT" && <button className="orders-button" type="button" onClick={() => void openMerchantDashboard()}>پنل فروشنده</button>
-              <button className="login-button" type="button" onClick={handleLogout}>خروج</button>
-            </>
-          ) : (
-            <>
-              <button className="cart-button" type="button" onClick={() => setCartOpen(true)}>سبد خرید{cart.length > 0 && <span>{cart.reduce((sum, item) => sum + item.quantity, 0)}</span>}</button>
-              <button className="login-button" type="button" onClick={() => openAuth("login")}>ورود</button>
-            </>
-          )}
-        </div>
-      </nav>
-
-      <section className="hero">
-        <div className="hero-content">
-          <span className="hero-badge">غذا کمتر هدر برود</span>
-          <h1>غذای خوب را<br />نجات بده.</h1>
-          <p className="hero-copy">
-            غذاهای مازاد کافه‌ها، رستوران‌ها و فست‌فودهای اطراف را با قیمت کمتر
-            پیدا کن، رزرو کن و در زمان مشخص تحویل بگیر.
-          </p>
-          <a className="primary-button" href="#offers">مشاهده پیشنهادهای امروز</a>
-        </div>
-      </section>
-
-      <section id="offers" className="section">
+      <Header
+        user={user}
+        cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
+        onCart={() => setCartOpen(true)}
+        onOrders={() => void openOrders()}
+        onMerchant={() => void openMerchantDashboard()}
+        onLogin={() => openAuth("login")}
+        onLogout={handleLogout}
+      />
+      <Hero />     <section id="offers" className="section">
         <div className="section-heading">
           <div>
             <p className="eyebrow">تازه و نزدیک</p>
@@ -374,19 +353,7 @@ function App() {
         )}
       </section>
 
-      <section id="how-it-works" className="section steps-section">
-        <div className="section-heading">
-          <div><p className="eyebrow">ساده و سریع</p><h2>چطور کار می‌کند؟</h2></div>
-        </div>
-        <div className="steps">
-          <div className="step"><span className="step-number">۰۱</span><h3>پیدا کن</h3><p>پیشنهادهای غذایی اطراف خودت را ببین.</p></div>
-          <div className="step"><span className="step-number">۰۲</span><h3>رزرو کن</h3><p>غذای موردنظرت را با قیمت تخفیف‌خورده سفارش بده.</p></div>
-          <div className="step"><span className="step-number">۰۳</span><h3>تحویل بگیر</h3><p>در بازه مشخص‌شده به فروشنده مراجعه کن و سفارشت را تحویل بگیر.</p></div>
-        </div>
-      </section>
-
-
-
+      <HowItWorks />
       {merchantOpen && (
         <div className="modal-backdrop" role="presentation" onMouseDown={() => setMerchantOpen(false)}>
           <section className="merchant-modal" role="dialog" aria-modal="true" onMouseDown={(event) => event.stopPropagation()}>

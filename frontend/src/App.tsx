@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import { ApiError, createOrder, FoodOffer, getCurrentUser, getOffers, getOrders, loginUser, registerUser, User, Order, MerchantProfile, createMerchantProfile, getMerchantProfile, getMyOffers, createOffer, deactivateOffer, updateOrderStatus, OfferPayload } from "./lib/api";
+import { ApiError, createOrder, FoodOffer, getCurrentUser, getOffer, getOffers, getOrders, loginUser, registerUser, User, Order, MerchantProfile, createMerchantProfile, getMerchantProfile, getMyOffers, createOffer, deactivateOffer, updateOrderStatus, OfferPayload } from "./lib/api";
 import { clearToken, getToken, setToken } from "./lib/auth";
 import { formatPickupTime, formatToman } from "./lib/formatters";
 import { OfferCard } from "./components/OfferCard";
@@ -100,6 +100,28 @@ function App() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    if (!location.pathname.startsWith("/offers/") || !offerId) return;
+    const id = Number(offerId);
+    if (!Number.isInteger(id) || id <= 0) return;
+    const cached = offers.find((item) => item.id === id);
+    if (cached) {
+      setSelectedOffer(cached);
+      setSelectedQuantity(1);
+      return;
+    }
+    setLoading(true);
+    setError("");
+    getOffer(id)
+      .then((offer) => {
+        setOffers((current) => current.some((item) => item.id === offer.id) ? current : [...current, offer]);
+        setSelectedOffer(offer);
+        setSelectedQuantity(1);
+      })
+      .catch((err) => setError(err instanceof ApiError ? err.message : "دریافت این پیشنهاد انجام نشد."))
+      .finally(() => setLoading(false));
+  }, [location.pathname, offerId, offers]);
 
   useEffect(() => {
     if (location.pathname !== "/merchant") return;
@@ -314,7 +336,7 @@ function App() {
 
   if (location.pathname.startsWith("/offers/") && offerId) {
     const id = Number(offerId);
-    const detailOffer = availableOffers.find((item) => item.id === id) || offers.find((item) => item.id === id) || null;
+    const detailOffer = selectedOffer?.id === id ? selectedOffer : offers.find((item) => item.id === id) || null;
     return (
       <>
         <OfferDetailPage

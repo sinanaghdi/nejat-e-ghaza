@@ -1,0 +1,64 @@
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Query, status
+from sqlalchemy.orm import Session
+
+from app.core.dependencies import get_current_user, require_role
+from app.db.database import get_db
+from app.db.models.food_offer import FoodOffer
+from app.db.models.user import User
+from app.models.enums import UserRole
+from app.schemas.offer import OfferCreate, OfferResponse, OfferUpdate
+from app.services import offer as offer_service
+
+router = APIRouter(prefix="/api/offers", tags=["offers"])
+
+
+@router.get("", response_model=list[OfferResponse])
+def list_offers(
+    db: Annotated[Session, Depends(get_db)],
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=50, ge=1, le=100),
+):
+    return offer_service.list_active_offers(db, skip=skip, limit=limit)
+
+
+@router.get("/mine", response_model=list[OfferResponse])
+def list_my_offers(
+    current_user: Annotated[User, Depends(require_role(UserRole.MERCHANT))],
+    db: Annotated[Session, Depends(get_db)],
+):
+    return offer_service.list_merchant_offers(db, current_user)
+
+
+@router.get("/{offer_id}", response_model=OfferResponse)
+def get_offer(offer_id: int, db: Annotated[Session, Depends(get_db)]):
+    return offer_service.get_offer(db, offer_id)
+
+
+@router.post("", response_model=OfferResponse, status_code=status.HTTP_201_CREATED)
+def create_offer(
+    payload: OfferCreate,
+    current_user: Annotated[User, Depends(require_role(UserRole.MERCHANT))],
+    db: Annotated[Session, Depends(get_db)],
+):
+    return offer_service.create_offer(db, current_user, payload)
+
+
+@router.patch("/{offer_id}", response_model=OfferResponse)
+def update_offer(
+    offer_id: int,
+    payload: OfferUpdate,
+    current_user: Annotated[User, Depends(require_role(UserRole.MERCHANT))],
+    db: Annotated[Session, Depends(get_db)],
+):
+    return offer_service.update_offer(db, current_user, offer_id, payload)
+
+
+@router.delete("/{offer_id}", response_model=OfferResponse)
+def deactivate_offer(
+    offer_id: int,
+    current_user: Annotated[User, Depends(require_role(UserRole.MERCHANT))],
+    db: Annotated[Session, Depends(get_db)],
+):
+    return offer_service.deactivate_offer(db, current_user, offer_id)

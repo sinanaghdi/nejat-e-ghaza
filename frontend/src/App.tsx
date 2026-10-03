@@ -324,8 +324,8 @@ function App() {
           cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
           quantity={selectedQuantity}
           onQuantityChange={setSelectedQuantity}
-          onAddToCart={addToCart}
-          onBack={() => { window.history.pushState({}, "", "/offers"); window.dispatchEvent(new PopStateEvent("popstate")); }}
+          onAddToCart={() => { if (detailOffer) { setSelectedOffer(detailOffer); addToCart(); } }}
+          onBack={() => window.history.back()}
           onCart={() => setCartOpen(true)}
         />
         <CartDrawer cart={cart} open={cartOpen} loading={orderLoading} error={orderError} onClose={() => setCartOpen(false)} onUpdateQuantity={updateCartQuantity} onSubmit={() => void submitOrder()} />

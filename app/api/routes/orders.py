@@ -23,6 +23,11 @@ def create_order(payload: OrderCreate, current_user: Annotated[User, Depends(req
 def list_orders(current_user: Annotated[User, Depends(require_role(UserRole.CUSTOMER))], db: Annotated[Session, Depends(get_db)]):
     return order_service.list_customer_orders(db, current_user)
 
+@router.get("/merchant", response_model=list[OrderResponse])
+def list_merchant_orders(current_user: Annotated[User, Depends(require_role(UserRole.MERCHANT))], db: Annotated[Session, Depends(get_db)]):
+    return order_service.list_merchant_orders(db, current_user)
+
+
 @router.get("/{order_id}", response_model=OrderResponse)
 def get_order(order_id: int, current_user: Annotated[User, Depends(require_role(UserRole.CUSTOMER))], db: Annotated[Session, Depends(get_db)]):
     return order_service.get_customer_order(db, current_user, order_id)

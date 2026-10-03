@@ -3,6 +3,11 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict
 
 
+class PaymentStartResponse(BaseModel):
+    payment: "PaymentResponse"
+    checkout_url: str
+
+
 class PaymentResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

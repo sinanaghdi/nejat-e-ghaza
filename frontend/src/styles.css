@@ -445,3 +445,41 @@ select {
   .profile-card { padding: 20px; }
   .profile-info-grid { grid-template-columns: 1fr; }
 }
+
+
+.payment-result-card {
+  max-width: 680px;
+  margin: 72px auto;
+  padding: 48px 28px;
+  border: 1px solid #e3e7e1;
+  border-radius: 28px;
+  background: #fff;
+  text-align: center;
+  box-shadow: 0 18px 50px rgba(23, 35, 29, .08);
+}
+
+.payment-result-card.success { border-color: #cfe5d6; }
+.payment-result-card.cancelled { border-color: #eadfca; }
+.payment-result-card.failed { border-color: #efd5d1; }
+
+.payment-result-card h1 {
+  margin: 8px 0 14px;
+  font-size: clamp(1.6rem, 4vw, 2.5rem);
+}
+
+.payment-result-card p:not(.eyebrow) {
+  color: #69746c;
+  line-height: 1.9;
+}
+
+.payment-result-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.payment-result-actions a {
+  text-decoration: none;
+}

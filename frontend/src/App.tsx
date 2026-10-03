@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { ApiError, createOrder, FoodOffer, getCurrentUser, getOffers, loginUser, registerUser, User } from "./lib/api";
+import { ApiError, createOrder, FoodOffer, getCurrentUser, getOffers, getOrders, loginUser, registerUser, User, Order } from "./lib/api";
 import { clearToken, getToken, setToken } from "./lib/auth";
 import { formatPickupTime, formatToman } from "./lib/formatters";
 
@@ -9,6 +9,25 @@ type CartItem = {
   offer: FoodOffer;
   quantity: number;
 };
+
+function statusLabel(status: Order["status"]): string {
+  const labels: Record<Order["status"], string> = {
+    PENDING: "در انتظار پرداخت",
+    PAID: "پرداخت شده",
+    READY_FOR_PICKUP: "آماده دریافت",
+    COMPLETED: "تکمیل شده",
+    CANCELLED: "لغو شده",
+    EXPIRED: "منقضی شده",
+  };
+  return labels[status];
+}
+
+function formatOrderDate(value: string): string {
+  return new Intl.DateTimeFormat("fa-IR", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
 
 function discountPercent(offer: FoodOffer): number {
   if (offer.original_price <= 0) return 0;
@@ -35,6 +54,10 @@ function App() {
   const [orderLoading, setOrderLoading] = useState(false);
   const [orderMessage, setOrderMessage] = useState("");
   const [orderError, setOrderError] = useState("");
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [ordersOpen, setOrdersOpen] = useState(false);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [ordersError, setOrdersError] = useState("");
 
   async function loadOffers() {
     setLoading(true);
@@ -164,9 +187,29 @@ function App() {
     }
   }
 
+  async function openOrders() {
+    const token = getToken();
+    if (!token) {
+      openAuth("login");
+      return;
+    }
+    setOrdersOpen(true);
+    setOrdersLoading(true);
+    setOrdersError("");
+    try {
+      setOrders(await getOrders(token));
+    } catch (err) {
+      setOrdersError(err instanceof ApiError ? err.message : "دریافت سفارش‌ها انجام نشد.");
+    } finally {
+      setOrdersLoading(false);
+    }
+  }
+
   function handleLogout() {
     clearToken();
     setUser(null);
+    setOrders([]);
+    setOrdersOpen(false);
   }
 
   const availableOffers = useMemo(
@@ -182,11 +225,16 @@ function App() {
           <a href="#offers">پیشنهادها</a>
           <a href="#how-it-works">چطور کار می‌کند؟</a>
           {user ? (
-            <button className="cart-button" type="button" onClick={() => setCartOpen(true)}>سبد خرید{cart.length > 0 && <span>{cart.reduce((sum, item) => sum + item.quantity, 0)}</span>}</button>
-            <button className="login-button" type="button" onClick={handleLogout}>خروج</button>
+            <>
+              <button className="cart-button" type="button" onClick={() => setCartOpen(true)}>سبد خرید{cart.length > 0 && <span>{cart.reduce((sum, item) => sum + item.quantity, 0)}</span>}</button>
+              <button className="orders-button" type="button" onClick={() => void openOrders()}>سفارش‌های من</button>
+              <button className="login-button" type="button" onClick={handleLogout}>خروج</button>
+            </>
           ) : (
-            <button className="cart-button" type="button" onClick={() => setCartOpen(true)}>سبد خرید{cart.length > 0 && <span>{cart.reduce((sum, item) => sum + item.quantity, 0)}</span>}</button>
-            <button className="login-button" type="button" onClick={() => openAuth("login")}>ورود</button>
+            <>
+              <button className="cart-button" type="button" onClick={() => setCartOpen(true)}>سبد خرید{cart.length > 0 && <span>{cart.reduce((sum, item) => sum + item.quantity, 0)}</span>}</button>
+              <button className="login-button" type="button" onClick={() => openAuth("login")}>ورود</button>
+            </>
           )}
         </div>
       </nav>
@@ -266,7 +314,7 @@ function App() {
                     <span>🕐 دریافت تا {formatPickupTime(offer.pickup_end)}</span>
                     <span>📦 {offer.available_quantity} عدد باقی‌مانده</span>
                   </div>
-                  <button className="secondary-button" type="button" onClick={() => openAuth("login")}>
+                  <button className="secondary-button" type="button" onClick={() => openOffer(offer)}>
                     مشاهده و رزرو
                   </button>
                 </div>
@@ -288,6 +336,39 @@ function App() {
       </section>
 
 
+
+      {ordersOpen && (
+        <div className="modal-backdrop" role="presentation" onMouseDown={() => setOrdersOpen(false)}>
+          <section className="orders-modal" role="dialog" aria-modal="true" aria-labelledby="orders-title" onMouseDown={(event) => event.stopPropagation()}>
+            <button className="modal-close" type="button" onClick={() => setOrdersOpen(false)} aria-label="بستن">×</button>
+            <div className="orders-header">
+              <p className="eyebrow">حساب کاربری</p>
+              <h2 id="orders-title">سفارش‌های من</h2>
+              <p>سفارش‌ها و کدهای دریافتت را اینجا ببین.</p>
+            </div>
+            {ordersLoading && <div className="orders-loading"><div className="spinner" /> در حال دریافت سفارش‌ها...</div>}
+            {!ordersLoading && ordersError && (
+              <div className="state-card error-state"><div className="state-icon">!</div><h3>دریافت سفارش‌ها ناموفق بود</h3><p>{ordersError}</p><button className="secondary-button compact" type="button" onClick={() => void openOrders()}>تلاش دوباره</button></div>
+            )}
+            {!ordersLoading && !ordersError && orders.length === 0 && (
+              <div className="state-card"><div className="state-icon">📦</div><h3>هنوز سفارشی نداری</h3><p>یک پیشنهاد انتخاب کن و اولین غذایت را نجات بده.</p></div>
+            )}
+            {!ordersLoading && !ordersError && orders.length > 0 && (
+              <div className="orders-list">
+                {orders.map((order) => (
+                  <article className="order-card" key={order.id}>
+                    <div className="order-card-top"><div><span className="order-label">سفارش</span><strong>#{order.id}</strong></div><span className={"status-badge status-" + order.status.toLowerCase()}>{statusLabel(order.status)}</span></div>
+                    <div className="order-items">{order.items.map((item) => <div className="order-item-row" key={item.id}><span>غذا #{item.food_offer_id} × {item.quantity}</span><strong>{formatToman(item.subtotal)}</strong></div>)}</div>
+                    <div className="order-total"><span>مبلغ کل</span><strong>{formatToman(order.total_amount)}</strong></div>
+                    <div className="pickup-code"><span>کد دریافت</span><strong>{order.pickup_code}</strong></div>
+                    <time className="order-date" dateTime={order.created_at}>ثبت شده در {formatOrderDate(order.created_at)}</time>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+      )}
 
       {orderMessage && (
         <div className="toast success-toast" role="status">

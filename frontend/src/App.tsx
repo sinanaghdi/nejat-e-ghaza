@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { ApiError, createOrder, FoodOffer, getCurrentUser, getOffers, getOrders, loginUser, registerUser, User, Order, MerchantProfile, createMerchantProfile, getMerchantProfile, getMyOffers, createOffer, deactivateOffer, updateOrderStatus, OfferPayload } from "./lib/api";
 import { clearToken, getToken, setToken } from "./lib/auth";
 import { formatPickupTime, formatToman } from "./lib/formatters";
@@ -18,6 +18,7 @@ import { OfferForm } from "./components/merchant/OfferForm";
 import { OrdersPage } from "./pages/OrdersPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { HomePage } from "./pages/HomePage";
+import { OfferDetailPage } from "./pages/OfferDetailPage";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 
 type AuthMode = "login" | "register";
@@ -53,6 +54,7 @@ function discountPercent(offer: FoodOffer): number {
 
 function App() {
   const location = useLocation();
+  const { offerId } = useParams();
   const [offers, setOffers] = useState<FoodOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -308,6 +310,29 @@ function App() {
     () => offers.filter((offer) => offer.is_active && offer.available_quantity > 0),
     [offers],
   );
+
+  if (location.pathname.startsWith("/offers/") && offerId) {
+    const id = Number(offerId);
+    const detailOffer = availableOffers.find((item) => item.id === id) || offers.find((item) => item.id === id) || null;
+    return (
+      <>
+        <OfferDetailPage
+          offer={detailOffer}
+          loading={loading}
+          error={error}
+          user={user}
+          cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
+          quantity={selectedQuantity}
+          onQuantityChange={setSelectedQuantity}
+          onAddToCart={addToCart}
+          onBack={() => { window.history.pushState({}, "", "/offers"); window.dispatchEvent(new PopStateEvent("popstate")); }}
+          onCart={() => setCartOpen(true)}
+        />
+        <CartDrawer cart={cart} open={cartOpen} loading={orderLoading} error={orderError} onClose={() => setCartOpen(false)} onUpdateQuantity={updateCartQuantity} onSubmit={() => void submitOrder()} />
+        <AuthModal open={authOpen} mode={authMode} loading={authLoading} error={authError} success={authSuccess} name={name} email={email} password={password} onClose={closeAuth} onModeChange={(mode) => { setAuthMode(mode); setAuthError(""); setAuthSuccess(""); }} onNameChange={setName} onEmailChange={setEmail} onPasswordChange={setPassword} onSubmit={handleAuthSubmit} />
+      </>
+    );
+  }
 
   if (location.pathname === "/orders") {
     if (location.pathname === "/profile") {

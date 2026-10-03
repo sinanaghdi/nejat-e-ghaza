@@ -1,7 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap");
-
 :root {
-  font-family: "Vazirmatn", system-ui, sans-serif;
+  font-family: var(--font-persian);
   color: #17231d;
   background: #f6f4ee;
   font-synthesis: none;
@@ -18,7 +16,7 @@ button:disabled { cursor: not-allowed; opacity: .65; }
 .app { min-height: 100vh; }
 
 .nav { width: min(1180px, calc(100% - 32px)); margin: auto; min-height: 76px; display: flex; align-items: center; justify-content: space-between; }
-.brand { font-size: 1.4rem; font-weight: 800; letter-spacing: -.04em; }
+.brand { font-size: 1.4rem; font-weight: 800;  }
 .nav-links { display: flex; align-items: center; gap: 28px; font-size: .92rem; }
 .nav-links a { color: #526057; }
 .nav-links a:hover { color: #173c2b; }
@@ -31,8 +29,8 @@ button:disabled { cursor: not-allowed; opacity: .65; }
 .hero::after { content: "🍃"; position: absolute; left: 7%; bottom: -30px; font-size: 15rem; opacity: .13; transform: rotate(-18deg); }
 .hero-content { max-width: 650px; position: relative; z-index: 1; }
 .hero-badge { display: inline-flex; padding: 8px 13px; border-radius: 999px; background: rgba(255,255,255,.65); font-size: .84rem; font-weight: 700; margin-bottom: 20px; }
-.hero h1 { margin: 0; font-size: clamp(3rem, 7vw, 5.8rem); line-height: 1.08; letter-spacing: -.06em; }
-.hero-copy { max-width: 570px; line-height: 2; font-size: 1.03rem; color: #4d5b52; margin: 25px 0 30px; }
+.hero h1 { margin: 0; font-size: clamp(3rem, 7vw, 5.8rem); line-height: 1.08;  }
+.hero-copy { max-width: 570px; line-height: var(--leading-relaxed-fa); font-size: 1.03rem; color: #4d5b52; margin: 25px 0 30px; }
 .primary-button { display: inline-flex; background: #173c2b; color: white; font-weight: 600; }
 
 .section { width: min(1180px, calc(100% - 32px)); margin: 100px auto; }
@@ -230,3 +228,56 @@ button:disabled { cursor: not-allowed; opacity: .65; }
   .merchant-order-row select { max-width: none; width: 100%; }
   .two-fields { grid-template-columns: 1fr; }
 }
+
+
+/* Persian typography refinements */
+body {
+  min-width: 320px;
+  line-height: var(--leading-normal-fa);
+}
+
+button,
+input,
+textarea,
+select {
+  line-height: 1.7;
+}
+
+.hero h1 {
+  font-weight: 800;
+  line-height: var(--leading-tight-fa);
+  letter-spacing: 0;
+}
+
+.section h2,
+.auth-header h2,
+.orders-header h2,
+.merchant-head h2,
+.offer-detail-content h2 {
+  line-height: var(--leading-tight-fa);
+  letter-spacing: 0;
+}
+
+.offer-content h3,
+.steps h3,
+.form-modal h2 {
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+.description,
+.detail-description,
+.steps p,
+.state-card p,
+.hero-copy {
+  line-height: var(--leading-relaxed-fa);
+}
+
+.price-row strong,
+.detail-price strong,
+.cart-summary strong,
+.merchant-stats strong,
+.pickup-code strong {
+  font-variant-numeric: tabular-nums;
+}
+

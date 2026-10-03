@@ -12,6 +12,7 @@ export function AppRouter() {
         <Route path="/profile" element={<App />} />
         <Route path="/merchant" element={<App />} />
         <Route path="/login" element={<App />} />
+        <Route path="/payment/result" element={<App />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

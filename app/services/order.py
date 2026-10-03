@@ -114,7 +114,11 @@ def list_merchant_orders(db: Session, user: User) -> list[Order]:
 
 
 def update_order_status(db: Session, user: User, order_id: int, new_status: OrderStatus) -> Order:
-    order = order_repository.get_by_id(db, order_id)
+    order = db.scalar(
+        select(Order)
+        .where(Order.id == order_id)
+        .with_for_update()
+    )
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 
@@ -123,7 +127,11 @@ def update_order_status(db: Session, user: User, order_id: int, new_status: Orde
     try:
         if new_status == OrderStatus.CANCELLED:
             for item in order.items:
-                offer = db.get(FoodOffer, item.food_offer_id)
+                offer = db.scalar(
+                    select(FoodOffer)
+                    .where(FoodOffer.id == item.food_offer_id)
+                    .with_for_update()
+                )
                 if offer:
                     offer.available_quantity += item.quantity
 
@@ -131,6 +139,48 @@ def update_order_status(db: Session, user: User, order_id: int, new_status: Orde
         db.commit()
         db.refresh(order)
         return order
+    except Exception:
+        db.rollback()
+        raise
+
+
+def expire_pending_orders(db: Session) -> int:
+    from datetime import datetime, timedelta, timezone
+    from app.core.config import settings
+
+    cutoff = datetime.now(timezone.utc) - timedelta(
+        minutes=settings.order_payment_timeout_minutes
+    )
+
+    try:
+        orders = list(
+            db.scalars(
+                select(Order)
+                .where(
+                    Order.status == OrderStatus.PENDING,
+                    Order.created_at <= cutoff,
+                )
+                .order_by(Order.id)
+                .with_for_update()
+            ).all()
+        )
+
+        expired_count = 0
+        for order in orders:
+            for item in order.items:
+                offer = db.scalar(
+                    select(FoodOffer)
+                    .where(FoodOffer.id == item.food_offer_id)
+                    .with_for_update()
+                )
+                if offer:
+                    offer.available_quantity += item.quantity
+
+            order.status = OrderStatus.EXPIRED
+            expired_count += 1
+
+        db.commit()
+        return expired_count
     except Exception:
         db.rollback()
         raise

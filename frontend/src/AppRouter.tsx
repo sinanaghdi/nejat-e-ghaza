@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import App from "./App";
 import { OrdersPage } from "./pages/OrdersPage";
+import { MerchantPage } from "./pages/MerchantPage";
 
 export function AppRouter() {
   return (

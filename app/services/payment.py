@@ -28,7 +28,11 @@ def create_payment(db: Session, user: User, order_id: int) -> Payment:
         return order.payment
 
     provider = get_payment_provider()
-    result = provider.start(PaymentRequest(amount=order.total_amount, order_id=order.id))
+    try:
+        result = provider.start(PaymentRequest(amount=order.total_amount, order_id=order.id))
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(status_code=502, detail="Payment provider is temporarily unavailable") from exc
     payment = Payment(
         order_id=order.id,
         provider=provider.name,
@@ -51,15 +55,21 @@ def create_payment(db: Session, user: User, order_id: int) -> Payment:
     return payment
 
 
-def verify_payment(db: Session, authority: str) -> Payment:
+def verify_payment(db: Session, authority: str, expected_order_id: int | None = None) -> Payment:
     payment = db.scalar(select(Payment).where(Payment.authority == authority).with_for_update())
     if not payment:
         raise HTTPException(status_code=404, detail="Payment not found")
+    if expected_order_id is not None and payment.order_id != expected_order_id:
+        raise HTTPException(status_code=400, detail="Payment does not belong to this order")
     if payment.status == "PAID":
         return payment
 
     provider = get_payment_provider()
-    result = provider.verify(authority, payment.amount)
+    try:
+        result = provider.verify(authority, payment.amount)
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(status_code=502, detail="Payment provider is temporarily unavailable") from exc
     if not result.success:
         payment.status = "FAILED"
         record_event(

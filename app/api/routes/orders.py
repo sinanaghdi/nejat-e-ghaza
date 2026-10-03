@@ -1,12 +1,17 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from app.core.dependencies import require_role
+from pydantic import BaseModel
+
+from app.core.dependencies import get_current_user, require_role
 from app.db.database import get_db
 from app.db.models.user import User
-from app.models.enums import UserRole
+from app.models.enums import UserRole, OrderStatus
 from app.schemas.order import OrderCreate, OrderResponse
 from app.services import order as order_service
+
+class OrderStatusUpdate(BaseModel):
+    status: OrderStatus
 
 router = APIRouter(prefix="/api/orders", tags=["orders"])
 
@@ -21,3 +26,7 @@ def list_orders(current_user: Annotated[User, Depends(require_role(UserRole.CUST
 @router.get("/{order_id}", response_model=OrderResponse)
 def get_order(order_id: int, current_user: Annotated[User, Depends(require_role(UserRole.CUSTOMER))], db: Annotated[Session, Depends(get_db)]):
     return order_service.get_customer_order(db, current_user, order_id)
+
+@router.patch("/{order_id}/status", response_model=OrderResponse)
+def update_status(order_id: int, payload: OrderStatusUpdate, current_user: Annotated[User, Depends(get_current_user)], db: Annotated[Session, Depends(get_db)]):
+    return order_service.update_order_status(db, current_user, order_id, payload.status)

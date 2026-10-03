@@ -1,6 +1,6 @@
 import type { MerchantProfile, FoodOffer, Order } from "../../lib/api";
 import { formatToman } from "../../lib/formatters";
-import { statusLabel } from "../../lib/status";
+function statusLabel(status: Order["status"]): string { const labels: Record<Order["status"], string> = { PENDING: "در انتظار پرداخت", PAID: "پرداخت‌شده", READY_FOR_PICKUP: "آماده دریافت", COMPLETED: "تکمیل‌شده", CANCELLED: "لغوشده", EXPIRED: "منقضی‌شده" }; return labels[status]; }
 type Props={open:boolean; loading:boolean; error:string; profile:MerchantProfile|null; offers:FoodOffer[]; orders:Order[]; onClose:()=>void; onCreateProfile:()=>void; onCreateOffer:()=>void; onDeactivate:(id:number)=>void; onStatusChange:(id:number,status:Order["status"])=>void;};
 export function MerchantDashboard({open,loading,error,profile,offers,orders,onClose,onCreateProfile,onCreateOffer,onDeactivate,onStatusChange}:Props){
  if(!open)return null;

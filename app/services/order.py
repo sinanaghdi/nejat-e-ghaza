@@ -19,6 +19,38 @@ ALLOWED_STATUS_TRANSITIONS = {
     OrderStatus.EXPIRED: set(),
 }
 
+CUSTOMER_ALLOWED_TRANSITIONS = {
+    OrderStatus.PENDING: {OrderStatus.CANCELLED},
+    OrderStatus.PAID: {OrderStatus.CANCELLED},
+}
+
+MERCHANT_ALLOWED_TRANSITIONS = {
+    OrderStatus.PENDING: {OrderStatus.CANCELLED},
+    OrderStatus.PAID: {OrderStatus.READY_FOR_PICKUP},
+    OrderStatus.READY_FOR_PICKUP: {OrderStatus.COMPLETED},
+}
+
+def _assert_actor_can_transition(user: User, order: Order, new_status: OrderStatus) -> None:
+    if user.role == UserRole.CUSTOMER:
+        if order.customer_id != user.id:
+            raise HTTPException(status_code=403, detail="You do not have access to this order")
+        allowed = CUSTOMER_ALLOWED_TRANSITIONS.get(order.status, set())
+    elif user.role == UserRole.MERCHANT:
+        if not order.merchant or order.merchant.user_id != user.id:
+            raise HTTPException(status_code=403, detail="You do not own this order")
+        allowed = MERCHANT_ALLOWED_TRANSITIONS.get(order.status, set())
+    elif user.role == UserRole.ADMIN:
+        allowed = ALLOWED_STATUS_TRANSITIONS.get(order.status, set())
+    else:
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+
+    if new_status not in allowed:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Role {user.role} cannot change {order.status} to {new_status}",
+        )
+
+
 def create_order(db: Session, user: User, payload: OrderCreate) -> Order:
     if user.role != UserRole.CUSTOMER:
         raise HTTPException(status_code=403, detail="Customer access required")
@@ -87,17 +119,7 @@ def update_order_status(db: Session, user: User, order_id: int, new_status: Orde
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 
-    if user.role == UserRole.CUSTOMER and order.customer_id != user.id:
-        raise HTTPException(status_code=403, detail="You do not have access to this order")
-    if user.role not in {UserRole.CUSTOMER, UserRole.MERCHANT, UserRole.ADMIN}:
-        raise HTTPException(status_code=403, detail="Insufficient permissions")
-
-    if user.role == UserRole.CUSTOMER and new_status not in {OrderStatus.CANCELLED}:
-        raise HTTPException(status_code=403, detail="Customer can only cancel an order")
-    if user.role == UserRole.MERCHANT and order.merchant.user_id != user.id:
-        raise HTTPException(status_code=403, detail="You do not own this order")
-    if new_status not in ALLOWED_STATUS_TRANSITIONS[order.status]:
-        raise HTTPException(status_code=409, detail=f"Invalid order status transition: {order.status} -> {new_status}")
+    _assert_actor_can_transition(user, order, new_status)
 
     order.status = new_status
     db.commit()

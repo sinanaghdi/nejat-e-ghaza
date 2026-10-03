@@ -131,3 +131,57 @@ export function getOrders(token: string): Promise<Order[]> {
 export function getOrder(token: string, orderId: number): Promise<Order> {
   return authRequest<Order>(`/api/orders/${orderId}`, token);
 }
+
+
+export interface MerchantProfile {
+  id: number;
+  user_id: number;
+  business_name: string;
+  description: string | null;
+  address: string;
+  city: string;
+}
+
+export interface OfferPayload {
+  title: string;
+  description?: string;
+  original_price: number;
+  sale_price: number;
+  quantity: number;
+  pickup_start: string;
+  pickup_end: string;
+  image_url?: string;
+}
+
+export function getMerchantProfile(token: string): Promise<MerchantProfile> {
+  return authRequest<MerchantProfile>("/api/merchant/profile", token);
+}
+
+export function createMerchantProfile(token: string, payload: Omit<MerchantProfile, "id" | "user_id">): Promise<MerchantProfile> {
+  return authRequest<MerchantProfile>("/api/merchant/profile", token, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function getMyOffers(token: string): Promise<FoodOffer[]> {
+  return authRequest<FoodOffer[]>("/api/offers/mine", token);
+}
+
+export function createOffer(token: string, payload: OfferPayload): Promise<FoodOffer> {
+  return authRequest<FoodOffer>("/api/offers", token, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deactivateOffer(token: string, offerId: number): Promise<FoodOffer> {
+  return authRequest<FoodOffer>(`/api/offers/${offerId}`, token, { method: "DELETE" });
+}
+
+export function updateOrderStatus(token: string, orderId: number, status: Order["status"]): Promise<Order> {
+  return authRequest<Order>(`/api/orders/${orderId}/status`, token, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+}

@@ -123,3 +123,11 @@ export function createOrder(token: string, items: OrderItemCreate[]): Promise<Or
     body: JSON.stringify({ items }),
   });
 }
+
+export function getOrders(token: string): Promise<Order[]> {
+  return authRequest<Order[]>("/api/orders", token);
+}
+
+export function getOrder(token: string, orderId: number): Promise<Order> {
+  return authRequest<Order>(`/api/orders/${orderId}`, token);
+}

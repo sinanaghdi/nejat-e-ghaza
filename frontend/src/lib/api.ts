@@ -89,6 +89,37 @@ export function loginUser(payload: { email: string; password: string }): Promise
   });
 }
 
+export interface OrderItemCreate {
+  food_offer_id: number;
+  quantity: number;
+}
+
+export interface OrderItem {
+  id: number;
+  food_offer_id: number;
+  quantity: number;
+  unit_price: number;
+  subtotal: number;
+}
+
+export interface Order {
+  id: number;
+  customer_id: number;
+  merchant_id: number;
+  total_amount: number;
+  status: "PENDING" | "PAID" | "READY_FOR_PICKUP" | "COMPLETED" | "CANCELLED" | "EXPIRED";
+  pickup_code: string;
+  created_at: string;
+  items: OrderItem[];
+}
+
 export function getCurrentUser(token: string): Promise<User> {
   return authRequest<User>("/api/auth/me", token);
+}
+
+export function createOrder(token: string, items: OrderItemCreate[]): Promise<Order> {
+  return authRequest<Order>("/api/orders", token, {
+    method: "POST",
+    body: JSON.stringify({ items }),
+  });
 }

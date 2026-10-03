@@ -263,6 +263,7 @@ def test_payment_webhook_moves_order_to_paid(client, db):
     webhook_response = client.post(
         "/api/payments/webhook",
         json={"authority": authority},
+        headers={"X-Webhook-Secret": "change-me"},
     )
 
     assert webhook_response.status_code == 200
@@ -291,8 +292,8 @@ def test_payment_webhook_is_idempotent(client, db):
     )
     authority = payment_response.json()["authority"]
 
-    first = client.post("/api/payments/webhook", json={"authority": authority})
-    second = client.post("/api/payments/webhook", json={"authority": authority})
+    first = client.post("/api/payments/webhook", json={"authority": authority}, headers={"X-Webhook-Secret": "change-me"})
+    second = client.post("/api/payments/webhook", json={"authority": authority}, headers={"X-Webhook-Secret": "change-me"})
 
     assert first.status_code == 200
     assert second.status_code == 200

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { ApiError, createOrder, FoodOffer, getCurrentUser, getOffers, getOrders, loginUser, registerUser, User, Order } from "./lib/api";
+import { ApiError, createOrder, FoodOffer, getCurrentUser, getOffers, getOrders, loginUser, registerUser, User, Order, MerchantProfile, createMerchantProfile, getMerchantProfile, getMyOffers, createOffer, deactivateOffer, updateOrderStatus, OfferPayload } from "./lib/api";
 import { clearToken, getToken, setToken } from "./lib/auth";
 import { formatPickupTime, formatToman } from "./lib/formatters";
 
@@ -58,6 +58,12 @@ function App() {
   const [ordersOpen, setOrdersOpen] = useState(false);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [ordersError, setOrdersError] = useState("");
+  const [merchantOpen, setMerchantOpen] = useState(false);
+  const [merchantProfile, setMerchantProfile] = useState<MerchantProfile | null>(null);
+  const [merchantOffers, setMerchantOffers] = useState<FoodOffer[]>([]);
+  const [merchantOrders, setMerchantOrders] = useState<Order[]>([]);
+  const [merchantLoading, setMerchantLoading] = useState(false);
+  const [merchantError, setMerchantError] = useState("");
 
   async function loadOffers() {
     setLoading(true);
@@ -205,6 +211,42 @@ function App() {
     }
   }
 
+  async function openMerchantDashboard() {
+    const token = getToken();
+    if (!token) { openAuth("login"); return; }
+    setMerchantOpen(true); setMerchantLoading(true); setMerchantError("");
+    try {
+      const [profile, offers, orders] = await Promise.all([getMerchantProfile(token), getMyOffers(token), getOrders(token)]);
+      setMerchantProfile(profile); setMerchantOffers(offers); setMerchantOrders(orders);
+    } catch (err) { setMerchantError(err instanceof ApiError ? err.message : "دریافت اطلاعات فروشگاه انجام نشد."); }
+    finally { setMerchantLoading(false); }
+  }
+
+  async function removeMerchantOffer(offerId: number) {
+    const token = getToken(); if (!token) return;
+    try { const updated = await deactivateOffer(token, offerId); setMerchantOffers((items) => items.map((item) => item.id === offerId ? updated : item)); }
+    catch (err) { setMerchantError(err instanceof ApiError ? err.message : "غیرفعال کردن پیشنهاد انجام نشد."); }
+  }
+
+  async function changeMerchantOrderStatus(orderId: number, status: Order["status"]) {
+    const token = getToken(); if (!token) return;
+    try { const updated = await updateOrderStatus(token, orderId, status); setMerchantOrders((items) => items.map((item) => item.id === orderId ? updated : item)); }
+    catch (err) { setMerchantError(err instanceof ApiError ? err.message : "تغییر وضعیت سفارش انجام نشد."); }
+  }
+
+  async function submitMerchantProfile(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); const token = getToken(); if (!token) return;
+    try { const profile = await createMerchantProfile(token, merchantForm); setMerchantProfile(profile); setMerchantFormOpen(false); }
+    catch (err) { setMerchantError(err instanceof ApiError ? err.message : "ساخت پروفایل فروشگاه انجام نشد."); }
+  }
+
+  async function submitOffer(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); const token = getToken(); if (!token) return;
+    try {
+      const payload: OfferPayload = { title: offerForm.title, description: offerForm.description || undefined, original_price: Number(offerForm.original_price), sale_price: Number(offerForm.sale_price), quantity: Number(offerForm.quantity), pickup_start: new Date(offerForm.pickup_start).toISOString(), pickup_end: new Date(offerForm.pickup_end).toISOString(), image_url: offerForm.image_url || undefined };
+      const offer = await createOffer(token, payload); setMerchantOffers((items) => [offer, ...items]); setOfferFormOpen(false);
+    } catch (err) { setMerchantError(err instanceof ApiError ? err.message : "ایجاد پیشنهاد انجام نشد."); }
+  }
   function handleLogout() {
     clearToken();
     setUser(null);
@@ -228,6 +270,7 @@ function App() {
             <>
               <button className="cart-button" type="button" onClick={() => setCartOpen(true)}>سبد خرید{cart.length > 0 && <span>{cart.reduce((sum, item) => sum + item.quantity, 0)}</span>}</button>
               <button className="orders-button" type="button" onClick={() => void openOrders()}>سفارش‌های من</button>
+              {user.role === "MERCHANT" && <button className="orders-button" type="button" onClick={() => void openMerchantDashboard()}>پنل فروشنده</button>
               <button className="login-button" type="button" onClick={handleLogout}>خروج</button>
             </>
           ) : (

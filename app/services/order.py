@@ -5,6 +5,8 @@ from app.db.models.food_offer import FoodOffer
 from app.db.models.order import Order
 from app.db.models.order_item import OrderItem
 from app.db.models.user import User
+from app.core.request_context import get_request_id
+from app.services.audit import record_event
 from app.models.enums import OrderStatus, UserRole
 from app.repositories import order as order_repository
 from app.schemas.order import OrderCreate
@@ -80,6 +82,16 @@ def create_order(db: Session, user: User, payload: OrderCreate) -> Order:
             items.append(OrderItem(food_offer_id=offer.id, quantity=requested.quantity, unit_price=offer.sale_price, subtotal=subtotal))
         order = Order(customer_id=user.id, merchant_id=merchant_id, total_amount=total, status=OrderStatus.PENDING, pickup_code=secrets.token_hex(4).upper(), items=items)
         db.add(order)
+        db.flush()
+        record_event(
+            db,
+            action="order.created",
+            entity_type="order",
+            entity_id=order.id,
+            actor=user,
+            request_id=get_request_id(),
+            details={"total_amount": str(total), "merchant_id": merchant_id},
+        )
         db.commit()
         db.refresh(order)
         return order
@@ -136,6 +148,15 @@ def update_order_status(db: Session, user: User, order_id: int, new_status: Orde
                     offer.available_quantity += item.quantity
 
         order.status = new_status
+        record_event(
+            db,
+            action="order.status_changed",
+            entity_type="order",
+            entity_id=order.id,
+            actor=user,
+            request_id=get_request_id(),
+            details={"new_status": new_status.value},
+        )
         db.commit()
         db.refresh(order)
         return order
@@ -177,6 +198,13 @@ def expire_pending_orders(db: Session) -> int:
                     offer.available_quantity += item.quantity
 
             order.status = OrderStatus.EXPIRED
+            record_event(
+                db,
+                action="order.expired",
+                entity_type="order",
+                entity_id=order.id,
+                request_id=get_request_id(),
+            )
             expired_count += 1
 
         db.commit()

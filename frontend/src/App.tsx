@@ -11,6 +11,9 @@ import { HowItWorks } from "./components/HowItWorks";
 import { CartDrawer } from "./components/cart/CartDrawer";
 import { AuthModal } from "./components/auth/AuthModal";
 import { OrdersModal } from "./components/orders/OrdersModal";
+import { MerchantDashboard } from "./components/merchant/MerchantDashboard";
+import { MerchantProfileForm } from "./components/merchant/MerchantProfileForm";
+import { OfferForm } from "./components/merchant/OfferForm";
 
 type AuthMode = "login" | "register";
 
@@ -357,28 +360,39 @@ function App() {
       </section>
 
       <HowItWorks />
-      {merchantOpen && (
-        <div className="modal-backdrop" role="presentation" onMouseDown={() => setMerchantOpen(false)}>
-          <section className="merchant-modal" role="dialog" aria-modal="true" onMouseDown={(event) => event.stopPropagation()}>
-            <button className="modal-close" type="button" onClick={() => setMerchantOpen(false)} aria-label="بستن">×</button>
-            {merchantLoading ? <div className="orders-loading"><div className="spinner" /> در حال بارگذاری پنل فروشنده...</div> : (
-              <>
-                <div className="merchant-head"><div><p className="eyebrow">مدیریت کسب‌وکار</p><h2>{merchantProfile?.business_name || "فروشگاه شما"}</h2><p>{merchantProfile?.city || "پروفایل فروشگاه هنوز ساخته نشده است."}</p></div><div>{!merchantProfile ? <button className="primary-button" type="button" onClick={() => setMerchantFormOpen(true)}>ساخت پروفایل</button> : <button className="primary-button" type="button" onClick={() => setOfferFormOpen(true)}>+ پیشنهاد جدید</button>}</div></div>
-                {merchantError && <p className="form-message error-message">{merchantError}</p>}
-                {!merchantProfile ? <div className="state-card"><div className="state-icon">🏪</div><h3>پروفایل فروشگاه را بسازید</h3><p>بعد از ساخت پروفایل می‌توانید پیشنهاد غذایی ثبت کنید.</p></div> : <>
-                  <div className="merchant-stats"><div><strong>{merchantOffers.filter((o) => o.is_active).length}</strong><span>پیشنهاد فعال</span></div><div><strong>{merchantOrders.length}</strong><span>سفارش</span></div><div><strong>{merchantOrders.filter((o) => o.status === "COMPLETED").length}</strong><span>تکمیل‌شده</span></div></div>
-                  <div className="merchant-grid"><div><div className="section-heading"><h3>پیشنهادهای من</h3></div><div className="merchant-offers">{merchantOffers.length === 0 ? <p className="muted">هنوز پیشنهادی ثبت نکرده‌اید.</p> : merchantOffers.map((offer) => <div className="merchant-row" key={offer.id}><div><strong>{offer.title}</strong><span>{formatToman(offer.sale_price)} · موجودی {offer.available_quantity}</span></div><span className={offer.is_active ? "active-dot" : "inactive-dot"}>{offer.is_active ? "فعال" : "غیرفعال"}</span>{offer.is_active && <button className="text-button danger" type="button" onClick={() => void removeMerchantOffer(offer.id)}>غیرفعال کردن</button>}</div>)}</div></div>
-                  <div><div className="section-heading"><h3>سفارش‌های اخیر</h3></div><div className="merchant-orders">{merchantOrders.length === 0 ? <p className="muted">هنوز سفارشی ندارید.</p> : merchantOrders.slice(0, 8).map((order) => <div className="merchant-order-row" key={order.id}><div><strong>سفارش #{order.id}</strong><span>{formatToman(order.total_amount)} · کد {order.pickup_code}</span></div><select value={order.status} onChange={(e) => void changeMerchantOrderStatus(order.id, e.target.value as Order["status"])}><option value={order.status}>{statusLabel(order.status)}</option>{order.status === "PAID" && <option value="READY_FOR_PICKUP">آماده دریافت</option>}{order.status === "READY_FOR_PICKUP" && <option value="COMPLETED">تکمیل شده</option>}{order.status === "PENDING" && <option value="CANCELLED">لغو شده</option>}</select></div>)}</div></div>
-                </>}
-              </>
-            )}
-          </section>
-        </div>
+      <MerchantDashboard
+        open={merchantOpen}
+        loading={merchantLoading}
+        error={merchantError}
+        profile={merchantProfile}
+        offers={merchantOffers}
+        orders={merchantOrders}
+        onClose={() => setMerchantOpen(false)}
+        onCreateProfile={() => setMerchantFormOpen(true)}
+        onCreateOffer={() => setOfferFormOpen(true)}
+        onDeactivate={(id) => void removeMerchantOffer(id)}
+        onStatusChange={(id, status) => void changeMerchantOrderStatus(id, status)}
+      />
+
+      {merchantFormOpen && (
+        <MerchantProfileForm
+          value={merchantForm}
+          onChange={setMerchantForm}
+          onSubmit={submitMerchantProfile}
+          onClose={() => setMerchantFormOpen(false)}
+        />
       )}
 
-      {merchantFormOpen && <div className="modal-backdrop nested-modal"><form className="form-modal" onSubmit={submitMerchantProfile}><h2>ساخت پروفایل فروشگاه</h2>{(["business_name","description","address","city"] as const).map((key) => <label key={key}>{key === "business_name" ? "نام کسب‌وکار" : key === "description" ? "توضیحات" : key === "address" ? "آدرس" : "شهر"}<input required={key !== "description"} value={merchantForm[key]} onChange={(e) => setMerchantForm({...merchantForm,[key]:e.target.value})} /></label>)}<div className="form-actions"><button className="secondary-button" type="button" onClick={() => setMerchantFormOpen(false)}>انصراف</button><button className="primary-button" type="submit">ذخیره</button></div></form></div>}
+      {offerFormOpen && (
+        <OfferForm
+          value={offerForm}
+          onChange={setOfferForm}
+          onSubmit={submitOffer}
+          onClose={() => setOfferFormOpen(false)}
+        />
+      )}
 
-      {offerFormOpen && <div className="modal-backdrop nested-modal"><form className="form-modal" onSubmit={submitOffer}><h2>پیشنهاد غذایی جدید</h2><label>عنوان<input required value={offerForm.title} onChange={(e) => setOfferForm({...offerForm,title:e.target.value})} /></label><label>توضیحات<textarea value={offerForm.description} onChange={(e) => setOfferForm({...offerForm,description:e.target.value})} /></label><div className="two-fields"><label>قیمت اصلی<input required type="number" min="1" value={offerForm.original_price} onChange={(e) => setOfferForm({...offerForm,original_price:e.target.value})} /></label><label>قیمت تخفیف<input required type="number" min="1" value={offerForm.sale_price} onChange={(e) => setOfferForm({...offerForm,sale_price:e.target.value})} /></label></div><label>تعداد<input required type="number" min="1" value={offerForm.quantity} onChange={(e) => setOfferForm({...offerForm,quantity:e.target.value})} /></label><div className="two-fields"><label>شروع دریافت<input required type="datetime-local" value={offerForm.pickup_start} onChange={(e) => setOfferForm({...offerForm,pickup_start:e.target.value})} /></label><label>پایان دریافت<input required type="datetime-local" value={offerForm.pickup_end} onChange={(e) => setOfferForm({...offerForm,pickup_end:e.target.value})} /></label></div><label>لینک تصویر اختیاری<input value={offerForm.image_url} onChange={(e) => setOfferForm({...offerForm,image_url:e.target.value})} /></label><div className="form-actions"><button className="secondary-button" type="button" onClick={() => setOfferFormOpen(false)}>انصراف</button><button className="primary-button" type="submit">ثبت پیشنهاد</button></div></form></div>}      <OrdersModal
+      <OrdersModal
         open={ordersOpen}
         orders={orders}
         loading={ordersLoading}

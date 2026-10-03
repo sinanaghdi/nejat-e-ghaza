@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useLocation } from "react-router-dom";
 import { ApiError, createOrder, FoodOffer, getCurrentUser, getOffers, getOrders, loginUser, registerUser, User, Order, MerchantProfile, createMerchantProfile, getMerchantProfile, getMyOffers, createOffer, deactivateOffer, updateOrderStatus, OfferPayload } from "./lib/api";
 import { clearToken, getToken, setToken } from "./lib/auth";
 import { formatPickupTime, formatToman } from "./lib/formatters";
@@ -14,6 +15,7 @@ import { OrdersModal } from "./components/orders/OrdersModal";
 import { MerchantDashboard } from "./components/merchant/MerchantDashboard";
 import { MerchantProfileForm } from "./components/merchant/MerchantProfileForm";
 import { OfferForm } from "./components/merchant/OfferForm";
+import { OrdersPage } from "./pages/OrdersPage";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 
 type AuthMode = "login" | "register";
@@ -48,6 +50,7 @@ function discountPercent(offer: FoodOffer): number {
 }
 
 function App() {
+  const location = useLocation();
   const [offers, setOffers] = useState<FoodOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -93,6 +96,18 @@ function App() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    if (location.pathname !== "/orders") return;
+    const token = getToken();
+    if (!token) return;
+    setOrdersLoading(true);
+    setOrdersError("");
+    getOrders(token)
+      .then(setOrders)
+      .catch((err) => setOrdersError(err instanceof ApiError ? err.message : "دریافت سفارش‌ها انجام نشد."))
+      .finally(() => setOrdersLoading(false));
+  }, [location.pathname]);
 
   useEffect(() => {
     void loadOffers();
@@ -275,6 +290,45 @@ function App() {
     () => offers.filter((offer) => offer.is_active && offer.available_quantity > 0),
     [offers],
   );
+
+  if (location.pathname === "/orders") {
+    return (
+      <>
+        <OrdersPage
+          orders={orders}
+          loading={ordersLoading}
+          error={ordersError}
+          onRetry={() => {
+            const token = getToken();
+            if (!token) { openAuth("login"); return; }
+            setOrdersLoading(true);
+            setOrdersError("");
+            getOrders(token)
+              .then(setOrders)
+              .catch((err) => setOrdersError(err instanceof ApiError ? err.message : "دریافت سفارش‌ها انجام نشد."))
+              .finally(() => setOrdersLoading(false));
+          }}
+        />
+        <MobileBottomNav cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)} userRole={user?.role || null} onCart={() => setCartOpen(true)} />
+        <AuthModal
+          open={authOpen}
+          mode={authMode}
+          loading={authLoading}
+          error={authError}
+          success={authSuccess}
+          name={name}
+          email={email}
+          password={password}
+          onClose={closeAuth}
+          onModeChange={(mode) => { setAuthMode(mode); setAuthError(""); setAuthSuccess(""); }}
+          onNameChange={setName}
+          onEmailChange={setEmail}
+          onPasswordChange={setPassword}
+          onSubmit={handleAuthSubmit}
+        />
+      </>
+    );
+  }
 
   return (
     <main className="app">

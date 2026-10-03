@@ -1,0 +1,88 @@
+@import "@fontsource/vazirmatn/400.css";
+@import "@fontsource/vazirmatn/500.css";
+@import "@fontsource/vazirmatn/600.css";
+@import "@fontsource/vazirmatn/700.css";
+@import "@fontsource/vazirmatn/800.css";
+
+/*
+ * Persian-first typography system.
+ * Do not use negative letter-spacing on Persian text:
+ * it damages Arabic-script joining and visual rhythm.
+ */
+
+:root {
+  --font-persian: "Vazirmatn", sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.25rem;
+  --text-display: clamp(2.75rem, 7vw, 5.5rem);
+
+  --leading-tight-fa: 1.35;
+  --leading-normal-fa: 1.75;
+  --leading-relaxed-fa: 2;
+}
+
+html,
+body,
+button,
+input,
+textarea,
+select {
+  font-family: var(--font-persian);
+}
+
+html {
+  direction: rtl;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-weight: 400;
+  line-height: var(--leading-normal-fa);
+  font-feature-settings: "kern", "liga", "calt";
+  font-variant-numeric: proportional-nums;
+}
+
+button,
+input,
+textarea,
+select {
+  font-feature-settings: inherit;
+}
+
+input[type="email"],
+input[type="password"],
+input[type="url"] {
+  font-variant-numeric: tabular-nums;
+}
+
+.fa-number {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+label,
+button,
+a {
+  overflow-wrap: anywhere;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  text-wrap: balance;
+}
+

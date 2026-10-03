@@ -12,7 +12,7 @@ import secrets
 
 ALLOWED_STATUS_TRANSITIONS = {
     OrderStatus.PENDING: {OrderStatus.PAID, OrderStatus.CANCELLED, OrderStatus.EXPIRED},
-    OrderStatus.PAID: {OrderStatus.READY_FOR_PICKUP, OrderStatus.CANCELLED},
+    OrderStatus.PAID: {OrderStatus.READY_FOR_PICKUP},
     OrderStatus.READY_FOR_PICKUP: {OrderStatus.COMPLETED, OrderStatus.EXPIRED},
     OrderStatus.COMPLETED: set(),
     OrderStatus.CANCELLED: set(),
@@ -21,7 +21,6 @@ ALLOWED_STATUS_TRANSITIONS = {
 
 CUSTOMER_ALLOWED_TRANSITIONS = {
     OrderStatus.PENDING: {OrderStatus.CANCELLED},
-    OrderStatus.PAID: {OrderStatus.CANCELLED},
 }
 
 MERCHANT_ALLOWED_TRANSITIONS = {
@@ -121,7 +120,17 @@ def update_order_status(db: Session, user: User, order_id: int, new_status: Orde
 
     _assert_actor_can_transition(user, order, new_status)
 
-    order.status = new_status
-    db.commit()
-    db.refresh(order)
-    return order
+    try:
+        if new_status == OrderStatus.CANCELLED:
+            for item in order.items:
+                offer = db.get(FoodOffer, item.food_offer_id)
+                if offer:
+                    offer.available_quantity += item.quantity
+
+        order.status = new_status
+        db.commit()
+        db.refresh(order)
+        return order
+    except Exception:
+        db.rollback()
+        raise

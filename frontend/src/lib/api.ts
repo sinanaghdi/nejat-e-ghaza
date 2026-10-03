@@ -75,6 +75,10 @@ export function getOffers(): Promise<FoodOffer[]> {
   return request<FoodOffer[]>("/api/offers");
 }
 
+export function getOffer(offerId: number): Promise<FoodOffer> {
+  return request<FoodOffer>(`/api/offers/${offerId}`);
+}
+
 export function registerUser(payload: { name: string; email: string; password: string }): Promise<User> {
   return request<User>("/api/auth/register", {
     method: "POST",

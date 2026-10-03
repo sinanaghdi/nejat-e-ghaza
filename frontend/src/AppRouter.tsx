@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import App from "./App";
+import { OrdersPage } from "./pages/OrdersPage";
 
 export function AppRouter() {
   return (

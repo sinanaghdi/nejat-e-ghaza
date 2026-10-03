@@ -1,0 +1,73 @@
+@import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap");
+
+:root {
+  font-family: "Vazirmatn", system-ui, sans-serif;
+  color: #1c211d;
+  background: #f7f5ef;
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; direction: rtl; }
+button, a { font: inherit; }
+a { color: inherit; text-decoration: none; }
+
+.app { min-height: 100vh; }
+.nav {
+  width: min(1180px, calc(100% - 40px));
+  margin: auto;
+  height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand { font-size: 1.35rem; font-weight: 800; }
+.nav-links { display: flex; align-items: center; gap: 28px; font-size: .95rem; }
+.login-button, .secondary-button, .primary-button {
+  border: 0;
+  cursor: pointer;
+  border-radius: 12px;
+  padding: 11px 18px;
+}
+.login-button { background: #1c211d; color: white; }
+.hero {
+  width: min(1180px, calc(100% - 40px));
+  margin: 20px auto 0;
+  min-height: 430px;
+  border-radius: 28px;
+  padding: 72px;
+  display: flex;
+  align-items: center;
+  background: #dfe8d7;
+}
+.hero > div { max-width: 620px; }
+.eyebrow { margin: 0 0 12px; font-weight: 700; }
+.hero h1 { margin: 0; font-size: clamp(2.6rem, 7vw, 5.4rem); line-height: 1.05; letter-spacing: -.05em; }
+.hero-copy { max-width: 560px; line-height: 2; font-size: 1.05rem; margin: 26px 0 30px; }
+.primary-button { display: inline-block; background: #1c211d; color: white; }
+
+.section { width: min(1180px, calc(100% - 40px)); margin: 100px auto; }
+.section-heading { display: flex; justify-content: space-between; align-items: end; margin-bottom: 28px; }
+.section h2 { margin: 0; font-size: 2.2rem; }
+.offer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.offer-card { overflow: hidden; background: white; border-radius: 20px; }
+.offer-image { height: 210px; display: grid; place-items: center; background: #e8e3d8; font-size: 4rem; }
+.offer-content { padding: 22px; }
+.merchant, .muted { color: #70756f; font-size: .88rem; }
+.offer-content h3 { margin: 8px 0 18px; font-size: 1.3rem; }
+.price-row { display: flex; align-items: center; gap: 12px; }
+.price-row strong { font-size: 1.05rem; }
+.price-row del { color: #9a9d98; font-size: .85rem; }
+.secondary-button { width: 100%; margin-top: 12px; background: #eef1eb; color: #1c211d; }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 50px; padding-bottom: 80px; }
+.step-number { font-size: .8rem; color: #777; }
+.steps h3 { font-size: 1.4rem; margin-bottom: 8px; }
+.steps p { color: #70756f; line-height: 1.8; }
+
+@media (max-width: 800px) {
+  .nav-links a { display: none; }
+  .hero { padding: 40px 28px; min-height: 480px; }
+  .offer-grid, .steps { grid-template-columns: 1fr; }
+  .section-heading { align-items: start; gap: 12px; flex-direction: column; }
+}

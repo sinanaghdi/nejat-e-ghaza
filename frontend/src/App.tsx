@@ -1,9 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
-import { ApiError, FoodOffer, getCurrentUser, getOffers, loginUser, registerUser, User } from "./lib/api";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { ApiError, createOrder, FoodOffer, getCurrentUser, getOffers, loginUser, registerUser, User } from "./lib/api";
 import { clearToken, getToken, setToken } from "./lib/auth";
 import { formatPickupTime, formatToman } from "./lib/formatters";
 
 type AuthMode = "login" | "register";
+
+type CartItem = {
+  offer: FoodOffer;
+  quantity: number;
+};
 
 function discountPercent(offer: FoodOffer): number {
   if (offer.original_price <= 0) return 0;
@@ -23,6 +28,13 @@ function App() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [selectedOffer, setSelectedOffer] = useState<FoodOffer | null>(null);
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [orderLoading, setOrderLoading] = useState(false);
+  const [orderMessage, setOrderMessage] = useState("");
+  const [orderError, setOrderError] = useState("");
 
   async function loadOffers() {
     setLoading(true);
@@ -57,7 +69,7 @@ function App() {
     if (!authLoading) setAuthOpen(false);
   }
 
-  async function handleAuthSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleAuthSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setAuthLoading(true);
     setAuthError("");
@@ -86,6 +98,67 @@ function App() {
     }
   }
 
+  function openOffer(offer: FoodOffer) {
+    setSelectedOffer(offer);
+    setSelectedQuantity(1);
+    setOrderError("");
+  }
+
+  function addToCart() {
+    if (!selectedOffer) return;
+    const quantity = Math.min(selectedQuantity, selectedOffer.available_quantity);
+    setCart((current) => {
+      const existing = current.find((item) => item.offer.id === selectedOffer.id);
+      if (existing) {
+        return current.map((item) =>
+          item.offer.id === selectedOffer.id
+            ? { ...item, quantity: Math.min(item.quantity + quantity, selectedOffer.available_quantity) }
+            : item,
+        );
+      }
+      return [...current, { offer: selectedOffer, quantity }];
+    });
+    setSelectedOffer(null);
+    setCartOpen(true);
+  }
+
+  function updateCartQuantity(offerId: number, quantity: number) {
+    setCart((current) =>
+      current
+        .map((item) =>
+          item.offer.id === offerId
+            ? { ...item, quantity: Math.max(0, Math.min(quantity, item.offer.available_quantity)) }
+            : item,
+        )
+        .filter((item) => item.quantity > 0),
+    );
+  }
+
+  async function submitOrder() {
+    const token = getToken();
+    if (!token || cart.length === 0) {
+      openAuth("login");
+      return;
+    }
+    setOrderLoading(true);
+    setOrderError("");
+    setOrderMessage("");
+    try {
+      const order = await createOrder(token, cart.map((item) => ({
+        food_offer_id: item.offer.id,
+        quantity: item.quantity,
+      })));
+      setCart([]);
+      setCartOpen(false);
+      setOrderMessage(`سفارش #${order.id} با موفقیت ثبت شد. کد دریافت: ${order.pickup_code}`);
+      await loadOffers();
+    } catch (err) {
+      setOrderError(err instanceof ApiError ? err.message : "ثبت سفارش انجام نشد.");
+    } finally {
+      setOrderLoading(false);
+    }
+  }
+
   function handleLogout() {
     clearToken();
     setUser(null);
@@ -104,8 +177,10 @@ function App() {
           <a href="#offers">پیشنهادها</a>
           <a href="#how-it-works">چطور کار می‌کند؟</a>
           {user ? (
+            <button className="cart-button" type="button" onClick={() => setCartOpen(true)}>سبد خرید{cart.length > 0 && <span>{cart.reduce((sum, item) => sum + item.quantity, 0)}</span>}</button>
             <button className="login-button" type="button" onClick={handleLogout}>خروج</button>
           ) : (
+            <button className="cart-button" type="button" onClick={() => setCartOpen(true)}>سبد خرید{cart.length > 0 && <span>{cart.reduce((sum, item) => sum + item.quantity, 0)}</span>}</button>
             <button className="login-button" type="button" onClick={() => openAuth("login")}>ورود</button>
           )}
         </div>
@@ -206,6 +281,85 @@ function App() {
           <div className="step"><span className="step-number">۰۳</span><h3>تحویل بگیر</h3><p>در بازه مشخص‌شده به فروشنده مراجعه کن و سفارشت را تحویل بگیر.</p></div>
         </div>
       </section>
+
+
+
+      {orderMessage && (
+        <div className="toast success-toast" role="status">
+          <strong>سفارش ثبت شد</strong>
+          <span>{orderMessage}</span>
+          <button type="button" onClick={() => setOrderMessage("")}>×</button>
+        </div>
+      )}
+
+      {selectedOffer && (
+        <div className="modal-backdrop" role="presentation" onMouseDown={() => setSelectedOffer(null)}>
+          <section className="offer-modal" role="dialog" aria-modal="true" onMouseDown={(event) => event.stopPropagation()}>
+            <button className="modal-close" type="button" onClick={() => setSelectedOffer(null)} aria-label="بستن">×</button>
+            <div className="detail-image">
+              {selectedOffer.image_url ? <img src={selectedOffer.image_url} alt={selectedOffer.title} /> : <span>🍱</span>}
+              {discountPercent(selectedOffer) > 0 && <span className="discount-badge">{discountPercent(selectedOffer)}٪ تخفیف</span>}
+            </div>
+            <div className="offer-detail-content">
+              <span className="merchant">فروشنده #{selectedOffer.merchant_id}</span>
+              <h2>{selectedOffer.title}</h2>
+              {selectedOffer.description && <p className="detail-description">{selectedOffer.description}</p>}
+              <div className="detail-price"><strong>{formatToman(selectedOffer.sale_price)}</strong><del>{formatToman(selectedOffer.original_price)}</del></div>
+              <div className="detail-meta">
+                <span>🕐 دریافت تا {formatPickupTime(selectedOffer.pickup_end)}</span>
+                <span>📦 {selectedOffer.available_quantity} عدد موجود</span>
+              </div>
+              <div className="quantity-control">
+                <button type="button" onClick={() => setSelectedQuantity((value) => Math.max(1, value - 1))}>−</button>
+                <strong>{selectedQuantity}</strong>
+                <button type="button" onClick={() => setSelectedQuantity((value) => Math.min(selectedOffer.available_quantity, value + 1))}>+</button>
+              </div>
+              <button className="primary-button full-button" type="button" onClick={addToCart}>افزودن به سبد خرید</button>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {cartOpen && (
+        <div className="modal-backdrop" role="presentation" onMouseDown={() => setCartOpen(false)}>
+          <aside className="cart-drawer" role="dialog" aria-modal="true" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="drawer-header">
+              <div><p className="eyebrow">سفارش شما</p><h2>سبد خرید</h2></div>
+              <button className="modal-close" type="button" onClick={() => setCartOpen(false)} aria-label="بستن">×</button>
+            </div>
+            {cart.length === 0 ? (
+              <div className="cart-empty"><div className="state-icon">🛒</div><h3>سبد خرید خالی است</h3><p>یک پیشنهاد خوشمزه انتخاب کن.</p></div>
+            ) : (
+              <>
+                <div className="cart-items">
+                  {cart.map((item) => (
+                    <div className="cart-item" key={item.offer.id}>
+                      <div className="cart-item-image">{item.offer.image_url ? <img src={item.offer.image_url} alt="" /> : "🍱"}</div>
+                      <div className="cart-item-info">
+                        <strong>{item.offer.title}</strong>
+                        <span>{formatToman(item.offer.sale_price)}</span>
+                        <div className="mini-quantity">
+                          <button type="button" onClick={() => updateCartQuantity(item.offer.id, item.quantity - 1)}>−</button>
+                          <b>{item.quantity}</b>
+                          <button type="button" onClick={() => updateCartQuantity(item.offer.id, item.quantity + 1)}>+</button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="cart-summary">
+                  <span>مبلغ کل</span>
+                  <strong>{formatToman(cart.reduce((sum, item) => sum + item.offer.sale_price * item.quantity, 0))}</strong>
+                </div>
+                {orderError && <p className="form-message error-message">{orderError}</p>}
+                <button className="primary-button full-button" type="button" disabled={orderLoading} onClick={() => void submitOrder()}>
+                  {orderLoading ? "در حال ثبت سفارش..." : "ثبت سفارش"}
+                </button>
+              </>
+            )}
+          </aside>
+        </div>
+      )}
 
       {authOpen && (
         <div className="modal-backdrop" role="presentation" onMouseDown={closeAuth}>

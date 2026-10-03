@@ -1,7 +1,9 @@
+import type { ReactNode } from "react";
+
 type Props = {
   eyebrow?: string;
   title: string;
-  trailing?: React.ReactNode;
+  trailing?: ReactNode;
 };
 
 export function SectionHeading({ eyebrow, title, trailing }: Props) {

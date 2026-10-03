@@ -33,6 +33,16 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+async function authRequest<T>(path: string, token: string, options: RequestInit = {}): Promise<T> {
+  return request<T>(path, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(options.headers || {}),
+    },
+  });
+}
+
 export interface FoodOffer {
   id: number;
   merchant_id: number;
@@ -49,6 +59,36 @@ export interface FoodOffer {
   created_at: string;
 }
 
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: "CUSTOMER" | "MERCHANT" | "ADMIN";
+}
+
+export interface TokenResponse {
+  access_token: string;
+  token_type: string;
+}
+
 export function getOffers(): Promise<FoodOffer[]> {
   return request<FoodOffer[]>("/api/offers");
+}
+
+export function registerUser(payload: { name: string; email: string; password: string }): Promise<User> {
+  return request<User>("/api/auth/register", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function loginUser(payload: { email: string; password: string }): Promise<TokenResponse> {
+  return request<TokenResponse>("/api/auth/login", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function getCurrentUser(token: string): Promise<User> {
+  return authRequest<User>("/api/auth/me", token);
 }

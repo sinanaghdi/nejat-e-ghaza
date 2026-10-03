@@ -1,11 +1,11 @@
 import type { MerchantProfile, FoodOffer, Order } from "../../lib/api";
 import { formatToman } from "../../lib/formatters";
 function statusLabel(status: Order["status"]): string { const labels: Record<Order["status"], string> = { PENDING: "در انتظار پرداخت", PAID: "پرداخت‌شده", READY_FOR_PICKUP: "آماده دریافت", COMPLETED: "تکمیل‌شده", CANCELLED: "لغوشده", EXPIRED: "منقضی‌شده" }; return labels[status]; }
-type Props={open:boolean; loading:boolean; error:string; profile:MerchantProfile|null; offers:FoodOffer[]; orders:Order[]; onClose:()=>void; onCreateProfile:()=>void; onCreateOffer:()=>void; onDeactivate:(id:number)=>void; onStatusChange:(id:number,status:Order["status"])=>void;};
+type Props={open?:boolean; loading:boolean; error:string; profile:MerchantProfile|null; offers:FoodOffer[]; orders:Order[]; onClose:()=>void; onCreateProfile:()=>void; onCreateOffer:()=>void; onDeactivate:(id:number)=>void; onStatusChange:(id:number,status:Order["status"])=>void;};
 export function MerchantDashboard({open,loading,error,profile,offers,orders,onClose,onCreateProfile,onCreateOffer,onDeactivate,onStatusChange}:Props){
- if(!open)return null;
- return <div className="modal-backdrop" role="presentation" onMouseDown={onClose}><section className="merchant-modal" role="dialog" aria-modal="true" onMouseDown={e=>e.stopPropagation()}>
- <button className="modal-close" type="button" onClick={onClose} aria-label="بستن">×</button>
+ if(open === false)return null;
+ return <div className="merchant-dashboard-surface" ><section className="merchant-dashboard-content" aria-label="پنل مدیریت فروشگاه">
+ {onClose && <button className="modal-close" type="button" onClick={onClose} aria-label="بستن">×</button>}
  {loading?<div className="orders-loading"><div className="spinner"/> در حال بارگذاری پنل فروشنده...</div>:<>
  <div className="merchant-head"><div><p className="eyebrow">مدیریت کسب‌وکار</p><h2>{profile?.business_name||"فروشگاه شما"}</h2><p>{profile?.city||"پروفایل فروشگاه هنوز ساخته نشده است."}</p></div><div>{!profile?<button className="primary-button" type="button" onClick={onCreateProfile}>ساخت پروفایل</button>:<button className="primary-button" type="button" onClick={onCreateOffer}>+ پیشنهاد جدید</button>}</div></div>
  {error&&<p className="form-message error-message">{error}</p>}

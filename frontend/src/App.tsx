@@ -106,6 +106,11 @@ function App() {
 
   function addToCart() {
     if (!selectedOffer) return;
+    const existingMerchantId = cart[0]?.offer.merchant_id;
+    if (existingMerchantId !== undefined && existingMerchantId !== selectedOffer.merchant_id) {
+      setOrderError("در هر سفارش فقط می‌توانی از یک فروشنده خرید کنی.");
+      return;
+    }
     const quantity = Math.min(selectedQuantity, selectedOffer.available_quantity);
     setCart((current) => {
       const existing = current.find((item) => item.offer.id === selectedOffer.id);

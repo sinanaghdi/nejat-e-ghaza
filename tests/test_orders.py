@@ -327,3 +327,28 @@ def test_customer_cannot_create_payment_for_another_customer_order(client, db):
     )
 
     assert response.status_code == 403
+
+
+def test_order_creation_writes_audit_log(client, db):
+    from app.db.models.audit_log import AuditLog
+
+    customer, _, _, offer = _setup_order(db)
+    token = _login(client, customer.email)
+
+    response = client.post(
+        "/api/orders",
+        json={"items": [{"food_offer_id": offer.id, "quantity": 1}]},
+        headers={"Authorization": f"Bearer {token}", "X-Request-ID": "test-request-123"},
+    )
+
+    assert response.status_code == 201
+    order_id = response.json()["id"]
+
+    event = (
+        db.query(AuditLog)
+        .filter(AuditLog.action == "order.created", AuditLog.entity_id == str(order_id))
+        .one()
+    )
+    assert event.actor_user_id == customer.id
+    assert event.request_id == "test-request-123"
+    assert event.success is True

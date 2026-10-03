@@ -128,6 +128,27 @@ export function createOrder(token: string, items: OrderItemCreate[]): Promise<Or
   });
 }
 
+
+export interface PaymentResponse {
+  id: number;
+  order_id: number;
+  provider: string;
+  authority: string;
+  reference_id: string | null;
+  amount: number;
+  status: string;
+  created_at: string;
+  paid_at: string | null;
+}
+
+export interface PaymentStartResponse {
+  payment: PaymentResponse;
+  checkout_url: string;
+}
+
+export function createPayment(token: string, orderId: number): Promise<PaymentStartResponse> {
+  return authRequest<PaymentStartResponse>(`/api/payments/orders/${orderId}`, token, { method: "POST" });
+}
 export function getOrders(token: string): Promise<Order[]> {
   return authRequest<Order[]>("/api/orders", token);
 }

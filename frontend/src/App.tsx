@@ -10,6 +10,7 @@ import { Hero } from "./components/Hero";
 import { HowItWorks } from "./components/HowItWorks";
 import { CartDrawer } from "./components/cart/CartDrawer";
 import { AuthModal } from "./components/auth/AuthModal";
+import { OrdersModal } from "./components/orders/OrdersModal";
 
 type AuthMode = "login" | "register";
 
@@ -377,38 +378,14 @@ function App() {
 
       {merchantFormOpen && <div className="modal-backdrop nested-modal"><form className="form-modal" onSubmit={submitMerchantProfile}><h2>ساخت پروفایل فروشگاه</h2>{(["business_name","description","address","city"] as const).map((key) => <label key={key}>{key === "business_name" ? "نام کسب‌وکار" : key === "description" ? "توضیحات" : key === "address" ? "آدرس" : "شهر"}<input required={key !== "description"} value={merchantForm[key]} onChange={(e) => setMerchantForm({...merchantForm,[key]:e.target.value})} /></label>)}<div className="form-actions"><button className="secondary-button" type="button" onClick={() => setMerchantFormOpen(false)}>انصراف</button><button className="primary-button" type="submit">ذخیره</button></div></form></div>}
 
-      {offerFormOpen && <div className="modal-backdrop nested-modal"><form className="form-modal" onSubmit={submitOffer}><h2>پیشنهاد غذایی جدید</h2><label>عنوان<input required value={offerForm.title} onChange={(e) => setOfferForm({...offerForm,title:e.target.value})} /></label><label>توضیحات<textarea value={offerForm.description} onChange={(e) => setOfferForm({...offerForm,description:e.target.value})} /></label><div className="two-fields"><label>قیمت اصلی<input required type="number" min="1" value={offerForm.original_price} onChange={(e) => setOfferForm({...offerForm,original_price:e.target.value})} /></label><label>قیمت تخفیف<input required type="number" min="1" value={offerForm.sale_price} onChange={(e) => setOfferForm({...offerForm,sale_price:e.target.value})} /></label></div><label>تعداد<input required type="number" min="1" value={offerForm.quantity} onChange={(e) => setOfferForm({...offerForm,quantity:e.target.value})} /></label><div className="two-fields"><label>شروع دریافت<input required type="datetime-local" value={offerForm.pickup_start} onChange={(e) => setOfferForm({...offerForm,pickup_start:e.target.value})} /></label><label>پایان دریافت<input required type="datetime-local" value={offerForm.pickup_end} onChange={(e) => setOfferForm({...offerForm,pickup_end:e.target.value})} /></label></div><label>لینک تصویر اختیاری<input value={offerForm.image_url} onChange={(e) => setOfferForm({...offerForm,image_url:e.target.value})} /></label><div className="form-actions"><button className="secondary-button" type="button" onClick={() => setOfferFormOpen(false)}>انصراف</button><button className="primary-button" type="submit">ثبت پیشنهاد</button></div></form></div>}      {ordersOpen && (
-        <div className="modal-backdrop" role="presentation" onMouseDown={() => setOrdersOpen(false)}>
-          <section className="orders-modal" role="dialog" aria-modal="true" aria-labelledby="orders-title" onMouseDown={(event) => event.stopPropagation()}>
-            <button className="modal-close" type="button" onClick={() => setOrdersOpen(false)} aria-label="بستن">×</button>
-            <div className="orders-header">
-              <p className="eyebrow">حساب کاربری</p>
-              <h2 id="orders-title">سفارش‌های من</h2>
-              <p>سفارش‌ها و کدهای دریافتت را اینجا ببین.</p>
-            </div>
-            {ordersLoading && <div className="orders-loading"><div className="spinner" /> در حال دریافت سفارش‌ها...</div>}
-            {!ordersLoading && ordersError && (
-              <div className="state-card error-state"><div className="state-icon">!</div><h3>دریافت سفارش‌ها ناموفق بود</h3><p>{ordersError}</p><button className="secondary-button compact" type="button" onClick={() => void openOrders()}>تلاش دوباره</button></div>
-            )}
-            {!ordersLoading && !ordersError && orders.length === 0 && (
-              <div className="state-card"><div className="state-icon">📦</div><h3>هنوز سفارشی نداری</h3><p>یک پیشنهاد انتخاب کن و اولین غذایت را نجات بده.</p></div>
-            )}
-            {!ordersLoading && !ordersError && orders.length > 0 && (
-              <div className="orders-list">
-                {orders.map((order) => (
-                  <article className="order-card" key={order.id}>
-                    <div className="order-card-top"><div><span className="order-label">سفارش</span><strong>#{order.id}</strong></div><StatusBadge status={order.status} /></div>
-                    <div className="order-items">{order.items.map((item) => <div className="order-item-row" key={item.id}><span>غذا #{item.food_offer_id} × {item.quantity}</span><strong>{formatToman(item.subtotal)}</strong></div>)}</div>
-                    <div className="order-total"><span>مبلغ کل</span><strong>{formatToman(order.total_amount)}</strong></div>
-                    <div className="pickup-code"><span>کد دریافت</span><strong>{order.pickup_code}</strong></div>
-                    <time className="order-date" dateTime={order.created_at}>ثبت شده در {formatOrderDate(order.created_at)}</time>
-                  </article>
-                ))}
-              </div>
-            )}
-          </section>
-        </div>
-      )}
+      {offerFormOpen && <div className="modal-backdrop nested-modal"><form className="form-modal" onSubmit={submitOffer}><h2>پیشنهاد غذایی جدید</h2><label>عنوان<input required value={offerForm.title} onChange={(e) => setOfferForm({...offerForm,title:e.target.value})} /></label><label>توضیحات<textarea value={offerForm.description} onChange={(e) => setOfferForm({...offerForm,description:e.target.value})} /></label><div className="two-fields"><label>قیمت اصلی<input required type="number" min="1" value={offerForm.original_price} onChange={(e) => setOfferForm({...offerForm,original_price:e.target.value})} /></label><label>قیمت تخفیف<input required type="number" min="1" value={offerForm.sale_price} onChange={(e) => setOfferForm({...offerForm,sale_price:e.target.value})} /></label></div><label>تعداد<input required type="number" min="1" value={offerForm.quantity} onChange={(e) => setOfferForm({...offerForm,quantity:e.target.value})} /></label><div className="two-fields"><label>شروع دریافت<input required type="datetime-local" value={offerForm.pickup_start} onChange={(e) => setOfferForm({...offerForm,pickup_start:e.target.value})} /></label><label>پایان دریافت<input required type="datetime-local" value={offerForm.pickup_end} onChange={(e) => setOfferForm({...offerForm,pickup_end:e.target.value})} /></label></div><label>لینک تصویر اختیاری<input value={offerForm.image_url} onChange={(e) => setOfferForm({...offerForm,image_url:e.target.value})} /></label><div className="form-actions"><button className="secondary-button" type="button" onClick={() => setOfferFormOpen(false)}>انصراف</button><button className="primary-button" type="submit">ثبت پیشنهاد</button></div></form></div>}      <OrdersModal
+        open={ordersOpen}
+        orders={orders}
+        loading={ordersLoading}
+        error={ordersError}
+        onClose={() => setOrdersOpen(false)}
+        onRetry={() => void openOrders()}
+      />
 
       {orderMessage && (
         <div className="toast success-toast" role="status">

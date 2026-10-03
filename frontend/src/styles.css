@@ -156,3 +156,34 @@ button:disabled { cursor: not-allowed; opacity: .65; }
   .nav-links { gap: 6px; }
   .cart-button, .login-button { padding: 9px 11px; }
 }
+
+.orders-button { border: 1px solid #d9dfd7; border-radius: 12px; padding: 10px 14px; background: #fff; color: #173c2b; font-weight: 700; }
+.orders-modal { width: min(760px, 100%); max-height: 90vh; overflow-y: auto; position: relative; border-radius: 24px; padding: 32px; background: #fff; box-shadow: 0 25px 80px rgba(0,0,0,.2); }
+.orders-header { padding-left: 35px; margin-bottom: 24px; }
+.orders-header h2 { margin: 0 0 7px; font-size: 2rem; }
+.orders-header p:last-child { margin: 0; color: #737d76; font-size: .9rem; }
+.orders-list { display: grid; gap: 14px; }
+.order-card { border: 1px solid #e4e8e2; border-radius: 17px; padding: 18px; background: #fbfcfa; }
+.order-card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid #e5e9e3; }
+.order-label { display: block; color: #7b847e; font-size: .72rem; margin-bottom: 3px; }
+.order-card-top strong { font-size: 1.1rem; }
+.status-badge { display: inline-flex; border-radius: 999px; padding: 6px 10px; font-size: .72rem; font-weight: 700; background: #e9eee8; color: #3e5746; }
+.status-paid, .status-ready_for_pickup { background: #e3efe5; color: #28613b; }
+.status-cancelled, .status-expired { background: #f5e7e3; color: #8b3929; }
+.order-items { display: grid; gap: 8px; padding: 14px 0; }
+.order-item-row, .order-total { display: flex; justify-content: space-between; gap: 12px; font-size: .8rem; color: #5f6b63; }
+.order-item-row strong, .order-total strong { color: #26372d; }
+.order-total { padding-top: 12px; border-top: 1px solid #e5e9e3; font-weight: 700; }
+.pickup-code { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; padding: 13px; border-radius: 12px; background: #e6f0e4; color: #285438; }
+.pickup-code span { font-size: .76rem; }
+.pickup-code strong { letter-spacing: .12em; font-size: 1.1rem; }
+.order-date { display: block; margin-top: 11px; color: #8a928c; font-size: .7rem; }
+.orders-loading { min-height: 220px; display: flex; align-items: center; justify-content: center; gap: 10px; color: #68736c; }
+.spinner { width: 20px; height: 20px; border: 2px solid #dbe3d9; border-top-color: #173c2b; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 760px) {
+  .orders-modal { padding: 24px 16px; max-height: 94vh; }
+  .orders-header h2 { font-size: 1.6rem; }
+  .orders-button { padding: 9px 11px; }
+}

@@ -1,9 +1,10 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_current_user
+from app.core.rate_limit import check_rate_limit
 from app.core.security import create_access_token
 from app.db.database import get_db
 from app.db.models.user import User
@@ -14,12 +15,22 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 @router.post("/register", response_model=UserResponse, status_code=201)
-def register(payload: RegisterRequest, db: Annotated[Session, Depends(get_db)]):
+def register(
+    request: Request,
+    payload: RegisterRequest,
+    db: Annotated[Session, Depends(get_db)],
+):
+    check_rate_limit(request, "register")
     return register_user(db, payload.name, payload.email, payload.password)
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(payload: LoginRequest, db: Annotated[Session, Depends(get_db)]):
+def login(
+    request: Request,
+    payload: LoginRequest,
+    db: Annotated[Session, Depends(get_db)],
+):
+    check_rate_limit(request, "login")
     user = authenticate_user(db, payload.email, payload.password)
     return TokenResponse(access_token=create_access_token(str(user.id)))
 

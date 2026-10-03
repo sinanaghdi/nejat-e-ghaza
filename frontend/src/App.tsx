@@ -8,10 +8,12 @@ import { StatusBadge } from "./components/StatusBadge";
 import { Header } from "./components/Header";
 import { Hero } from "./components/Hero";
 import { HowItWorks } from "./components/HowItWorks";
+import { CartDrawer, type CartItem } from "./components/cart/CartDrawer";
+import { AuthModal } from "./components/auth/AuthModal";
 
 type AuthMode = "login" | "register";
 
-type CartItem = {
+type LegacyCartItem = {
   offer: FoodOffer;
   quantity: number;
 };
@@ -55,7 +57,7 @@ function App() {
   const [password, setPassword] = useState("");
   const [selectedOffer, setSelectedOffer] = useState<FoodOffer | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<LegacyCartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [orderLoading, setOrderLoading] = useState(false);
   const [orderMessage, setOrderMessage] = useState("");
@@ -440,83 +442,32 @@ function App() {
         </div>
       )}
 
-      {cartOpen && (
-        <div className="modal-backdrop" role="presentation" onMouseDown={() => setCartOpen(false)}>
-          <aside className="cart-drawer" role="dialog" aria-modal="true" onMouseDown={(event) => event.stopPropagation()}>
-            <div className="drawer-header">
-              <div><p className="eyebrow">سفارش شما</p><h2>سبد خرید</h2></div>
-              <button className="modal-close" type="button" onClick={() => setCartOpen(false)} aria-label="بستن">×</button>
-            </div>
-            {cart.length === 0 ? (
-              <div className="cart-empty"><div className="state-icon">🛒</div><h3>سبد خرید خالی است</h3><p>یک پیشنهاد خوشمزه انتخاب کن.</p></div>
-            ) : (
-              <>
-                <div className="cart-items">
-                  {cart.map((item) => (
-                    <div className="cart-item" key={item.offer.id}>
-                      <div className="cart-item-image">{item.offer.image_url ? <img src={item.offer.image_url} alt="" /> : "🍱"}</div>
-                      <div className="cart-item-info">
-                        <strong>{item.offer.title}</strong>
-                        <span>{formatToman(item.offer.sale_price)}</span>
-                        <div className="mini-quantity">
-                          <button type="button" onClick={() => updateCartQuantity(item.offer.id, item.quantity - 1)}>−</button>
-                          <b>{item.quantity}</b>
-                          <button type="button" onClick={() => updateCartQuantity(item.offer.id, item.quantity + 1)}>+</button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="cart-summary">
-                  <span>مبلغ کل</span>
-                  <strong>{formatToman(cart.reduce((sum, item) => sum + item.offer.sale_price * item.quantity, 0))}</strong>
-                </div>
-                {orderError && <p className="form-message error-message">{orderError}</p>}
-                <button className="primary-button full-button" type="button" disabled={orderLoading} onClick={() => void submitOrder()}>
-                  {orderLoading ? "در حال ثبت سفارش..." : "ثبت سفارش"}
-                </button>
-              </>
-            )}
-          </aside>
-        </div>
-      )}
+      <CartDrawer
+        cart={cart}
+        open={cartOpen}
+        loading={orderLoading}
+        error={orderError}
+        onClose={() => setCartOpen(false)}
+        onUpdateQuantity={updateCartQuantity}
+        onSubmit={() => void submitOrder()}
+      />
 
-      {authOpen && (
-        <div className="modal-backdrop" role="presentation" onMouseDown={closeAuth}>
-          <section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title" onMouseDown={(event) => event.stopPropagation()}>
-            <button className="modal-close" type="button" onClick={closeAuth} aria-label="بستن">×</button>
-            <div className="auth-header">
-              <span className="eyebrow">نجات غذا</span>
-              <h2 id="auth-title">{authMode === "login" ? "خوش آمدی" : "ساخت حساب کاربری"}</h2>
-              <p>{authMode === "login" ? "برای ادامه وارد حساب خودت شو." : "چند ثانیه بیشتر طول نمی‌کشد."}</p>
-            </div>
-
-            <div className="auth-tabs">
-              <button type="button" className={authMode === "login" ? "active" : ""} onClick={() => { setAuthMode("login"); setAuthError(""); setAuthSuccess(""); }}>
-                ورود
-              </button>
-              <button type="button" className={authMode === "register" ? "active" : ""} onClick={() => { setAuthMode("register"); setAuthError(""); setAuthSuccess(""); }}>
-                ثبت‌نام
-              </button>
-            </div>
-
-            <form className="auth-form" onSubmit={handleAuthSubmit}>
-              {authMode === "register" && (
-                <label>نام و نام خانوادگی<input required minLength={2} maxLength={100} value={name} onChange={(event) => setName(event.target.value)} placeholder="مثلاً سینا احمدی" /></label>
-              )}
-              <label>ایمیل<input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="example@email.com" dir="ltr" /></label>
-              <label>رمز عبور<input required type="password" minLength={8} maxLength={128} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="حداقل ۸ کاراکتر" dir="ltr" /></label>
-
-              {authError && <p className="form-message error-message">{authError}</p>}
-              {authSuccess && <p className="form-message success-message">{authSuccess}</p>}
-
-              <button className="primary-button auth-submit" type="submit" disabled={authLoading}>
-                {authLoading ? "در حال پردازش..." : authMode === "login" ? "ورود به حساب" : "ساخت حساب"}
-              </button>
-            </form>
-          </section>
-        </div>
-      )}
+      <AuthModal
+        open={authOpen}
+        mode={authMode}
+        loading={authLoading}
+        error={authError}
+        success={authSuccess}
+        name={name}
+        email={email}
+        password={password}
+        onClose={closeAuth}
+        onModeChange={(mode) => { setAuthMode(mode); setAuthError(""); setAuthSuccess(""); }}
+        onNameChange={setName}
+        onEmailChange={setEmail}
+        onPasswordChange={setPassword}
+        onSubmit={handleAuthSubmit}
+      />
     </main>
   );
 }

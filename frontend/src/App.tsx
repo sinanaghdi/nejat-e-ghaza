@@ -98,6 +98,22 @@ function App() {
   }
 
   useEffect(() => {
+    if (location.pathname !== "/merchant") return;
+    const token = getToken();
+    if (!token) return;
+    setMerchantLoading(true);
+    setMerchantError("");
+    Promise.all([getMerchantProfile(token), getMyOffers(token), getOrders(token)])
+      .then(([profile, offers, orders]) => {
+        setMerchantProfile(profile);
+        setMerchantOffers(offers);
+        setMerchantOrders(orders);
+      })
+      .catch((err) => setMerchantError(err instanceof ApiError ? err.message : "دریافت اطلاعات فروشگاه انجام نشد."))
+      .finally(() => setMerchantLoading(false));
+  }, [location.pathname]);
+
+  useEffect(() => {
     if (location.pathname !== "/orders") return;
     const token = getToken();
     if (!token) return;

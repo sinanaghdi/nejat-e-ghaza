@@ -1,0 +1,18 @@
+import type { MerchantProfile, FoodOffer, Order } from "../../lib/api";
+import { formatToman } from "../../lib/formatters";
+import { statusLabel } from "../../lib/status";
+type Props={open:boolean; loading:boolean; error:string; profile:MerchantProfile|null; offers:FoodOffer[]; orders:Order[]; onClose:()=>void; onCreateProfile:()=>void; onCreateOffer:()=>void; onDeactivate:(id:number)=>void; onStatusChange:(id:number,status:Order["status"])=>void;};
+export function MerchantDashboard({open,loading,error,profile,offers,orders,onClose,onCreateProfile,onCreateOffer,onDeactivate,onStatusChange}:Props){
+ if(!open)return null;
+ return <div className="modal-backdrop" role="presentation" onMouseDown={onClose}><section className="merchant-modal" role="dialog" aria-modal="true" onMouseDown={e=>e.stopPropagation()}>
+ <button className="modal-close" type="button" onClick={onClose} aria-label="بستن">×</button>
+ {loading?<div className="orders-loading"><div className="spinner"/> در حال بارگذاری پنل فروشنده...</div>:<>
+ <div className="merchant-head"><div><p className="eyebrow">مدیریت کسب‌وکار</p><h2>{profile?.business_name||"فروشگاه شما"}</h2><p>{profile?.city||"پروفایل فروشگاه هنوز ساخته نشده است."}</p></div><div>{!profile?<button className="primary-button" type="button" onClick={onCreateProfile}>ساخت پروفایل</button>:<button className="primary-button" type="button" onClick={onCreateOffer}>+ پیشنهاد جدید</button>}</div></div>
+ {error&&<p className="form-message error-message">{error}</p>}
+ {!profile?<div className="state-card"><div className="state-icon">🏪</div><h3>پروفایل فروشگاه را بسازید</h3><p>بعد از ساخت پروفایل می‌توانید پیشنهاد غذایی ثبت کنید.</p></div>:<>
+ <div className="merchant-stats"><div><strong>{offers.filter(o=>o.is_active).length}</strong><span>پیشنهاد فعال</span></div><div><strong>{orders.length}</strong><span>سفارش</span></div><div><strong>{orders.filter(o=>o.status==="COMPLETED").length}</strong><span>تکمیل‌شده</span></div></div>
+ <div className="merchant-grid"><div><div className="section-heading"><h3>پیشنهادهای من</h3></div><div className="merchant-offers">{offers.length===0?<p className="muted">هنوز پیشنهادی ثبت نکرده‌اید.</p>:offers.map(o=><div className="merchant-row" key={o.id}><div><strong>{o.title}</strong><span>{formatToman(o.sale_price)} · موجودی {o.available_quantity}</span></div><span className={o.is_active?"active-dot":"inactive-dot"}>{o.is_active?"فعال":"غیرفعال"}</span>{o.is_active&&<button className="text-button danger" type="button" onClick={()=>onDeactivate(o.id)}>غیرفعال کردن</button>}</div>)}</div></div>
+ <div><div className="section-heading"><h3>سفارش‌های اخیر</h3></div><div className="merchant-orders">{orders.length===0?<p className="muted">هنوز سفارشی ندارید.</p>:orders.slice(0,8).map(o=><div className="merchant-order-row" key={o.id}><div><strong>سفارش #{o.id}</strong><span>{formatToman(o.total_amount)} · کد {o.pickup_code}</span></div><select value={o.status} onChange={e=>onStatusChange(o.id,e.target.value as Order["status"])}><option value={o.status}>{statusLabel(o.status)}</option>{o.status==="PAID"&&<option value="READY_FOR_PICKUP">آماده دریافت</option>}{o.status==="READY_FOR_PICKUP"&&<option value="COMPLETED">تکمیل شده</option>}{o.status==="PENDING"&&<option value="CANCELLED">لغو شده</option>}</select></div>)}</div></div></div>
+ </>}</>}
+ </section></div>;
+}

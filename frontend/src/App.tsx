@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import { ApiError, createOrder, FoodOffer, getCurrentUser, getOffer, getOffers, getOrders, loginUser, registerUser, User, Order, MerchantProfile, createMerchantProfile, getMerchantProfile, getMyOffers, createOffer, deactivateOffer, updateOrderStatus, OfferPayload } from "./lib/api";
+import { ApiError, createOrder, createPayment, FoodOffer, getCurrentUser, getOffer, getOffers, getOrders, loginUser, registerUser, User, Order, MerchantProfile, createMerchantProfile, getMerchantProfile, getMyOffers, createOffer, deactivateOffer, updateOrderStatus, OfferPayload } from "./lib/api";
 import { clearToken, getToken, setToken } from "./lib/auth";
 import { formatPickupTime, formatToman } from "./lib/formatters";
 import { OfferCard } from "./components/OfferCard";
@@ -257,10 +257,15 @@ function App() {
         food_offer_id: item.offer.id,
         quantity: item.quantity,
       })));
+      const payment = await createPayment(token, order.id);
       setCart([]);
       setCartOpen(false);
-      setOrderMessage(`سفارش #${order.id} با موفقیت ثبت شد. کد دریافت: ${order.pickup_code}`);
       await loadOffers();
+      if (payment.payment.provider === "zarinpal") {
+        window.location.assign(payment.checkout_url);
+        return;
+      }
+      setOrderMessage(`سفارش #${order.id} ثبت شد. درگاه آزمایشی فعال است؛ پرداخت واقعی هنوز انجام نشده است.`);
     } catch (err) {
       setOrderError(err instanceof ApiError ? err.message : "ثبت سفارش انجام نشد.");
     } finally {

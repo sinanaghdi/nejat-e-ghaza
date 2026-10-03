@@ -6,6 +6,7 @@ from app.api.routes.offers import router as offers_router
 from app.api.routes.orders import router as orders_router
 from app.api.routes.merchant import router as merchant_router
 from app.api.routes.admin import router as admin_router
+from app.api.routes.payments import router as payments_router
 from app.core.config import settings
 
 app = FastAPI(title="Nejat-e-Ghaza")
@@ -23,6 +24,7 @@ app.include_router(offers_router)
 app.include_router(orders_router)
 app.include_router(merchant_router)
 app.include_router(admin_router)
+app.include_router(payments_router)
 
 
 @app.get("/health")

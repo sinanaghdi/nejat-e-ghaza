@@ -14,6 +14,11 @@ class Settings(BaseSettings):
     rate_limit_requests: int = 120
     rate_limit_window_seconds: int = 60
     payment_webhook_secret: str = "change-me"
+    payment_provider: str = "mock"
+    payment_callback_url: str = "http://localhost:8000/api/payments/zarinpal/callback"
+    payment_http_timeout_seconds: float = 10.0
+    zarinpal_merchant_id: str | None = None
+    zarinpal_sandbox: bool = True
     bootstrap_admin_name: str | None = None
     bootstrap_admin_email: str | None = None
     bootstrap_admin_password: str | None = None

@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     rate_limit_requests: int = 120
     rate_limit_window_seconds: int = 60
     payment_webhook_secret: str = "change-me"
+    bootstrap_admin_name: str | None = None
+    bootstrap_admin_email: str | None = None
+    bootstrap_admin_password: str | None = None
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

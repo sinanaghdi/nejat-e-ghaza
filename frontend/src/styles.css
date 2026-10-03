@@ -36,7 +36,7 @@ button:disabled { cursor: not-allowed; opacity: .65; }
 .section { width: min(1180px, calc(100% - 32px)); margin: 100px auto; }
 .section-heading { display: flex; justify-content: space-between; align-items: end; margin-bottom: 28px; }
 .eyebrow { margin: 0 0 8px; color: #58705f; font-weight: 700; font-size: .86rem; }
-.section h2 { margin: 0; font-size: 2.25rem; letter-spacing: -.04em; }
+.section h2 { margin: 0; font-size: 2.25rem; }
 .offer-count { color: #778078; font-size: .88rem; }
 
 .offer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }

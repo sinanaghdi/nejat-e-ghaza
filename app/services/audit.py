@@ -2,6 +2,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from app.core.request_context import get_client_ip, get_request_id
 from app.db.models.audit_log import AuditLog
 from app.db.models.user import User
 
@@ -24,8 +25,8 @@ def record_event(
         action=action,
         entity_type=entity_type,
         entity_id=str(entity_id) if entity_id is not None else None,
-        request_id=request_id,
-        ip_address=ip_address,
+        request_id=request_id or get_request_id(),
+        ip_address=ip_address or get_client_ip(),
         success=success,
         details=details,
         error_message=error_message,

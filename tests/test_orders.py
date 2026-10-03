@@ -219,3 +219,110 @@ def test_paid_order_cannot_be_cancelled_through_status_endpoint(client, db):
     )
 
     assert response.status_code == 403
+
+
+def test_customer_can_create_payment_for_pending_order(client, db):
+    customer, _, _, offer = _setup_order(db)
+    token = _login(client, customer.email)
+
+    order_response = client.post(
+        "/api/orders",
+        json={"items": [{"food_offer_id": offer.id, "quantity": 1}]},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    order_id = order_response.json()["id"]
+
+    response = client.post(
+        f"/api/payments/orders/{order_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "PENDING"
+    assert response.json()["order_id"] == order_id
+    assert response.json()["provider"] == "mock"
+
+
+def test_payment_webhook_moves_order_to_paid(client, db):
+    customer, _, _, offer = _setup_order(db)
+    token = _login(client, customer.email)
+
+    order_response = client.post(
+        "/api/orders",
+        json={"items": [{"food_offer_id": offer.id, "quantity": 1}]},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    order_id = order_response.json()["id"]
+
+    payment_response = client.post(
+        f"/api/payments/orders/{order_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    authority = payment_response.json()["authority"]
+
+    webhook_response = client.post(
+        "/api/payments/webhook",
+        json={"authority": authority},
+    )
+
+    assert webhook_response.status_code == 200
+    assert webhook_response.json()["status"] == "PAID"
+
+    from app.db.models.order import Order
+    from app.models.enums import OrderStatus
+    order = db.get(Order, order_id)
+    assert order.status == OrderStatus.PAID
+
+
+def test_payment_webhook_is_idempotent(client, db):
+    customer, _, _, offer = _setup_order(db)
+    token = _login(client, customer.email)
+
+    order_response = client.post(
+        "/api/orders",
+        json={"items": [{"food_offer_id": offer.id, "quantity": 1}]},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    order_id = order_response.json()["id"]
+
+    payment_response = client.post(
+        f"/api/payments/orders/{order_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    authority = payment_response.json()["authority"]
+
+    first = client.post("/api/payments/webhook", json={"authority": authority})
+    second = client.post("/api/payments/webhook", json={"authority": authority})
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert first.json()["reference_id"] == second.json()["reference_id"]
+
+
+def test_customer_cannot_create_payment_for_another_customer_order(client, db):
+    customer, _, _, offer = _setup_order(db)
+    token = _login(client, customer.email)
+
+    order_response = client.post(
+        "/api/orders",
+        json={"items": [{"food_offer_id": offer.id, "quantity": 1}]},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    order_id = order_response.json()["id"]
+
+    other = User(
+        name="Other Customer",
+        email="other-payment@example.com",
+        password_hash=hash_password("password123"),
+        role=UserRole.CUSTOMER,
+    )
+    db.add(other)
+    db.commit()
+
+    other_token = _login(client, other.email)
+    response = client.post(
+        f"/api/payments/orders/{order_id}",
+        headers={"Authorization": f"Bearer {other_token}"},
+    )
+
+    assert response.status_code == 403

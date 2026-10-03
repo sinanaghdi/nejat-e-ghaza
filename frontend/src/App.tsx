@@ -8,7 +8,7 @@ import { StatusBadge } from "./components/StatusBadge";
 import { Header } from "./components/Header";
 import { Hero } from "./components/Hero";
 import { HowItWorks } from "./components/HowItWorks";
-import { CartDrawer, type CartItem } from "./components/cart/CartDrawer";
+import { CartDrawer } from "./components/cart/CartDrawer";
 import { AuthModal } from "./components/auth/AuthModal";
 
 type AuthMode = "login" | "register";

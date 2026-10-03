@@ -108,3 +108,51 @@ button:disabled { cursor: not-allowed; opacity: .65; }
   .section { margin: 76px auto; }
   .section-heading { align-items: start; gap: 10px; flex-direction: column; }
 }
+
+
+.cart-button { border: 1px solid #d9dfd7; border-radius: 12px; padding: 10px 14px; background: #fff; color: #173c2b; font-weight: 700; position: relative; }
+.cart-button span { display: inline-grid; place-items: center; min-width: 20px; height: 20px; margin-right: 7px; padding: 0 5px; border-radius: 999px; background: #173c2b; color: #fff; font-size: .7rem; }
+.nav-links { gap: 10px; }
+.offer-modal { width: min(820px, 100%); max-height: 92vh; overflow-y: auto; position: relative; border-radius: 24px; background: #fff; box-shadow: 0 25px 80px rgba(0,0,0,.2); display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; }
+.detail-image { min-height: 430px; display: grid; place-items: center; position: relative; background: #e8e4d9; font-size: 7rem; }
+.detail-image img { width: 100%; height: 100%; object-fit: cover; }
+.offer-detail-content { padding: 38px; display: flex; flex-direction: column; justify-content: center; }
+.offer-detail-content h2 { margin: 8px 0; font-size: 2rem; }
+.detail-description { color: #69746c; line-height: 2; }
+.detail-price { display: flex; align-items: baseline; gap: 12px; margin: 20px 0; }
+.detail-price strong { font-size: 1.5rem; }
+.detail-price del { color: #9a9f99; font-size: .85rem; }
+.detail-meta { display: grid; gap: 8px; color: #657169; font-size: .85rem; margin-bottom: 24px; }
+.quantity-control { display: flex; align-items: center; justify-content: space-between; width: 150px; border: 1px solid #dfe4dd; border-radius: 12px; overflow: hidden; margin-bottom: 18px; }
+.quantity-control button, .mini-quantity button { border: 0; background: #f1f3ef; color: #173c2b; font-size: 1.2rem; width: 44px; height: 42px; }
+.full-button { width: 100%; justify-content: center; }
+.cart-drawer { width: min(440px, 100%); height: 100%; margin-right: auto; background: #fff; padding: 26px; overflow-y: auto; box-shadow: -15px 0 60px rgba(0,0,0,.16); }
+.drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+.drawer-header h2 { margin: 0; }
+.drawer-header .modal-close { position: static; flex: 0 0 auto; }
+.cart-items { display: grid; gap: 12px; }
+.cart-item { display: flex; gap: 12px; padding: 12px; border: 1px solid #e6eae4; border-radius: 15px; }
+.cart-item-image { width: 72px; height: 72px; flex: 0 0 72px; display: grid; place-items: center; border-radius: 11px; background: #e8e4d9; font-size: 1.7rem; overflow: hidden; }
+.cart-item-image img { width: 100%; height: 100%; object-fit: cover; }
+.cart-item-info { min-width: 0; flex: 1; display: grid; gap: 5px; }
+.cart-item-info strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cart-item-info span { color: #68736c; font-size: .78rem; }
+.mini-quantity { display: flex; align-items: center; width: 110px; border: 1px solid #e0e5de; border-radius: 9px; overflow: hidden; }
+.mini-quantity button { width: 32px; height: 28px; font-size: 1rem; }
+.mini-quantity b { flex: 1; text-align: center; font-size: .8rem; }
+.cart-summary { display: flex; justify-content: space-between; align-items: center; margin: 22px 0 12px; padding-top: 18px; border-top: 1px solid #e3e7e1; }
+.cart-summary strong { font-size: 1.15rem; }
+.cart-empty { min-height: 55vh; display: grid; place-content: center; text-align: center; }
+.toast { position: fixed; z-index: 200; left: 20px; bottom: 20px; width: min(420px, calc(100% - 40px)); display: grid; gap: 5px; padding: 16px 45px 16px 18px; border-radius: 15px; box-shadow: 0 15px 50px rgba(0,0,0,.16); background: #e8f2e8; color: #2f6840; }
+.toast span { font-size: .8rem; line-height: 1.7; }
+.toast button { position: absolute; left: 12px; top: 12px; border: 0; background: transparent; font-size: 1.2rem; color: inherit; }
+
+@media (max-width: 760px) {
+  .offer-modal { grid-template-columns: 1fr; max-height: 94vh; }
+  .detail-image { min-height: 250px; max-height: 300px; }
+  .offer-detail-content { padding: 25px; }
+  .offer-detail-content h2 { font-size: 1.5rem; }
+  .cart-drawer { width: 100%; margin: 0; }
+  .nav-links { gap: 6px; }
+  .cart-button, .login-button { padding: 9px 11px; }
+}

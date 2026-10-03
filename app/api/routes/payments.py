@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.dependencies import require_role
-from app.db.database import get_db
+from app.db.database import SessionLocal, get_db
 from app.db.models.user import User
 from app.models.enums import UserRole
 from app.schemas.payment import PaymentResponse, PaymentStartResponse, PaymentWebhook
@@ -22,8 +22,12 @@ def create_payment(
     db: Annotated[Session, Depends(get_db)],
 ):
     payment = payment_service.create_payment(db, current_user, order_id)
-    provider = payment_service.get_payment_provider()
-    return {"payment": payment, "checkout_url": f"/api/payments/mock/checkout/{payment.authority}" if payment.provider == "mock" else f"https://www.zarinpal.com/pg/StartPay/{payment.authority}"}
+    if payment.provider == "mock":
+        checkout_url = f"/api/payments/mock/checkout/{payment.authority}"
+    else:
+        checkout_base = "https://sandbox.zarinpal.com/pg/StartPay/" if settings.zarinpal_sandbox else "https://www.zarinpal.com/pg/StartPay/"
+        checkout_url = f"{checkout_base}{payment.authority}"
+    return {"payment": payment, "checkout_url": checkout_url}
 
 
 @router.post("/webhook", response_model=PaymentResponse)
@@ -51,7 +55,7 @@ def zarinpal_callback(
             url=f"{settings.frontend_payment_result_url}?status=cancelled&order_id={order_id or ''}"
         )
 
-    db = next(get_db())
+    db = SessionLocal()
     try:
         payment = payment_service.verify_payment(db, authority, expected_order_id=order_id)
         ref_id = payment.reference_id or ""

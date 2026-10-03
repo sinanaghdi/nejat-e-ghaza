@@ -187,3 +187,46 @@ button:disabled { cursor: not-allowed; opacity: .65; }
   .orders-header h2 { font-size: 1.6rem; }
   .orders-button { padding: 9px 11px; }
 }
+
+.merchant-modal { width: min(1000px, 100%); max-height: 92vh; overflow-y: auto; position: relative; border-radius: 24px; padding: 32px; background: #fff; box-shadow: 0 25px 80px rgba(0,0,0,.2); }
+.merchant-head { display: flex; justify-content: space-between; gap: 20px; align-items: center; padding-left: 35px; margin-bottom: 22px; }
+.merchant-head h2 { margin: 0 0 5px; font-size: 1.8rem; }
+.merchant-head p:last-child { margin: 0; color: #788179; font-size: .82rem; }
+.merchant-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+.merchant-stats div { padding: 18px; border: 1px solid #e3e8e1; border-radius: 15px; background: #fbfcfa; }
+.merchant-stats strong { display: block; font-size: 1.5rem; color: #173c2b; }
+.merchant-stats span { color: #788179; font-size: .75rem; }
+.merchant-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.section-heading { margin-bottom: 10px; }
+.section-heading h3 { margin: 0; }
+.merchant-offers, .merchant-orders { display: grid; gap: 8px; }
+.merchant-row, .merchant-order-row { display: flex; align-items: center; gap: 10px; padding: 13px; border: 1px solid #e5e9e3; border-radius: 13px; background: #fff; }
+.merchant-row > div, .merchant-order-row > div { flex: 1; min-width: 0; display: grid; gap: 4px; }
+.merchant-row strong, .merchant-order-row strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.merchant-row span, .merchant-order-row span { color: #7b847d; font-size: .72rem; }
+.active-dot, .inactive-dot { flex: 0 0 auto; font-weight: 700; }
+.active-dot { color: #2d7044 !important; }
+.inactive-dot { color: #9a4c3d !important; }
+.text-button { border: 0; background: transparent; font-size: .7rem; font-weight: 700; cursor: pointer; }
+.text-button.danger { color: #a64b3a; }
+.merchant-order-row select { max-width: 130px; border: 1px solid #dfe4dd; border-radius: 9px; padding: 7px; background: #fff; }
+.form-modal { width: min(520px, 100%); max-height: 92vh; overflow-y: auto; background: #fff; border-radius: 22px; padding: 28px; box-shadow: 0 25px 80px rgba(0,0,0,.2); display: grid; gap: 14px; }
+.form-modal h2 { margin: 0 0 8px; }
+.form-modal label { display: grid; gap: 6px; color: #48564d; font-size: .78rem; font-weight: 700; }
+.form-modal input, .form-modal textarea { width: 100%; box-sizing: border-box; border: 1px solid #dce3da; border-radius: 10px; padding: 11px 12px; font: inherit; background: #fbfcfa; }
+.form-modal textarea { min-height: 90px; resize: vertical; }
+.two-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.nested-modal { z-index: 250; }
+
+@media (max-width: 760px) {
+  .merchant-modal { padding: 22px 15px; }
+  .merchant-head { align-items: flex-start; flex-direction: column; }
+  .merchant-grid { grid-template-columns: 1fr; }
+  .merchant-stats { grid-template-columns: 1fr 1fr 1fr; }
+  .merchant-stats div { padding: 12px 8px; text-align: center; }
+  .merchant-stats strong { font-size: 1.2rem; }
+  .merchant-row, .merchant-order-row { flex-wrap: wrap; }
+  .merchant-order-row select { max-width: none; width: 100%; }
+  .two-fields { grid-template-columns: 1fr; }
+}

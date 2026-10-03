@@ -62,7 +62,7 @@ def verify_payment(db: Session, authority: str) -> Payment:
         db.commit()
         raise HTTPException(status_code=400, detail="Payment verification failed")
 
-    order = db.get(Order, payment.order_id)
+    order = db.scalar(select(Order).where(Order.id == payment.order_id).with_for_update())
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 

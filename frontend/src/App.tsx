@@ -292,7 +292,34 @@ function App() {
   );
 
   if (location.pathname === "/orders") {
+    if (location.pathname === "/merchant") {
+    const token = getToken();
+    if (!token && !authOpen) {
+      openAuth("login");
+    }
     return (
+      <>
+        <MerchantPage
+          loading={merchantLoading}
+          error={merchantError}
+          profile={merchantProfile}
+          offers={merchantOffers}
+          orders={merchantOrders}
+          onCreateProfile={() => setMerchantFormOpen(true)}
+          onCreateOffer={() => setOfferFormOpen(true)}
+          onDeactivate={(id) => void removeMerchantOffer(id)}
+          onStatusChange={(id, status) => void changeMerchantOrderStatus(id, status)}
+        />
+        <MobileBottomNav cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)} userRole={user?.role || "MERCHANT"} onCart={() => setCartOpen(true)} />
+        <CartDrawer cart={cart} open={cartOpen} loading={orderLoading} error={orderError} onClose={() => setCartOpen(false)} onUpdateQuantity={updateCartQuantity} onSubmit={() => void submitOrder()} />
+        <AuthModal open={authOpen} mode={authMode} loading={authLoading} error={authError} success={authSuccess} name={name} email={email} password={password} onClose={closeAuth} onModeChange={(mode) => { setAuthMode(mode); setAuthError(""); setAuthSuccess(""); }} onNameChange={setName} onEmailChange={setEmail} onPasswordChange={setPassword} onSubmit={handleAuthSubmit} />
+        {merchantFormOpen && <MerchantProfileForm value={merchantForm} onChange={setMerchantForm} onSubmit={submitMerchantProfile} onClose={() => setMerchantFormOpen(false)} />}
+        {offerFormOpen && <OfferForm value={offerForm} onChange={setOfferForm} onSubmit={submitOffer} onClose={() => setOfferFormOpen(false)} />}
+      </>
+    );
+  }
+
+  return (
       <>
         <OrdersPage
           orders={orders}

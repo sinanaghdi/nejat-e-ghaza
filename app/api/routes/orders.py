@@ -1,0 +1,23 @@
+from typing import Annotated
+from fastapi import APIRouter, Depends, status
+from sqlalchemy.orm import Session
+from app.core.dependencies import require_role
+from app.db.database import get_db
+from app.db.models.user import User
+from app.models.enums import UserRole
+from app.schemas.order import OrderCreate, OrderResponse
+from app.services import order as order_service
+
+router = APIRouter(prefix="/api/orders", tags=["orders"])
+
+@router.post("", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
+def create_order(payload: OrderCreate, current_user: Annotated[User, Depends(require_role(UserRole.CUSTOMER))], db: Annotated[Session, Depends(get_db)]):
+    return order_service.create_order(db, current_user, payload)
+
+@router.get("", response_model=list[OrderResponse])
+def list_orders(current_user: Annotated[User, Depends(require_role(UserRole.CUSTOMER))], db: Annotated[Session, Depends(get_db)]):
+    return order_service.list_customer_orders(db, current_user)
+
+@router.get("/{order_id}", response_model=OrderResponse)
+def get_order(order_id: int, current_user: Annotated[User, Depends(require_role(UserRole.CUSTOMER))], db: Annotated[Session, Depends(get_db)]):
+    return order_service.get_customer_order(db, current_user, order_id)

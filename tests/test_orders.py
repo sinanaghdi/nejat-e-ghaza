@@ -168,3 +168,54 @@ def test_merchant_cannot_complete_unpaid_order(client, db):
     )
 
     assert response.status_code == 403
+
+
+def test_cancelling_pending_order_restores_inventory(client, db):
+    customer, _, _, offer = _setup_order(db)
+    token = _login(client, customer.email)
+
+    response = client.post(
+        "/api/orders",
+        json={"items": [{"food_offer_id": offer.id, "quantity": 1}]},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    order_id = response.json()["id"]
+
+    db.refresh(offer)
+    assert offer.available_quantity == 1
+
+    response = client.patch(
+        f"/api/orders/{order_id}/status",
+        json={"status": "CANCELLED"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    db.refresh(offer)
+    assert offer.available_quantity == 2
+
+
+def test_paid_order_cannot_be_cancelled_through_status_endpoint(client, db):
+    customer, _, _, offer = _setup_order(db)
+    token = _login(client, customer.email)
+
+    response = client.post(
+        "/api/orders",
+        json={"items": [{"food_offer_id": offer.id, "quantity": 1}]},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    order_id = response.json()["id"]
+
+    from app.db.models.order import Order
+    from app.models.enums import OrderStatus
+    order = db.get(Order, order_id)
+    order.status = OrderStatus.PAID
+    db.commit()
+
+    response = client.patch(
+        f"/api/orders/{order_id}/status",
+        json={"status": "CANCELLED"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 403

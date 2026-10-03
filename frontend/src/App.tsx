@@ -14,6 +14,7 @@ import { OrdersModal } from "./components/orders/OrdersModal";
 import { MerchantDashboard } from "./components/merchant/MerchantDashboard";
 import { MerchantProfileForm } from "./components/merchant/MerchantProfileForm";
 import { OfferForm } from "./components/merchant/OfferForm";
+import { MobileBottomNav } from "./components/MobileBottomNav";
 
 type AuthMode = "login" | "register";
 
@@ -360,6 +361,7 @@ function App() {
       </section>
 
       <HowItWorks />
+      <MobileBottomNav cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)} userRole={user?.role || null} onCart={() => setCartOpen(true)} />
       <MerchantDashboard
         open={merchantOpen}
         loading={merchantLoading}

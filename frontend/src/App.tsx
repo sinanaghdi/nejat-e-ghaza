@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { ApiError, createOrder, FoodOffer, getCurrentUser, getOffers, getOrders, loginUser, registerUser, User, Order, MerchantProfile, createMerchantProfile, getMerchantProfile, getMyOffers, createOffer, deactivateOffer, updateOrderStatus, OfferPayload } from "./lib/api";
 import { clearToken, getToken, setToken } from "./lib/auth";
 import { formatPickupTime, formatToman } from "./lib/formatters";
+import { OfferCard } from "./components/OfferCard";
+import { QuantityControl } from "./components/QuantityControl";
+import { StatusBadge } from "./components/StatusBadge";
 
 type AuthMode = "login" | "register";
 
@@ -425,7 +428,7 @@ function App() {
               <div className="orders-list">
                 {orders.map((order) => (
                   <article className="order-card" key={order.id}>
-                    <div className="order-card-top"><div><span className="order-label">سفارش</span><strong>#{order.id}</strong></div><span className={"status-badge status-" + order.status.toLowerCase()}>{statusLabel(order.status)}</span></div>
+                    <div className="order-card-top"><div><span className="order-label">سفارش</span><strong>#{order.id}</strong></div><StatusBadge status={order.status} /></div>
                     <div className="order-items">{order.items.map((item) => <div className="order-item-row" key={item.id}><span>غذا #{item.food_offer_id} × {item.quantity}</span><strong>{formatToman(item.subtotal)}</strong></div>)}</div>
                     <div className="order-total"><span>مبلغ کل</span><strong>{formatToman(order.total_amount)}</strong></div>
                     <div className="pickup-code"><span>کد دریافت</span><strong>{order.pickup_code}</strong></div>
@@ -463,11 +466,7 @@ function App() {
                 <span>🕐 دریافت تا {formatPickupTime(selectedOffer.pickup_end)}</span>
                 <span>📦 {selectedOffer.available_quantity} عدد موجود</span>
               </div>
-              <div className="quantity-control">
-                <button type="button" onClick={() => setSelectedQuantity((value) => Math.max(1, value - 1))}>−</button>
-                <strong>{selectedQuantity}</strong>
-                <button type="button" onClick={() => setSelectedQuantity((value) => Math.min(selectedOffer.available_quantity, value + 1))}>+</button>
-              </div>
+              <QuantityControl value={selectedQuantity} max={selectedOffer.available_quantity} onChange={setSelectedQuantity} />
               <button className="primary-button full-button" type="button" onClick={addToCart}>افزودن به سبد خرید</button>
             </div>
           </section>

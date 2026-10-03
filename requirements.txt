@@ -10,3 +10,5 @@ passlib[bcrypt]
 pytest
 httpx
 celery[redis]==5.4.0
+
+requests

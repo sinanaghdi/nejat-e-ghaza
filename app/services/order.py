@@ -10,6 +10,15 @@ from app.repositories import order as order_repository
 from app.schemas.order import OrderCreate
 import secrets
 
+ALLOWED_STATUS_TRANSITIONS = {
+    OrderStatus.PENDING: {OrderStatus.PAID, OrderStatus.CANCELLED, OrderStatus.EXPIRED},
+    OrderStatus.PAID: {OrderStatus.READY_FOR_PICKUP, OrderStatus.CANCELLED},
+    OrderStatus.READY_FOR_PICKUP: {OrderStatus.COMPLETED, OrderStatus.EXPIRED},
+    OrderStatus.COMPLETED: set(),
+    OrderStatus.CANCELLED: set(),
+    OrderStatus.EXPIRED: set(),
+}
+
 def create_order(db: Session, user: User, payload: OrderCreate) -> Order:
     if user.role != UserRole.CUSTOMER:
         raise HTTPException(status_code=403, detail="Customer access required")
@@ -62,3 +71,25 @@ def list_customer_orders(db: Session, user: User) -> list[Order]:
     if user.role != UserRole.CUSTOMER:
         raise HTTPException(status_code=403, detail="Customer access required")
     return order_repository.list_by_customer(db, user.id)
+
+def update_order_status(db: Session, user: User, order_id: int, new_status: OrderStatus) -> Order:
+    order = order_repository.get_by_id(db, order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    if user.role == UserRole.CUSTOMER and order.customer_id != user.id:
+        raise HTTPException(status_code=403, detail="You do not have access to this order")
+    if user.role not in {UserRole.CUSTOMER, UserRole.MERCHANT, UserRole.ADMIN}:
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+
+    if user.role == UserRole.CUSTOMER and new_status not in {OrderStatus.CANCELLED}:
+        raise HTTPException(status_code=403, detail="Customer can only cancel an order")
+    if user.role == UserRole.MERCHANT and order.merchant.user_id != user.id:
+        raise HTTPException(status_code=403, detail="You do not own this order")
+    if new_status not in ALLOWED_STATUS_TRANSITIONS[order.status]:
+        raise HTTPException(status_code=409, detail=f"Invalid order status transition: {order.status} -> {new_status}")
+
+    order.status = new_status
+    db.commit()
+    db.refresh(order)
+    return order

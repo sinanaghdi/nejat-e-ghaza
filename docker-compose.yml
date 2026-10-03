@@ -9,9 +9,34 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
     command: >
       sh -c "alembic upgrade head &&
       uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  worker:
+    build:
+      context: .
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: celery -A app.workers.celery_app.celery_app worker --loglevel=INFO
+
+  beat:
+    build:
+      context: .
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_started
+    command: celery -A app.workers.celery_app.celery_app beat --loglevel=INFO
+
   db:
     image: postgres:16
     environment:
@@ -26,6 +51,16 @@ services:
       test: ["CMD-SHELL", "pg_isready -U postgres -d nejat_e_ghaza"]
       interval: 5s
       timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
       retries: 10
 
 volumes:

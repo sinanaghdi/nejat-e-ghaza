@@ -33,6 +33,7 @@ const customer = {
 
 test("customer can discover, authenticate, order, and review order status", async ({ page }) => {
   let orderCreated = false;
+  let authenticated = false;
 
   await page.route("**/api/**", async (route) => {
     const request = route.request();
@@ -58,6 +59,7 @@ test("customer can discover, authenticate, order, and review order status", asyn
     }
 
     if (url.pathname === "/api/auth/login" && request.method() === "POST") {
+      authenticated = true;
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -67,6 +69,14 @@ test("customer can discover, authenticate, order, and review order status", asyn
     }
 
     if (url.pathname === "/api/auth/me" && request.method() === "GET") {
+      if (!authenticated) {
+        await route.fulfill({
+          status: 401,
+          contentType: "application/json",
+          body: JSON.stringify({ detail: "Not authenticated" }),
+        });
+        return;
+      }
       await route.fulfill({
         status: 200,
         contentType: "application/json",

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import { ApiError, createOrder, createPayment, FoodOffer, getCurrentUser, getOffer, getOffers, getOrders, loginUser, registerUser, User, Order, MerchantProfile, createMerchantProfile, getMerchantProfile, getMyOffers, createOffer, deactivateOffer, updateOrderStatus, OfferPayload } from "./lib/api";
+import { ApiError, createOrder, createPayment, FoodOffer, getCurrentUser, getOffer, getOffers, getOrders, loginUser, logoutUser, registerUser, User, Order, MerchantProfile, createMerchantProfile, getMerchantProfile, getMyOffers, createOffer, deactivateOffer, updateOrderStatus, OfferPayload } from "./lib/api";
 import { clearToken, getToken, setToken } from "./lib/auth";
 import { formatPickupTime, formatToman } from "./lib/formatters";
 import { OfferCard } from "./components/OfferCard";
@@ -168,11 +168,11 @@ function App() {
 
   useEffect(() => {
     void loadOffers();
-    const token = getToken();
-    if (!token) return;
-
-    getCurrentUser(token)
-      .then(setUser)
+    getCurrentUser(getToken())
+      .then((currentUser) => {
+        setUser(currentUser);
+        setToken(null);
+      })
       .catch(() => clearToken());
   }, []);
 
@@ -372,7 +372,12 @@ function App() {
       const offer = await createOffer(token, payload); setMerchantOffers((items) => [offer, ...items]); setOfferFormOpen(false);
     } catch (err) { setMerchantError(err instanceof ApiError ? err.message : "ایجاد پیشنهاد انجام نشد."); }
   }
-  function handleLogout() {
+  async function handleLogout() {
+    try {
+      await logoutUser();
+    } catch {
+      // Local state is cleared even if the server session is already invalid.
+    }
     clearToken();
     setUser(null);
     setOrders([]);
@@ -479,10 +484,7 @@ function App() {
         <ProfilePage
           user={user}
           onLogin={() => openAuth("login")}
-          onLogout={() => {
-            clearToken();
-            setUser(null);
-          }}
+          onLogout={() => void handleLogout()}
         />
         <MobileBottomNav
           cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}

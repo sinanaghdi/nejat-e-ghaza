@@ -56,6 +56,8 @@ class MerchantSummary(BaseModel):
     business_name: str
     city: str
     address: str
+    latitude: float | None
+    longitude: float | None
 
 
 class OfferResponse(BaseModel):

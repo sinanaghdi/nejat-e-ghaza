@@ -170,10 +170,6 @@ test("customer can discover, authenticate, order, and review order status", asyn
   await page.getByRole("button", { name: "جست‌وجو" }).click();
   await expect(page.getByRole("heading", { name: "باکس شام نجات" })).toBeVisible();
 
-  await page.getByRole("button", { name: "مشاهده و رزرو" }).click();
-  await page.getByRole("button", { name: "افزودن به سبد خرید" }).click();
-  await expect(page.getByRole("dialog", { name: "سبد خرید" })).toBeVisible();
-
   await page.getByRole("button", { name: "ورود" }).click();
   await page.getByRole("button", { name: "ثبت‌نام" }).click();
   await page.getByLabel("نام و نام خانوادگی").fill(customer.name);
@@ -186,6 +182,10 @@ test("customer can discover, authenticate, order, and review order status", asyn
   await page.getByLabel("رمز عبور").fill("password123");
   await page.getByRole("button", { name: "ورود به حساب" }).click();
   await expect(page.getByRole("button", { name: "خروج" })).toBeVisible();
+
+  await page.getByRole("button", { name: "مشاهده و رزرو" }).click();
+  await page.getByRole("button", { name: "افزودن به سبد خرید" }).click();
+  await expect(page.getByRole("dialog", { name: "سبد خرید" })).toBeVisible();
 
   await page.getByRole("button", { name: "سبد خرید" }).click();
   await page.getByRole("button", { name: "ثبت سفارش" }).click();

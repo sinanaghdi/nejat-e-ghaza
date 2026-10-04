@@ -16,6 +16,9 @@ def make_settings(**overrides):
         "frontend_payment_result_url": "https://example.com/payment/result",
         "zarinpal_merchant_id": "merchant",
         "zarinpal_sandbox": False,
+        "expose_legacy_access_token": False,
+        "auth_cookie_secure": True,
+        "auth_cookie_samesite": "lax",
     }
     values.update(overrides)
     return Settings(**values)

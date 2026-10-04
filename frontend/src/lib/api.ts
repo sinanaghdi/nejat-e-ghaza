@@ -85,6 +85,9 @@ export interface OfferFilters {
   min_price?: number;
   max_price?: number;
   sort?: OfferSort;
+  latitude?: number;
+  longitude?: number;
+  radius_km?: number;
 }
 
 export function getOffers(filters: OfferFilters = {}): Promise<FoodOffer[]> {
@@ -94,6 +97,9 @@ export function getOffers(filters: OfferFilters = {}): Promise<FoodOffer[]> {
   if (filters.min_price !== undefined) params.set("min_price", String(filters.min_price));
   if (filters.max_price !== undefined) params.set("max_price", String(filters.max_price));
   if (filters.sort) params.set("sort", filters.sort);
+  if (filters.latitude !== undefined) params.set("latitude", String(filters.latitude));
+  if (filters.longitude !== undefined) params.set("longitude", String(filters.longitude));
+  if (filters.radius_km !== undefined) params.set("radius_km", String(filters.radius_km));
   const suffix = params.toString() ? `?${params.toString()}` : "";
   return request<FoodOffer[]>(`/api/offers${suffix}`);
 }
@@ -188,6 +194,8 @@ export interface MerchantProfile {
   description: string | null;
   address: string;
   city: string;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export interface OfferPayload {

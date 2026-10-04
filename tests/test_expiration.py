@@ -111,7 +111,7 @@ def test_recent_pending_order_is_not_expired(db):
     assert expired == 0
     db.refresh(order)
     db.refresh(offer)
-    assert order.status == OrderStatus.PAID
+    assert order.status == OrderStatus.PENDING
     assert offer.available_quantity == 1
 
 
@@ -135,5 +135,5 @@ def test_paid_payment_is_reconciled_during_expiration(db):
     assert expired == 0
     db.refresh(order)
     db.refresh(offer)
-    assert order.status == OrderStatus.PENDING
+    assert order.status == OrderStatus.PAID
     assert offer.available_quantity == 1

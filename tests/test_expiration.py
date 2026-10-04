@@ -115,7 +115,7 @@ def test_recent_pending_order_is_not_expired(db):
     assert offer.available_quantity == 1
 
 
-def test_paid_payment_is_not_expired(db):
+def test_paid_payment_is_reconciled_during_expiration(db):
     from app.db.models.payment import Payment
 
     order, offer = _setup_expiring_order(db)

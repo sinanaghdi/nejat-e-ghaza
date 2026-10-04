@@ -297,7 +297,7 @@ def test_payment_webhook_is_idempotent(client, db):
 
     assert first.status_code == 200
     assert second.status_code == 200
-    assert first.json()["payment"]["reference_id"] == second.json()["payment"]["reference_id"]
+    assert first.json()["reference_id"] == second.json()["reference_id"]
 
 
 def test_customer_cannot_create_payment_for_another_customer_order(client, db):

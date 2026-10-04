@@ -56,13 +56,35 @@ def create_payment(db: Session, user: User, order_id: int) -> Payment:
 
 
 def verify_payment(db: Session, authority: str, expected_order_id: int | None = None) -> Payment:
-    payment = db.scalar(select(Payment).where(Payment.authority == authority).with_for_update())
+    # Lock ordering is intentionally Order -> Payment. The expiration worker
+    # follows the same order so payment verification cannot race expiration.
+    payment = db.scalar(select(Payment).where(Payment.authority == authority))
     if not payment:
         raise HTTPException(status_code=404, detail="Payment not found")
     if expected_order_id is not None and payment.order_id != expected_order_id:
         raise HTTPException(status_code=400, detail="Payment does not belong to this order")
+
+    order = db.scalar(
+        select(Order)
+        .where(Order.id == payment.order_id)
+        .with_for_update()
+    )
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    payment = db.scalar(
+        select(Payment)
+        .where(Payment.id == payment.id)
+        .with_for_update()
+    )
+    if not payment:
+        raise HTTPException(status_code=404, detail="Payment not found")
+
     if payment.status == "PAID":
         return payment
+
+    if order.status != OrderStatus.PENDING:
+        raise HTTPException(status_code=409, detail="Order is no longer payable")
 
     provider = get_payment_provider()
     try:
@@ -82,12 +104,6 @@ def verify_payment(db: Session, authority: str, expected_order_id: int | None = 
         )
         db.commit()
         raise HTTPException(status_code=400, detail="Payment verification failed")
-
-    order = db.scalar(select(Order).where(Order.id == payment.order_id).with_for_update())
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    if order.status != OrderStatus.PENDING:
-        raise HTTPException(status_code=409, detail="Order is no longer payable")
 
     payment.status = "PAID"
     payment.reference_id = result.reference_id

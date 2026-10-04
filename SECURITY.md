@@ -22,11 +22,17 @@ Payment verification is idempotent for already-paid payments. A failed payment c
 
 Keep the webhook endpoint protected by `X-Webhook-Secret`. For a real payment provider, prefer provider-signed callbacks or verification APIs and keep provider-side verification as the final source of truth.
 
-## JWT storage
+## Browser authentication
 
-The current browser client stores its short-lived access token in `localStorage`. This is intentionally kept for the current SPA architecture and is an XSS-sensitive trade-off.
+The browser client now uses an HttpOnly session cookie for the access token. JavaScript does not store the JWT in localStorage.
 
-Before a high-risk public deployment, migrate authentication to secure, HTTP-only cookies with an explicit CSRF strategy and rotate/refresh tokens server-side.
+State-changing browser requests use a double-submit CSRF token:
+
+- HttpOnly session cookie for authentication.
+- Non-HttpOnly CSRF cookie plus `X-CSRF-Token` request header.
+- Bearer-token API clients remain supported for backward compatibility and are not subject to the cookie-specific CSRF check.
+
+In production, the session cookie must be Secure and use HTTPS.
 
 ## Recovery
 

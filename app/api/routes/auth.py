@@ -72,18 +72,8 @@ def login(
 
 @router.post("/logout")
 def logout(response: Response):
-    response.delete_cookie(
-        key=settings.auth_cookie_name,
-        secure=settings.auth_cookie_secure,
-        samesite=settings.auth_cookie_samesite,
-        path="/",
-    )
-    response.delete_cookie(
-        key=settings.csrf_cookie_name,
-        secure=settings.auth_cookie_secure,
-        samesite=settings.auth_cookie_samesite,
-        path="/",
-    )
+    response.delete_cookie(key=settings.auth_cookie_name, path="/")
+    response.delete_cookie(key=settings.csrf_cookie_name, path="/")
     return {"status": "logged_out"}
 
 

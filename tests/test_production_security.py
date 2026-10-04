@@ -41,3 +41,27 @@ def test_production_settings_reject_insecure_values(field, value):
     settings = make_settings(**{field: value})
     with pytest.raises(RuntimeError):
         settings.validate_production()
+
+
+def test_cors_rejects_untrusted_origin(client):
+    response = client.options(
+        "/api/offers",
+        headers={
+            "Origin": "https://evil.example",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+    assert response.status_code == 400
+    assert "access-control-allow-origin" not in response.headers
+
+
+def test_cors_allows_configured_origin(client):
+    response = client.options(
+        "/api/offers",
+        headers={
+            "Origin": "http://localhost:5173",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://localhost:5173"

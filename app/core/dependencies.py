@@ -8,6 +8,7 @@ from app.db.models.user import User
 from app.models.enums import UserRole
 from app.repositories.user import get_by_id
 from app.core.security import decode_access_token
+from app.core.config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 
@@ -16,7 +17,7 @@ def get_current_user(
     token: Annotated[str | None, Depends(oauth2_scheme)],
     db: Annotated[Session, Depends(get_db)],
 ) -> User:
-    cookie_token = request.cookies.get("nejat_e_ghaza_session")
+    cookie_token = request.cookies.get(settings.auth_cookie_name)
     auth_token = cookie_token or token
     user_id = decode_access_token(auth_token) if auth_token else None
     if not user_id or not user_id.isdigit():

@@ -187,7 +187,6 @@ test("customer can discover, authenticate, order, and review order status", asyn
   await page.getByRole("button", { name: "افزودن به سبد خرید" }).click();
   await expect(page.getByRole("dialog", { name: "سبد خرید" })).toBeVisible();
 
-  await page.getByRole("button", { name: "سبد خرید" }).click();
   await page.getByRole("button", { name: "ثبت سفارش" }).click();
   await expect(page.getByText("سفارش #1 ثبت شد")).toBeVisible();
 

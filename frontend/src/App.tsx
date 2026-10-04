@@ -514,6 +514,9 @@ function App() {
         onCityChange={setCity}
         onSortChange={setSort}
         onSearch={() => void loadOffers()}
+        nearby={nearby}
+        locationStatus={locationStatus}
+        onNearby={enableNearby}
         onCart={() => setCartOpen(true)}
         onOrders={() => void openOrders()}
         onMerchant={() => void openMerchantDashboard()}

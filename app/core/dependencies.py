@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import Depends, HTTPException, status
+from fastapi import Cookie, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
@@ -9,13 +9,16 @@ from app.models.enums import UserRole
 from app.repositories.user import get_by_id
 from app.core.security import decode_access_token
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 
 def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)],
+    request: Request,
+    token: Annotated[str | None, Depends(oauth2_scheme)],
     db: Annotated[Session, Depends(get_db)],
 ) -> User:
-    user_id = decode_access_token(token)
+    cookie_token = request.cookies.get("nejat_e_ghaza_session")
+    auth_token = cookie_token or token
+    user_id = decode_access_token(auth_token) if auth_token else None
     if not user_id or not user_id.isdigit():
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token", headers={"WWW-Authenticate": "Bearer"})
     user = get_by_id(db, int(user_id))

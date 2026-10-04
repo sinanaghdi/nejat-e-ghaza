@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.db.models.food_offer import FoodOffer
 from app.db.models.order import Order
 from app.db.models.order_item import OrderItem
+from app.db.models.payment import Payment
 from app.db.models.user import User
 from app.core.request_context import get_request_id
 from app.services.audit import record_event
@@ -188,6 +189,17 @@ def expire_pending_orders(db: Session) -> int:
 
         expired_count = 0
         for order in orders:
+            # Keep the same Order -> Payment lock ordering used by payment
+            # verification. A paid order must never be expired after gateway
+            # verification has succeeded.
+            payment = db.scalar(
+                select(Payment)
+                .where(Payment.order_id == order.id)
+                .with_for_update()
+            )
+            if payment and payment.status == "PAID":
+                continue
+
             for item in order.items:
                 offer = db.scalar(
                     select(FoodOffer)

@@ -1,5 +1,7 @@
 from typing import Annotated
 
+from decimal import Decimal
+
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
@@ -19,8 +21,26 @@ def list_offers(
     db: Annotated[Session, Depends(get_db)],
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=100),
+    query: str | None = Query(default=None, min_length=1, max_length=100),
+    city: str | None = Query(default=None, min_length=1, max_length=100),
+    min_price: Decimal | None = Query(default=None, gt=0),
+    max_price: Decimal | None = Query(default=None, gt=0),
+    sort: str = Query(default="newest", pattern="^(newest|price_asc|price_desc|discount)$"),
 ):
-    return offer_service.list_active_offers(db, skip=skip, limit=limit)
+    if min_price is not None and max_price is not None and min_price > max_price:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=422, detail="min_price cannot exceed max_price")
+
+    return offer_service.list_active_offers(
+        db,
+        skip=skip,
+        limit=limit,
+        query=query,
+        city=city,
+        min_price=min_price,
+        max_price=max_price,
+        sort=sort,
+    )
 
 
 @router.get("/mine", response_model=list[OfferResponse])

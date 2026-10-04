@@ -46,6 +46,12 @@ async function authRequest<T>(path: string, token: string, options: RequestInit 
 export interface FoodOffer {
   id: number;
   merchant_id: number;
+  merchant: {
+    id: number;
+    business_name: string;
+    city: string;
+    address: string;
+  };
   title: string;
   description: string | null;
   original_price: number;
@@ -71,8 +77,25 @@ export interface TokenResponse {
   token_type: string;
 }
 
-export function getOffers(): Promise<FoodOffer[]> {
-  return request<FoodOffer[]>("/api/offers");
+export type OfferSort = "newest" | "price_asc" | "price_desc" | "discount";
+
+export interface OfferFilters {
+  query?: string;
+  city?: string;
+  min_price?: number;
+  max_price?: number;
+  sort?: OfferSort;
+}
+
+export function getOffers(filters: OfferFilters = {}): Promise<FoodOffer[]> {
+  const params = new URLSearchParams();
+  if (filters.query?.trim()) params.set("query", filters.query.trim());
+  if (filters.city?.trim()) params.set("city", filters.city.trim());
+  if (filters.min_price !== undefined) params.set("min_price", String(filters.min_price));
+  if (filters.max_price !== undefined) params.set("max_price", String(filters.max_price));
+  if (filters.sort) params.set("sort", filters.sort);
+  const suffix = params.toString() ? `?${params.toString()}` : "";
+  return request<FoodOffer[]>(`/api/offers${suffix}`);
 }
 
 export function getOffer(offerId: number): Promise<FoodOffer> {

@@ -13,6 +13,7 @@ from app.api.routes.health import router as health_router
 from app.core.config import settings
 from app.core.logging import configure_logging
 from app.middleware.request_context import RequestContextMiddleware
+from app.middleware.csrf import CSRFMiddleware
 
 configure_logging()
 logger = logging.getLogger("nejat_e_ghaza")
@@ -21,6 +22,7 @@ settings.validate_production()
 app = FastAPI(title="Nejat-e-Ghaza")
 
 app.add_middleware(RequestContextMiddleware)
+app.add_middleware(CSRFMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.frontend_origin_list,

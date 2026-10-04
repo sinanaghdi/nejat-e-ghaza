@@ -7,7 +7,7 @@ from app.core.csrf import csrf_is_valid
 
 class CSRFMiddleware(BaseHTTPMiddleware):
     SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
-    EXEMPT_PATHS = {"/api/auth/register", "/api/auth/login", "/api/auth/csrf"}
+    EXEMPT_PATHS = {"/api/auth/register", "/api/auth/login", "/api/auth/csrf", "/api/payments/webhook"}
 
     async def dispatch(self, request, call_next):
         if request.method not in self.SAFE_METHODS and request.url.path not in self.EXEMPT_PATHS:

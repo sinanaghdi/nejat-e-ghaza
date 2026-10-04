@@ -59,6 +59,9 @@ function App() {
   const [offers, setOffers] = useState<FoodOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [city, setCity] = useState("");
+  const [sort, setSort] = useState<"newest" | "price_asc" | "price_desc" | "discount">("newest");
   const [user, setUser] = useState<User | null>(null);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [authOpen, setAuthOpen] = useState(false);
@@ -94,7 +97,7 @@ function App() {
     setLoading(true);
     setError("");
     try {
-      setOffers(await getOffers());
+      setOffers(await getOffers({ query: search, city, sort }));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "ارتباط با سرور برقرار نشد. لطفاً دوباره تلاش کنید.");
     } finally {
@@ -463,6 +466,13 @@ function App() {
         loading={loading}
         error={error}
         availableOffers={availableOffers}
+        search={search}
+        city={city}
+        sort={sort}
+        onSearchChange={setSearch}
+        onCityChange={setCity}
+        onSortChange={setSort}
+        onSearch={() => void loadOffers()}
         onCart={() => setCartOpen(true)}
         onOrders={() => void openOrders()}
         onMerchant={() => void openMerchantDashboard()}

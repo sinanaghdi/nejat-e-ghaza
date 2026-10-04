@@ -193,5 +193,5 @@ test("customer can discover, authenticate, order, and review order status", asyn
   await page.getByRole("button", { name: "سفارش‌های من" }).click();
   await expect(page.getByRole("heading", { name: "سفارش‌های من" })).toBeVisible();
   await expect(page.getByText("پرداخت شده")).toBeVisible();
-  await expect(page.getByText("#1")).toBeVisible();
+  await expect(page.getByText("#1", { exact: true })).toBeVisible();
 });

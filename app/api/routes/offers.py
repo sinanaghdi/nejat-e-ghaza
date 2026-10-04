@@ -25,8 +25,20 @@ def list_offers(
     city: str | None = Query(default=None, min_length=1, max_length=100),
     min_price: Decimal | None = Query(default=None, gt=0),
     max_price: Decimal | None = Query(default=None, gt=0),
-    sort: str = Query(default="newest", pattern="^(newest|price_asc|price_desc|discount)$"),
+    sort: str = Query(default="newest", pattern="^(newest|price_asc|price_desc|discount|distance)$"),
+    latitude: float | None = Query(default=None, ge=-90, le=90),
+    longitude: float | None = Query(default=None, ge=-180, le=180),
+    radius_km: float | None = Query(default=None, gt=0, le=100),
 ):
+    if (latitude is None) != (longitude is None):
+        from fastapi import HTTPException
+        raise HTTPException(status_code=422, detail="latitude and longitude must be provided together")
+    if radius_km is not None and latitude is None:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=422, detail="radius_km requires latitude and longitude")
+    if sort == "distance" and latitude is None:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=422, detail="distance sort requires latitude and longitude")
     if min_price is not None and max_price is not None and min_price > max_price:
         from fastapi import HTTPException
         raise HTTPException(status_code=422, detail="min_price cannot exceed max_price")
@@ -40,6 +52,9 @@ def list_offers(
         min_price=min_price,
         max_price=max_price,
         sort=sort,
+        latitude=latitude,
+        longitude=longitude,
+        radius_km=radius_km,
     )
 
 

@@ -1,13 +1,20 @@
 services:
   nginx:
-    image: nginx:1.27-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.web.production
+      args:
+        VITE_API_BASE_URL: /
     ports:
       - "80:80"
     depends_on:
       api:
         condition: service_healthy
-    volumes:
-      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     restart: unless-stopped
 
   api:

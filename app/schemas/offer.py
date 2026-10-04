@@ -49,11 +49,21 @@ class OfferUpdate(BaseModel):
         return self
 
 
+class MerchantSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    business_name: str
+    city: str
+    address: str
+
+
 class OfferResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     merchant_id: int
+    merchant: MerchantSummary
     title: str
     description: str | None
     original_price: Decimal

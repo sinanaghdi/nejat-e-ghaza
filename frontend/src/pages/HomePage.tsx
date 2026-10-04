@@ -25,6 +25,9 @@ type Props = {
   onCityChange: (value: string) => void;
   onSortChange: (value: Props["sort"]) => void;
   onSearch: () => void;
+  nearby: boolean;
+  locationStatus: "idle" | "loading" | "denied" | "ready";
+  onNearby: () => void;
 };
 
 function discountPercent(offer: FoodOffer) {
@@ -32,7 +35,7 @@ function discountPercent(offer: FoodOffer) {
   return Math.round((1 - Number(offer.sale_price) / Number(offer.original_price)) * 100);
 }
 
-export function HomePage({ user, cartCount, loading, error, availableOffers, onCart, onOrders, onMerchant, onLogin, onLogout, onRetry, onOffer, search, city, sort, onSearchChange, onCityChange, onSortChange, onSearch }: Props) {
+export function HomePage({ user, cartCount, loading, error, availableOffers, onCart, onOrders, onMerchant, onLogin, onLogout, onRetry, onOffer, search, city, sort, onSearchChange, onCityChange, onSortChange, onSearch, nearby, locationStatus, onNearby }: Props) {
   return (
     <main className="app">
       <Header user={user} cartCount={cartCount} onCart={onCart} onOrders={onOrders} onMerchant={onMerchant} onLogin={onLogin} onLogout={onLogout} />
@@ -57,6 +60,9 @@ export function HomePage({ user, cartCount, loading, error, availableOffers, onC
             </select>
           </div>
           <button className="primary-button discovery-button" type="button" onClick={onSearch}>جست‌وجو</button>
+          <button className={`secondary-button nearby-button${nearby ? " active" : ""}`} type="button" onClick={onNearby} disabled={locationStatus === "loading"}>
+            {locationStatus === "loading" ? "در حال دریافت موقعیت..." : nearby ? "پیشنهادهای نزدیک فعال است" : "نزدیک من"}
+          </button>
         </div>
         <div className="section-heading">
           <div><p className="eyebrow">تازه و نزدیک</p><h2>پیشنهادهای امروز</h2></div>

@@ -1,0 +1,25 @@
+# Build the Persian RTL React frontend and serve it alongside the API through the production Nginx.
+
+FROM node:20-alpine AS build
+
+WORKDIR /app/frontend
+
+COPY frontend/package.json .
+RUN npm install
+
+COPY frontend/ .
+
+ARG VITE_API_BASE_URL=/
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+
+RUN npm run build
+
+
+FROM nginx:1.27-alpine
+
+COPY --from=build /app/frontend/dist /usr/share/nginx/html
+COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

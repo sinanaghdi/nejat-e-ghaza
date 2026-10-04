@@ -1,13 +1,23 @@
-const TOKEN_KEY = "nejat_e_ghaza_access_token";
+const SESSION_MARKER = "nejat_e_ghaza_authenticated";
+const CSRF_KEY = "nejat_e_ghaza_csrf";
 
 export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY);
+  return sessionStorage.getItem(SESSION_MARKER) ? "cookie-session" : null;
 }
 
-export function setToken(token: string): void {
-  localStorage.setItem(TOKEN_KEY, token);
+export function setToken(_token: string | null): void {
+  sessionStorage.setItem(SESSION_MARKER, "1");
 }
 
 export function clearToken(): void {
-  localStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(SESSION_MARKER);
+  sessionStorage.removeItem(CSRF_KEY);
+}
+
+export function getCsrfToken(): string | null {
+  return sessionStorage.getItem(CSRF_KEY);
+}
+
+export function setCsrfToken(token: string): void {
+  sessionStorage.setItem(CSRF_KEY, token);
 }

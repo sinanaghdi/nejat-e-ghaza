@@ -70,3 +70,16 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  production-docker-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build API image
+        run: docker build -f Dockerfile.production -t nejat-e-ghaza-api:test .
+
+      - name: Build frontend image
+        run: docker build -f Dockerfile.web.production --build-arg VITE_API_BASE_URL=/ -t nejat-e-ghaza-web:test .

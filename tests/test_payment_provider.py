@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from app.core.config import settings
 from app.services.payment_provider import ZarinpalPaymentProvider
 
 
@@ -8,6 +9,9 @@ def test_zarinpal_converts_toman_to_rial():
 
 
 def test_zarinpal_verify_accepts_already_verified(monkeypatch):
+    settings.zarinpal_merchant_id = "test-merchant"
+    settings.zarinpal_merchant_id = "test-merchant"
+    settings.payment_callback_url = "http://test/callback"
     provider = ZarinpalPaymentProvider()
 
     class Response:

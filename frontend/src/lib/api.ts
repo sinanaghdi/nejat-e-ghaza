@@ -2,6 +2,47 @@ import { getCsrfToken, setCsrfToken } from "./auth";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
 
+const DEMO_OFFERS: FoodOffer[] = [
+  {
+    id: 1, merchant_id: 101,
+    merchant: { id: 101, business_name: "کافه سبز", city: "کرمانشاه", address: "بلوار طاق‌بستان", latitude: null, longitude: null },
+    title: "باکس صبحانه ویژه", description: "ترکیبی از صبحانه تازه و خوراکی‌های روز کافه با تخفیف ویژه.",
+    original_price: 180000, sale_price: 89000, quantity: 8, available_quantity: 5,
+    pickup_start: "2026-10-04T18:00:00", pickup_end: "2026-10-04T21:00:00", image_url: null, is_active: true, created_at: "2026-10-04T10:00:00",
+  },
+  {
+    id: 2, merchant_id: 102,
+    merchant: { id: 102, business_name: "فست‌فود هفت", city: "کرمانشاه", address: "خیابان برق", latitude: null, longitude: null },
+    title: "باکس پیتزا و سیب‌زمینی", description: "غذای مازاد تازه امشب با قیمت کمتر؛ مناسب یک نفر.",
+    original_price: 320000, sale_price: 159000, quantity: 6, available_quantity: 3,
+    pickup_start: "2026-10-04T20:00:00", pickup_end: "2026-10-04T23:00:00", image_url: null, is_active: true, created_at: "2026-10-04T11:00:00",
+  },
+  {
+    id: 3, merchant_id: 103,
+    merchant: { id: 103, business_name: "رستوران خانه", city: "کرمانشاه", address: "میدان آزادگان", latitude: null, longitude: null },
+    title: "باکس شام خانوادگی", description: "چند غذای محبوب رستوران برای جلوگیری از هدررفت مواد غذایی.",
+    original_price: 540000, sale_price: 249000, quantity: 4, available_quantity: 2,
+    pickup_start: "2026-10-04T19:30:00", pickup_end: "2026-10-04T22:30:00", image_url: null, is_active: true, created_at: "2026-10-04T12:00:00",
+  },
+];
+
+function demoOffers(filters: OfferFilters = {}): FoodOffer[] {
+  let items = [...DEMO_OFFERS];
+  if (filters.query?.trim()) {
+    const q = filters.query.trim().toLowerCase();
+    items = items.filter((item) => `${item.title} ${item.description ?? ""} ${item.merchant.business_name}`.toLowerCase().includes(q));
+  }
+  if (filters.city?.trim()) {
+    const city = filters.city.trim().toLowerCase();
+    items = items.filter((item) => item.merchant.city.toLowerCase().includes(city));
+  }
+  if (filters.sort === "price_asc") items.sort((a, b) => a.sale_price - b.sale_price);
+  if (filters.sort === "price_desc") items.sort((a, b) => b.sale_price - a.sale_price);
+  if (filters.sort === "discount") items.sort((a, b) => ((b.original_price-b.sale_price)/b.original_price) - ((a.original_price-a.sale_price)/a.original_price));
+  return items;
+}
+
+
 export class ApiError extends Error {
   status: number;
 
@@ -124,7 +165,7 @@ export interface OfferFilters {
   radius_km?: number;
 }
 
-export function getOffers(filters: OfferFilters = {}): Promise<FoodOffer[]> {
+export function getOffers(filters: OfferFilters = {}): Promise<FoodOffer[]> {\n  if (import.meta.env.VITE_DEMO_MODE === "true") return Promise.resolve(demoOffers(filters));
   const params = new URLSearchParams();
   if (filters.query?.trim()) params.set("query", filters.query.trim());
   if (filters.city?.trim()) params.set("city", filters.city.trim());
@@ -142,7 +183,7 @@ export function getOffers(filters: OfferFilters = {}): Promise<FoodOffer[]> {
   );
 }
 
-export function getOffer(offerId: number): Promise<FoodOffer> {
+export function getOffer(offerId: number): Promise<FoodOffer> {\n  if (import.meta.env.VITE_DEMO_MODE === "true") { const offer = DEMO_OFFERS.find((item) => item.id === offerId); return offer ? Promise.resolve(offer) : Promise.reject(new ApiError("پیشنهاد پیدا نشد.", 404)); }
   return request<unknown>(`/api/offers/${offerId}`).then(normalizeFoodOffer);
 }
 

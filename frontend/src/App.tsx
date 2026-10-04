@@ -93,7 +93,7 @@ function App() {
   const [merchantError, setMerchantError] = useState("");
   const [merchantFormOpen, setMerchantFormOpen] = useState(false);
   const [offerFormOpen, setOfferFormOpen] = useState(false);
-  const [merchantForm, setMerchantForm] = useState({ business_name: "", description: "", address: "", city: "" });
+  const [merchantForm, setMerchantForm] = useState({ business_name: "", description: "", address: "", city: "", latitude: "", longitude: "" });
   const [offerForm, setOfferForm] = useState({ title: "", description: "", original_price: "", sale_price: "", quantity: "1", pickup_start: "", pickup_end: "", image_url: "" });
 
   async function loadOffers() {
@@ -354,7 +354,14 @@ function App() {
 
   async function submitMerchantProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); const token = getToken(); if (!token) return;
-    try { const profile = await createMerchantProfile(token, merchantForm); setMerchantProfile(profile); setMerchantFormOpen(false); }
+    try { const profile = await createMerchantProfile(token, {
+        business_name: merchantForm.business_name,
+        description: merchantForm.description || null,
+        address: merchantForm.address,
+        city: merchantForm.city,
+        latitude: merchantForm.latitude ? Number(merchantForm.latitude) : null,
+        longitude: merchantForm.longitude ? Number(merchantForm.longitude) : null,
+      }); setMerchantProfile(profile); setMerchantFormOpen(false); }
     catch (err) { setMerchantError(err instanceof ApiError ? err.message : "ساخت پروفایل فروشگاه انجام نشد."); }
   }
 

@@ -352,3 +352,29 @@ def test_order_creation_writes_audit_log(client, db):
     assert event.actor_user_id == customer.id
     assert event.request_id == "test-request-123"
     assert event.success is True
+
+
+def test_create_payment_is_idempotent(client, db):
+    customer, _, _, offer = _setup_order(db)
+    token = _login(client, customer.email)
+
+    order_response = client.post(
+        "/api/orders",
+        json={"items": [{"food_offer_id": offer.id, "quantity": 1}]},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    order_id = order_response.json()["id"]
+
+    first = client.post(
+        f"/api/payments/orders/{order_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    second = client.post(
+        f"/api/payments/orders/{order_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert first.json()["id"] == second.json()["id"]
+    assert first.json()["authority"] == second.json()["authority"]

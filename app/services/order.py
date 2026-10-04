@@ -198,6 +198,9 @@ def expire_pending_orders(db: Session) -> int:
                 .with_for_update()
             )
             if payment and payment.status == "PAID":
+                # Defensive reconciliation for an interrupted transaction from
+                # an older deployment: a paid payment is authoritative.
+                order.status = OrderStatus.PAID
                 continue
 
             for item in order.items:

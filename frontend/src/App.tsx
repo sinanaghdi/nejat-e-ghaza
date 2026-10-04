@@ -62,6 +62,9 @@ function App() {
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("");
   const [sort, setSort] = useState<"newest" | "price_asc" | "price_desc" | "discount">("newest");
+  const [nearby, setNearby] = useState(false);
+  const [locationStatus, setLocationStatus] = useState<"idle" | "loading" | "denied" | "ready">("idle");
+  const [userCoordinates, setUserCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [authOpen, setAuthOpen] = useState(false);
@@ -97,7 +100,14 @@ function App() {
     setLoading(true);
     setError("");
     try {
-      setOffers(await getOffers({ query: search, city, sort }));
+      setOffers(await getOffers({
+        query: search,
+        city,
+        sort: nearby && userCoordinates ? "distance" : sort,
+        latitude: nearby && userCoordinates ? userCoordinates.latitude : undefined,
+        longitude: nearby && userCoordinates ? userCoordinates.longitude : undefined,
+        radius_km: nearby && userCoordinates ? 10 : undefined,
+      }));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "ارتباط با سرور برقرار نشد. لطفاً دوباره تلاش کنید.");
     } finally {
@@ -156,6 +166,7 @@ function App() {
   }, [location.pathname]);
 
   useEffect(() => {
+    if (nearby && !userCoordinates) return;
     void loadOffers();
     const token = getToken();
     if (!token) return;
@@ -164,6 +175,29 @@ function App() {
       .then(setUser)
       .catch(() => clearToken());
   }, []);
+
+  function enableNearby() {
+    if (!navigator.geolocation) {
+      setLocationStatus("denied");
+      return;
+    }
+    setLocationStatus("loading");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserCoordinates({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+        setNearby(true);
+        setLocationStatus("ready");
+      },
+      () => {
+        setNearby(false);
+        setLocationStatus("denied");
+      },
+      { enableHighAccuracy: false, maximumAge: 300000, timeout: 10000 },
+    );
+  }
 
   function openAuth(mode: AuthMode) {
     setAuthMode(mode);

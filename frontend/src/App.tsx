@@ -781,7 +781,7 @@ function App() {
               <button
                 className="primary-button full-button"
                 type="button"
-                onClick={addToCart}
+                onClick={() => addToCart()}
               >
                 افزودن به سبد خرید
               </button>

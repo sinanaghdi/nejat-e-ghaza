@@ -1,3 +1,5 @@
+import { getCsrfToken, setCsrfToken } from "./auth";
+
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
 
 export class ApiError extends Error {
@@ -152,13 +154,15 @@ export function registerUser(
   });
 }
 
-export function loginUser(
+export async function loginUser(
   payload: { email: string; password: string },
 ): Promise<TokenResponse> {
-  return request<TokenResponse>("/api/auth/login", {
+  const response = await request<TokenResponse>("/api/auth/login", {
     method: "POST",
     body: JSON.stringify(payload),
   });
+  setCsrfToken(response.csrf_token);
+  return response;
 }
 
 export interface OrderItemCreate {
@@ -411,10 +415,7 @@ function normalizePayment(value: unknown): PaymentResponse {
 
 
 export function logoutUser(): Promise<{ status: string }> {
-  return request<{ status: string }>("/api/auth/logout", {
+  return authRequest<{ status: string }>("/api/auth/logout", null, {
     method: "POST",
-    headers: getCsrfToken()
-      ? { "X-CSRF-Token": getCsrfToken() as string }
-      : undefined,
   });
 }

@@ -10,6 +10,12 @@ class Settings(BaseSettings):
     jwt_secret_key: str
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
+    expose_legacy_access_token: bool = True
+    auth_cookie_name: str = "nejat_e_ghaza_session"
+    auth_cookie_secure: bool = False
+    auth_cookie_samesite: str = "lax"
+    csrf_cookie_name: str = "nejat_e_ghaza_csrf"
+    csrf_header_name: str = "X-CSRF-Token"
     frontend_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
     redis_url: str = "redis://localhost:6379/0"
     order_payment_timeout_minutes: int = 15
@@ -41,6 +47,18 @@ class Settings(BaseSettings):
             return
 
         errors: list[str] = []
+
+        if self.expose_legacy_access_token:
+            errors.append("EXPOSE_LEGACY_ACCESS_TOKEN must be false in production.")
+
+        if not self.auth_cookie_secure:
+            errors.append("AUTH_COOKIE_SECURE must be true in production.")
+
+        if self.auth_cookie_samesite.lower() not in {"lax", "strict", "none"}:
+            errors.append("AUTH_COOKIE_SAMESITE must be lax, strict, or none.")
+
+        if self.auth_cookie_samesite.lower() == "none" and not self.auth_cookie_secure:
+            errors.append("AUTH_COOKIE_SAMESITE=none requires AUTH_COOKIE_SECURE=true.")
 
         if len(self.jwt_secret_key.encode("utf-8")) < 32 or self.jwt_secret_key in {
             "test-secret",

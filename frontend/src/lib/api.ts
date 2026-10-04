@@ -101,8 +101,9 @@ export interface User {
 }
 
 export interface TokenResponse {
-  access_token: string;
+  access_token: string | null;
   token_type: string;
+  csrf_token: string;
 }
 
 export type OfferSort =

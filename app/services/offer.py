@@ -52,6 +52,9 @@ def list_active_offers(
     min_price=None,
     max_price=None,
     sort: str = "newest",
+    latitude: float | None = None,
+    longitude: float | None = None,
+    radius_km: float | None = None,
 ) -> list[FoodOffer]:
     return offer_repository.list_active(
         db,
@@ -62,6 +65,9 @@ def list_active_offers(
         min_price=min_price,
         max_price=max_price,
         sort=sort,
+        latitude=latitude,
+        longitude=longitude,
+        radius_km=radius_km,
     )
 
 

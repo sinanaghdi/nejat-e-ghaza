@@ -238,9 +238,9 @@ def test_customer_can_create_payment_for_pending_order(client, db):
     )
 
     assert response.status_code == 200
-    assert response.json()["status"] == "PENDING"
-    assert response.json()["order_id"] == order_id
-    assert response.json()["provider"] == "mock"
+    assert response.json()["payment"]["status"] == "PENDING"
+    assert response.json()["payment"]["order_id"] == order_id
+    assert response.json()["payment"]["provider"] == "mock"
 
 
 def test_payment_webhook_moves_order_to_paid(client, db):
@@ -258,7 +258,7 @@ def test_payment_webhook_moves_order_to_paid(client, db):
         f"/api/payments/orders/{order_id}",
         headers={"Authorization": f"Bearer {token}"},
     )
-    authority = payment_response.json()["authority"]
+    authority = payment_response.json()["payment"]["authority"]
 
     webhook_response = client.post(
         "/api/payments/webhook",
@@ -297,7 +297,7 @@ def test_payment_webhook_is_idempotent(client, db):
 
     assert first.status_code == 200
     assert second.status_code == 200
-    assert first.json()["reference_id"] == second.json()["reference_id"]
+    assert first.json()["payment"]["reference_id"] == second.json()["payment"]["reference_id"]
 
 
 def test_customer_cannot_create_payment_for_another_customer_order(client, db):
@@ -376,5 +376,5 @@ def test_create_payment_is_idempotent(client, db):
 
     assert first.status_code == 200
     assert second.status_code == 200
-    assert first.json()["id"] == second.json()["id"]
-    assert first.json()["authority"] == second.json()["authority"]
+    assert first.json()["payment"]["id"] == second.json()["payment"]["id"]
+    assert first.json()["payment"]["authority"] == second.json()["payment"]["authority"]

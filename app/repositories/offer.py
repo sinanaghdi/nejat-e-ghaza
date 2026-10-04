@@ -1,4 +1,4 @@
-from sqlalchemy import and_, or_, select
+from sqlalchemy import and_, func, or_, select
 from app.db.models.merchant import Merchant
 from sqlalchemy.orm import Session
 
@@ -30,6 +30,9 @@ def list_active(
     min_price=None,
     max_price=None,
     sort: str = "newest",
+    latitude: float | None = None,
+    longitude: float | None = None,
+    radius_km: float | None = None,
 ) -> list[FoodOffer]:
     filters = [
         FoodOffer.is_active.is_(True),
@@ -52,7 +55,28 @@ def list_active(
     if max_price is not None:
         filters.append(FoodOffer.sale_price <= max_price)
 
-    if sort == "price_asc":
+    distance_expr = None
+    if latitude is not None and longitude is not None:
+        lat = func.radians(Merchant.latitude)
+        lon = func.radians(Merchant.longitude)
+        user_lat = func.radians(latitude)
+        user_lon = func.radians(longitude)
+        distance_expr = 6371 * func.acos(
+            func.cos(user_lat) * func.cos(lat) * func.cos(lon - user_lon)
+            + func.sin(user_lat) * func.sin(lat)
+        )
+        if radius_km is not None:
+            filters.append(
+                and_(
+                    Merchant.latitude.is_not(None),
+                    Merchant.longitude.is_not(None),
+                    distance_expr <= radius_km,
+                )
+            )
+
+    if sort == "distance" and distance_expr is not None:
+        ordering = distance_expr.asc()
+    elif sort == "price_asc":
         ordering = FoodOffer.sale_price.asc()
     elif sort == "price_desc":
         ordering = FoodOffer.sale_price.desc()

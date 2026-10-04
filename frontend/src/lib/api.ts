@@ -12,6 +12,7 @@ export class ApiError extends Error {
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: "include",
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -35,16 +36,35 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
 async function authRequest<T>(
   path: string,
-  token: string,
+  token: string | null,
   options: RequestInit = {},
 ): Promise<T> {
+  const method = (options.method || "GET").toUpperCase();
+  const headers = new Headers(options.headers || {});
+
+  if (token && token !== "cookie-session") {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  if (!["GET", "HEAD", "OPTIONS"].includes(method) && !getCsrfToken()) {
+    await getCsrfTokenFromServer();
+  }
+
+  const csrfToken = getCsrfToken();
+  if (!["GET", "HEAD", "OPTIONS"].includes(method) && csrfToken) {
+    headers.set("X-CSRF-Token", csrfToken);
+  }
+
   return request<T>(path, {
     ...options,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      ...(options.headers || {}),
-    },
+    headers,
   });
+}
+
+async function getCsrfTokenFromServer(): Promise<string> {
+  const payload = await request<{ csrf_token: string }>("/api/auth/csrf");
+  setCsrfToken(payload.csrf_token);
+  return payload.csrf_token;
 }
 
 export interface FoodOffer {
@@ -171,12 +191,12 @@ export interface Order {
   items: OrderItem[];
 }
 
-export function getCurrentUser(token: string): Promise<User> {
+export function getCurrentUser(token: string | null): Promise<User> {
   return authRequest<User>("/api/auth/me", token);
 }
 
 export function createOrder(
-  token: string,
+  token: string | null,
   items: OrderItemCreate[],
 ): Promise<Order> {
   return authRequest<unknown>("/api/orders", token, {
@@ -203,7 +223,7 @@ export interface PaymentStartResponse {
 }
 
 export function createPayment(
-  token: string,
+  token: string | null,
   orderId: number,
 ): Promise<PaymentStartResponse> {
   return authRequest<unknown>(`/api/payments/orders/${orderId}`, token, {
@@ -217,13 +237,13 @@ export function createPayment(
   });
 }
 
-export function getOrders(token: string): Promise<Order[]> {
+export function getOrders(token: string | null): Promise<Order[]> {
   return authRequest<unknown[]>("/api/orders", token).then((items) =>
     items.map(normalizeOrder),
   );
 }
 
-export function getOrder(token: string, orderId: number): Promise<Order> {
+export function getOrder(token: string | null, orderId: number): Promise<Order> {
   return authRequest<unknown>(`/api/orders/${orderId}`, token).then(
     normalizeOrder,
   );
@@ -251,12 +271,12 @@ export interface OfferPayload {
   image_url?: string;
 }
 
-export function getMerchantProfile(token: string): Promise<MerchantProfile> {
+export function getMerchantProfile(token: string | null): Promise<MerchantProfile> {
   return authRequest<MerchantProfile>("/api/merchant/profile", token);
 }
 
 export function createMerchantProfile(
-  token: string,
+  token: string | null,
   payload: Omit<MerchantProfile, "id" | "user_id">,
 ): Promise<MerchantProfile> {
   return authRequest<MerchantProfile>("/api/merchant/profile", token, {
@@ -265,14 +285,14 @@ export function createMerchantProfile(
   });
 }
 
-export function getMyOffers(token: string): Promise<FoodOffer[]> {
+export function getMyOffers(token: string | null): Promise<FoodOffer[]> {
   return authRequest<unknown[]>("/api/offers/mine", token).then((items) =>
     items.map(normalizeFoodOffer),
   );
 }
 
 export function createOffer(
-  token: string,
+  token: string | null,
   payload: OfferPayload,
 ): Promise<FoodOffer> {
   return authRequest<unknown>("/api/offers", token, {
@@ -282,7 +302,7 @@ export function createOffer(
 }
 
 export function deactivateOffer(
-  token: string,
+  token: string | null,
   offerId: number,
 ): Promise<FoodOffer> {
   return authRequest<unknown>(`/api/offers/${offerId}`, token, {
@@ -291,7 +311,7 @@ export function deactivateOffer(
 }
 
 export function updateOrderStatus(
-  token: string,
+  token: string | null,
   orderId: number,
   status: Order["status"],
 ): Promise<Order> {
@@ -387,4 +407,14 @@ function normalizePayment(value: unknown): PaymentResponse {
         ? null
         : String(payment.paid_at),
   };
+}
+
+
+export function logoutUser(): Promise<{ status: string }> {
+  return request<{ status: string }>("/api/auth/logout", {
+    method: "POST",
+    headers: getCsrfToken()
+      ? { "X-CSRF-Token": getCsrfToken() as string }
+      : undefined,
+  });
 }

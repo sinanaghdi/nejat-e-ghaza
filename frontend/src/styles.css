@@ -545,3 +545,28 @@ select {
     width: 100%;
   }
 }
+
+
+.nearby-button {
+  min-height: 46px;
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+.nearby-button.active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(23, 60, 43, .06);
+}
+
+.nearby-button:disabled {
+  opacity: .65;
+  cursor: wait;
+}
+
+@media (max-width: 760px) {
+  .nearby-button {
+    width: 100%;
+    justify-self: stretch;
+  }
+}

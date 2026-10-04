@@ -70,7 +70,7 @@ def test_public_offer_search_and_city_filter(client, db):
 
     response = client.get("/api/offers", params={"sort": "price_asc"})
     assert response.status_code == 200
-    assert [item["sale_price"] for item in response.json()] == [100000, 120000]
+    assert [item["sale_price"] for item in response.json()] == ["100000.00", "120000.00"]
 
 
 def test_offer_price_range_validation(client):

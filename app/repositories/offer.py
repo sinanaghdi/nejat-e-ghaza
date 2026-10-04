@@ -1,4 +1,5 @@
-from sqlalchemy import select
+from sqlalchemy import and_, or_, select
+from app.db.models.merchant import Merchant
 from sqlalchemy.orm import Session
 
 from app.db.models.food_offer import FoodOffer
@@ -12,14 +13,59 @@ def create(db: Session, offer: FoodOffer) -> FoodOffer:
 
 
 def get_by_id(db: Session, offer_id: int) -> FoodOffer | None:
-    return db.get(FoodOffer, offer_id)
-
-
-def list_active(db: Session, skip: int = 0, limit: int = 50) -> list[FoodOffer]:
     statement = (
         select(FoodOffer)
-        .where(FoodOffer.is_active.is_(True), FoodOffer.available_quantity > 0)
-        .order_by(FoodOffer.created_at.desc())
+        .join(Merchant, FoodOffer.merchant_id == Merchant.id)
+        .where(FoodOffer.id == offer_id)
+    )
+    return db.scalar(statement)
+
+
+def list_active(
+    db: Session,
+    skip: int = 0,
+    limit: int = 50,
+    query: str | None = None,
+    city: str | None = None,
+    min_price=None,
+    max_price=None,
+    sort: str = "newest",
+) -> list[FoodOffer]:
+    filters = [
+        FoodOffer.is_active.is_(True),
+        FoodOffer.available_quantity > 0,
+    ]
+
+    if query:
+        term = f"%{query.strip()}%"
+        filters.append(
+            or_(
+                FoodOffer.title.ilike(term),
+                FoodOffer.description.ilike(term),
+                Merchant.business_name.ilike(term),
+            )
+        )
+    if city:
+        filters.append(Merchant.city.ilike(city.strip()))
+    if min_price is not None:
+        filters.append(FoodOffer.sale_price >= min_price)
+    if max_price is not None:
+        filters.append(FoodOffer.sale_price <= max_price)
+
+    if sort == "price_asc":
+        ordering = FoodOffer.sale_price.asc()
+    elif sort == "price_desc":
+        ordering = FoodOffer.sale_price.desc()
+    elif sort == "discount":
+        ordering = (FoodOffer.original_price - FoodOffer.sale_price).desc()
+    else:
+        ordering = FoodOffer.created_at.desc()
+
+    statement = (
+        select(FoodOffer)
+        .join(Merchant, FoodOffer.merchant_id == Merchant.id)
+        .where(and_(*filters))
+        .order_by(ordering, FoodOffer.id.desc())
         .offset(skip)
         .limit(limit)
     )

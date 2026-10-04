@@ -18,7 +18,7 @@ def get_current_user(
     db: Annotated[Session, Depends(get_db)],
 ) -> User:
     cookie_token = request.cookies.get(settings.auth_cookie_name)
-    auth_token = cookie_token or token
+    auth_token = token or cookie_token
     user_id = decode_access_token(auth_token) if auth_token else None
     if not user_id or not user_id.isdigit():
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token", headers={"WWW-Authenticate": "Bearer"})

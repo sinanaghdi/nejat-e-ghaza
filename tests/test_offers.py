@@ -76,3 +76,13 @@ def test_public_offer_search_and_city_filter(client, db):
 def test_offer_price_range_validation(client):
     response = client.get("/api/offers", params={"min_price": 200000, "max_price": 100000})
     assert response.status_code == 422
+
+
+def test_nearby_offer_sort_requires_coordinates(client):
+    response = client.get("/api/offers", params={"sort": "distance"})
+    assert response.status_code == 422
+
+
+def test_nearby_offer_requires_coordinate_pair(client):
+    response = client.get("/api/offers", params={"latitude": 34.3})
+    assert response.status_code == 422

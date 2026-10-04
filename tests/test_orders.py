@@ -397,16 +397,21 @@ def test_failed_payment_can_be_retried(client, db, monkeypatch):
     class RetryProvider(PaymentProvider):
         name = "retry-test"
 
+        def __init__(self):
+            self.calls = 0
+
         def start(self, request: PaymentRequest) -> PaymentStartResult:
+            self.calls += 1
             return PaymentStartResult(
-                authority=f"RETRY-{request.order_id}-{request.amount}",
+                authority=f"RETRY-{request.order_id}-{self.calls}-{request.amount}",
                 checkout_url="/checkout",
             )
 
         def verify(self, authority: str, amount: Decimal) -> PaymentVerifyResult:
             return PaymentVerifyResult(success=False)
 
-    monkeypatch.setattr(payment_service, "get_payment_provider", lambda: RetryProvider())
+    provider = RetryProvider()
+    monkeypatch.setattr(payment_service, "get_payment_provider", lambda: provider)
 
     first = client.post(
         f"/api/payments/orders/{order_id}",

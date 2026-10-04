@@ -36,3 +36,8 @@ The frontend is Persian-first and RTL-first. Offers are loaded from the FastAPI 
 - Customer orders
 - Merchant dashboard
 - Admin dashboard
+
+
+## Production
+
+The production Docker stack builds the frontend into `Dockerfile.web.production` and serves the React SPA from Nginx. API requests use the same-origin `/api` path, so no browser-side API host is required in production.

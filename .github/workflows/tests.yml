@@ -71,6 +71,12 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E
+        run: npm run e2e
+
   production-docker-build:
     runs-on: ubuntu-latest
 

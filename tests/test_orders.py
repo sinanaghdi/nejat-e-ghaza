@@ -290,7 +290,7 @@ def test_payment_webhook_is_idempotent(client, db):
         f"/api/payments/orders/{order_id}",
         headers={"Authorization": f"Bearer {token}"},
     )
-    authority = payment_response.json()["authority"]
+    authority = payment_response.json()["payment"]["authority"]
 
     first = client.post("/api/payments/webhook", json={"authority": authority}, headers={"X-Webhook-Secret": "change-me"})
     second = client.post("/api/payments/webhook", json={"authority": authority}, headers={"X-Webhook-Secret": "change-me"})

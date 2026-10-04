@@ -33,7 +33,11 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-async function authRequest<T>(path: string, token: string, options: RequestInit = {}): Promise<T> {
+async function authRequest<T>(
+  path: string,
+  token: string,
+  options: RequestInit = {},
+): Promise<T> {
   return request<T>(path, {
     ...options,
     headers: {
@@ -56,8 +60,8 @@ export interface FoodOffer {
   };
   title: string;
   description: string | null;
-  original_price: string;
-  sale_price: string;
+  original_price: number;
+  sale_price: number;
   quantity: number;
   available_quantity: number;
   pickup_start: string;
@@ -79,7 +83,12 @@ export interface TokenResponse {
   token_type: string;
 }
 
-export type OfferSort = "newest" | "price_asc" | "price_desc" | "discount" | "distance";
+export type OfferSort =
+  | "newest"
+  | "price_asc"
+  | "price_desc"
+  | "discount"
+  | "distance";
 
 export interface OfferFilters {
   query?: string;
@@ -102,22 +111,30 @@ export function getOffers(filters: OfferFilters = {}): Promise<FoodOffer[]> {
   if (filters.latitude !== undefined) params.set("latitude", String(filters.latitude));
   if (filters.longitude !== undefined) params.set("longitude", String(filters.longitude));
   if (filters.radius_km !== undefined) params.set("radius_km", String(filters.radius_km));
+
   const suffix = params.toString() ? `?${params.toString()}` : "";
-  return request<FoodOffer[]>(`/api/offers${suffix}`);
+
+  return request<unknown[]>(`/api/offers${suffix}`).then((items) =>
+    items.map(normalizeFoodOffer),
+  );
 }
 
 export function getOffer(offerId: number): Promise<FoodOffer> {
-  return request<FoodOffer>(`/api/offers/${offerId}`);
+  return request<unknown>(`/api/offers/${offerId}`).then(normalizeFoodOffer);
 }
 
-export function registerUser(payload: { name: string; email: string; password: string }): Promise<User> {
+export function registerUser(
+  payload: { name: string; email: string; password: string },
+): Promise<User> {
   return request<User>("/api/auth/register", {
     method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
-export function loginUser(payload: { email: string; password: string }): Promise<TokenResponse> {
+export function loginUser(
+  payload: { email: string; password: string },
+): Promise<TokenResponse> {
   return request<TokenResponse>("/api/auth/login", {
     method: "POST",
     body: JSON.stringify(payload),
@@ -133,16 +150,22 @@ export interface OrderItem {
   id: number;
   food_offer_id: number;
   quantity: number;
-  unit_price: string;
-  subtotal: string;
+  unit_price: number;
+  subtotal: number;
 }
 
 export interface Order {
   id: number;
   customer_id: number;
   merchant_id: number;
-  total_amount: string;
-  status: "PENDING" | "PAID" | "READY_FOR_PICKUP" | "COMPLETED" | "CANCELLED" | "EXPIRED";
+  total_amount: number;
+  status:
+    | "PENDING"
+    | "PAID"
+    | "READY_FOR_PICKUP"
+    | "COMPLETED"
+    | "CANCELLED"
+    | "EXPIRED";
   pickup_code: string;
   created_at: string;
   items: OrderItem[];
@@ -152,13 +175,15 @@ export function getCurrentUser(token: string): Promise<User> {
   return authRequest<User>("/api/auth/me", token);
 }
 
-export function createOrder(token: string, items: OrderItemCreate[]): Promise<Order> {
-  return authRequest<Order>("/api/orders", token, {
+export function createOrder(
+  token: string,
+  items: OrderItemCreate[],
+): Promise<Order> {
+  return authRequest<unknown>("/api/orders", token, {
     method: "POST",
     body: JSON.stringify({ items }),
-  });
+  }).then(normalizeOrder);
 }
-
 
 export interface PaymentResponse {
   id: number;
@@ -166,7 +191,7 @@ export interface PaymentResponse {
   provider: string;
   authority: string;
   reference_id: string | null;
-  amount: string;
+  amount: number;
   status: string;
   created_at: string;
   paid_at: string | null;
@@ -177,17 +202,32 @@ export interface PaymentStartResponse {
   checkout_url: string;
 }
 
-export function createPayment(token: string, orderId: number): Promise<PaymentStartResponse> {
-  return authRequest<PaymentStartResponse>(`/api/payments/orders/${orderId}`, token, { method: "POST" });
+export function createPayment(
+  token: string,
+  orderId: number,
+): Promise<PaymentStartResponse> {
+  return authRequest<unknown>(`/api/payments/orders/${orderId}`, token, {
+    method: "POST",
+  }).then((payload) => {
+    const raw = payload as { payment: unknown; checkout_url: string };
+    return {
+      payment: normalizePayment(raw.payment),
+      checkout_url: raw.checkout_url,
+    };
+  });
 }
+
 export function getOrders(token: string): Promise<Order[]> {
-  return authRequest<Order[]>("/api/orders", token);
+  return authRequest<unknown[]>("/api/orders", token).then((items) =>
+    items.map(normalizeOrder),
+  );
 }
 
 export function getOrder(token: string, orderId: number): Promise<Order> {
-  return authRequest<Order>(`/api/orders/${orderId}`, token);
+  return authRequest<unknown>(`/api/orders/${orderId}`, token).then(
+    normalizeOrder,
+  );
 }
-
 
 export interface MerchantProfile {
   id: number;
@@ -215,7 +255,10 @@ export function getMerchantProfile(token: string): Promise<MerchantProfile> {
   return authRequest<MerchantProfile>("/api/merchant/profile", token);
 }
 
-export function createMerchantProfile(token: string, payload: Omit<MerchantProfile, "id" | "user_id">): Promise<MerchantProfile> {
+export function createMerchantProfile(
+  token: string,
+  payload: Omit<MerchantProfile, "id" | "user_id">,
+): Promise<MerchantProfile> {
   return authRequest<MerchantProfile>("/api/merchant/profile", token, {
     method: "POST",
     body: JSON.stringify(payload),
@@ -223,23 +266,125 @@ export function createMerchantProfile(token: string, payload: Omit<MerchantProfi
 }
 
 export function getMyOffers(token: string): Promise<FoodOffer[]> {
-  return authRequest<FoodOffer[]>("/api/offers/mine", token);
+  return authRequest<unknown[]>("/api/offers/mine", token).then((items) =>
+    items.map(normalizeFoodOffer),
+  );
 }
 
-export function createOffer(token: string, payload: OfferPayload): Promise<FoodOffer> {
-  return authRequest<FoodOffer>("/api/offers", token, {
+export function createOffer(
+  token: string,
+  payload: OfferPayload,
+): Promise<FoodOffer> {
+  return authRequest<unknown>("/api/offers", token, {
     method: "POST",
     body: JSON.stringify(payload),
-  });
+  }).then(normalizeFoodOffer);
 }
 
-export function deactivateOffer(token: string, offerId: number): Promise<FoodOffer> {
-  return authRequest<FoodOffer>(`/api/offers/${offerId}`, token, { method: "DELETE" });
+export function deactivateOffer(
+  token: string,
+  offerId: number,
+): Promise<FoodOffer> {
+  return authRequest<unknown>(`/api/offers/${offerId}`, token, {
+    method: "DELETE",
+  }).then(normalizeFoodOffer);
 }
 
-export function updateOrderStatus(token: string, orderId: number, status: Order["status"]): Promise<Order> {
-  return authRequest<Order>(`/api/orders/${orderId}/status`, token, {
+export function updateOrderStatus(
+  token: string,
+  orderId: number,
+  status: Order["status"],
+): Promise<Order> {
+  return authRequest<unknown>(`/api/orders/${orderId}/status`, token, {
     method: "PATCH",
     body: JSON.stringify({ status }),
-  });
+  }).then(normalizeOrder);
+}
+
+function normalizeFoodOffer(value: unknown): FoodOffer {
+  const offer = value as Record<string, unknown>;
+  const merchant = offer.merchant as Record<string, unknown>;
+
+  return {
+    id: Number(offer.id),
+    merchant_id: Number(offer.merchant_id),
+    merchant: {
+      id: Number(merchant.id),
+      business_name: String(merchant.business_name),
+      city: String(merchant.city),
+      address: String(merchant.address),
+      latitude:
+        merchant.latitude === null || merchant.latitude === undefined
+          ? null
+          : Number(merchant.latitude),
+      longitude:
+        merchant.longitude === null || merchant.longitude === undefined
+          ? null
+          : Number(merchant.longitude),
+    },
+    title: String(offer.title),
+    description:
+      offer.description === null || offer.description === undefined
+        ? null
+        : String(offer.description),
+    original_price: Number(offer.original_price),
+    sale_price: Number(offer.sale_price),
+    quantity: Number(offer.quantity),
+    available_quantity: Number(offer.available_quantity),
+    pickup_start: String(offer.pickup_start),
+    pickup_end: String(offer.pickup_end),
+    image_url:
+      offer.image_url === null || offer.image_url === undefined
+        ? null
+        : String(offer.image_url),
+    is_active: Boolean(offer.is_active),
+    created_at: String(offer.created_at),
+  };
+}
+
+function normalizeOrder(value: unknown): Order {
+  const order = value as Record<string, unknown>;
+  const rawItems = Array.isArray(order.items) ? order.items : [];
+
+  return {
+    id: Number(order.id),
+    customer_id: Number(order.customer_id),
+    merchant_id: Number(order.merchant_id),
+    total_amount: Number(order.total_amount),
+    status: String(order.status) as Order["status"],
+    pickup_code: String(order.pickup_code),
+    created_at: String(order.created_at),
+    items: rawItems.map((value) => {
+      const item = value as Record<string, unknown>;
+      return {
+        id: Number(item.id),
+        food_offer_id: Number(item.food_offer_id),
+        quantity: Number(item.quantity),
+        unit_price: Number(item.unit_price),
+        subtotal: Number(item.subtotal),
+      };
+    }),
+  };
+}
+
+function normalizePayment(value: unknown): PaymentResponse {
+  const payment = value as Record<string, unknown>;
+
+  return {
+    id: Number(payment.id),
+    order_id: Number(payment.order_id),
+    provider: String(payment.provider),
+    authority: String(payment.authority),
+    reference_id:
+      payment.reference_id === null || payment.reference_id === undefined
+        ? null
+        : String(payment.reference_id),
+    amount: Number(payment.amount),
+    status: String(payment.status),
+    created_at: String(payment.created_at),
+    paid_at:
+      payment.paid_at === null || payment.paid_at === undefined
+        ? null
+        : String(payment.paid_at),
+  };
 }

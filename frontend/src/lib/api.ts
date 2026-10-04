@@ -165,7 +165,8 @@ export interface OfferFilters {
   radius_km?: number;
 }
 
-export function getOffers(filters: OfferFilters = {}): Promise<FoodOffer[]> {\n  if (import.meta.env.VITE_DEMO_MODE === "true") return Promise.resolve(demoOffers(filters));
+export function getOffers(filters: OfferFilters = {}): Promise<FoodOffer[]> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") return Promise.resolve(demoOffers(filters));
   const params = new URLSearchParams();
   if (filters.query?.trim()) params.set("query", filters.query.trim());
   if (filters.city?.trim()) params.set("city", filters.city.trim());
@@ -183,7 +184,8 @@ export function getOffers(filters: OfferFilters = {}): Promise<FoodOffer[]> {\n 
   );
 }
 
-export function getOffer(offerId: number): Promise<FoodOffer> {\n  if (import.meta.env.VITE_DEMO_MODE === "true") { const offer = DEMO_OFFERS.find((item) => item.id === offerId); return offer ? Promise.resolve(offer) : Promise.reject(new ApiError("پیشنهاد پیدا نشد.", 404)); }
+export function getOffer(offerId: number): Promise<FoodOffer> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") { const offer = DEMO_OFFERS.find((item) => item.id === offerId); return offer ? Promise.resolve(offer) : Promise.reject(new ApiError("پیشنهاد پیدا نشد.", 404)); }
   return request<unknown>(`/api/offers/${offerId}`).then(normalizeFoodOffer);
 }
 

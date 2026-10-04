@@ -61,7 +61,7 @@ test("customer can discover, authenticate, order, and review order status", asyn
       await route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ access_token: "e2e-token", token_type: "bearer" }),
+        body: JSON.stringify({ access_token: null, token_type: "bearer", csrf_token: "e2e-csrf-token" }),
       });
       return;
     }

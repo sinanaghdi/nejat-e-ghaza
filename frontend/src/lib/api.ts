@@ -56,8 +56,8 @@ export interface FoodOffer {
   };
   title: string;
   description: string | null;
-  original_price: number;
-  sale_price: number;
+  original_price: string;
+  sale_price: string;
   quantity: number;
   available_quantity: number;
   pickup_start: string;
@@ -133,15 +133,15 @@ export interface OrderItem {
   id: number;
   food_offer_id: number;
   quantity: number;
-  unit_price: number;
-  subtotal: number;
+  unit_price: string;
+  subtotal: string;
 }
 
 export interface Order {
   id: number;
   customer_id: number;
   merchant_id: number;
-  total_amount: number;
+  total_amount: string;
   status: "PENDING" | "PAID" | "READY_FOR_PICKUP" | "COMPLETED" | "CANCELLED" | "EXPIRED";
   pickup_code: string;
   created_at: string;
@@ -166,7 +166,7 @@ export interface PaymentResponse {
   provider: string;
   authority: string;
   reference_id: string | null;
-  amount: number;
+  amount: string;
   status: string;
   created_at: string;
   paid_at: string | null;

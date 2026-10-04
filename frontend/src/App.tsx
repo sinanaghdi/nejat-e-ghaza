@@ -384,38 +384,6 @@ function App() {
     [offers],
   );
 
-  if (location.pathname === "/payment/result") {
-    return (
-      <>
-        <PaymentResultPage user={user} cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)} onCart={() => setCartOpen(true)} />
-        <CartDrawer cart={cart} open={cartOpen} loading={orderLoading} error={orderError} onClose={() => setCartOpen(false)} onUpdateQuantity={updateCartQuantity} onSubmit={() => void submitOrder()} />
-      </>
-    );
-  }
-
-  if (location.pathname.startsWith("/offers/") && offerId) {
-    const id = Number(offerId);
-    const detailOffer = selectedOffer?.id === id ? selectedOffer : offers.find((item) => item.id === id) || null;
-    return (
-      <>
-        <OfferDetailPage
-          offer={detailOffer}
-          loading={loading}
-          error={error}
-          user={user}
-          cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
-          quantity={selectedQuantity}
-          onQuantityChange={setSelectedQuantity}
-          onAddToCart={() => { if (detailOffer) addToCart(detailOffer); }}
-          onBack={() => window.history.back()}
-          onCart={() => setCartOpen(true)}
-        />
-        <CartDrawer cart={cart} open={cartOpen} loading={orderLoading} error={orderError} onClose={() => setCartOpen(false)} onUpdateQuantity={updateCartQuantity} onSubmit={() => void submitOrder()} />
-        <AuthModal open={authOpen} mode={authMode} loading={authLoading} error={authError} success={authSuccess} name={name} email={email} password={password} onClose={closeAuth} onModeChange={(mode) => { setAuthMode(mode); setAuthError(""); setAuthSuccess(""); }} onNameChange={setName} onEmailChange={setEmail} onPasswordChange={setPassword} onSubmit={handleAuthSubmit} />
-      </>
-    );
-  }
-
   useEffect(() => {
     if (location.pathname === "/merchant" && !getToken()) {
       openAuth("login");
@@ -427,6 +395,83 @@ function App() {
       void loadOffers();
     }
   }, [nearby, userCoordinates]);
+
+  if (location.pathname === "/payment/result") {
+    return (
+      <>
+        <PaymentResultPage
+          user={user}
+          cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
+          onCart={() => setCartOpen(true)}
+        />
+        <CartDrawer
+          cart={cart}
+          open={cartOpen}
+          loading={orderLoading}
+          error={orderError}
+          onClose={() => setCartOpen(false)}
+          onUpdateQuantity={updateCartQuantity}
+          onSubmit={() => void submitOrder()}
+        />
+      </>
+    );
+  }
+
+  if (location.pathname.startsWith("/offers/") && offerId) {
+    const id = Number(offerId);
+    const detailOffer =
+      selectedOffer?.id === id
+        ? selectedOffer
+        : offers.find((item) => item.id === id) || null;
+
+    return (
+      <>
+        <OfferDetailPage
+          offer={detailOffer}
+          loading={loading}
+          error={error}
+          user={user}
+          cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
+          quantity={selectedQuantity}
+          onQuantityChange={setSelectedQuantity}
+          onAddToCart={() => {
+            if (detailOffer) addToCart(detailOffer);
+          }}
+          onBack={() => window.history.back()}
+          onCart={() => setCartOpen(true)}
+        />
+        <CartDrawer
+          cart={cart}
+          open={cartOpen}
+          loading={orderLoading}
+          error={orderError}
+          onClose={() => setCartOpen(false)}
+          onUpdateQuantity={updateCartQuantity}
+          onSubmit={() => void submitOrder()}
+        />
+        <AuthModal
+          open={authOpen}
+          mode={authMode}
+          loading={authLoading}
+          error={authError}
+          success={authSuccess}
+          name={name}
+          email={email}
+          password={password}
+          onClose={closeAuth}
+          onModeChange={(mode) => {
+            setAuthMode(mode);
+            setAuthError("");
+            setAuthSuccess("");
+          }}
+          onNameChange={setName}
+          onEmailChange={setEmail}
+          onPasswordChange={setPassword}
+          onSubmit={handleAuthSubmit}
+        />
+      </>
+    );
+  }
 
   if (location.pathname === "/profile") {
     return (
@@ -481,6 +526,7 @@ function App() {
               openAuth("login");
               return;
             }
+
             setOrdersLoading(true);
             setOrdersError("");
             getOrders(token)
@@ -594,4 +640,188 @@ function App() {
     );
   }
 
+  return (
+    <>
+      <HomePage
+        user={user}
+        cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
+        loading={loading}
+        error={error}
+        availableOffers={availableOffers}
+        search={search}
+        city={city}
+        sort={sort}
+        onSearchChange={setSearch}
+        onCityChange={setCity}
+        onSortChange={setSort}
+        onSearch={() => void loadOffers()}
+        nearby={nearby}
+        locationStatus={locationStatus}
+        onNearby={enableNearby}
+        onCart={() => setCartOpen(true)}
+        onOrders={() => void openOrders()}
+        onMerchant={() => void openMerchantDashboard()}
+        onLogin={() => openAuth("login")}
+        onLogout={handleLogout}
+        onRetry={() => void loadOffers()}
+        onOffer={openOffer}
+      />
 
+      <MerchantDashboard
+        open={merchantOpen}
+        loading={merchantLoading}
+        error={merchantError}
+        profile={merchantProfile}
+        offers={merchantOffers}
+        orders={merchantOrders}
+        onClose={() => setMerchantOpen(false)}
+        onCreateProfile={() => setMerchantFormOpen(true)}
+        onCreateOffer={() => setOfferFormOpen(true)}
+        onDeactivate={(id) => void removeMerchantOffer(id)}
+        onStatusChange={(id, status) =>
+          void changeMerchantOrderStatus(id, status)
+        }
+      />
+
+      {merchantFormOpen && (
+        <MerchantProfileForm
+          value={merchantForm}
+          onChange={setMerchantForm}
+          onSubmit={submitMerchantProfile}
+          onClose={() => setMerchantFormOpen(false)}
+        />
+      )}
+
+      {offerFormOpen && (
+        <OfferForm
+          value={offerForm}
+          onChange={setOfferForm}
+          onSubmit={submitOffer}
+          onClose={() => setOfferFormOpen(false)}
+        />
+      )}
+
+      <OrdersModal
+        open={ordersOpen}
+        orders={orders}
+        loading={ordersLoading}
+        error={ordersError}
+        onClose={() => setOrdersOpen(false)}
+        onRetry={() => void openOrders()}
+      />
+
+      {orderMessage && (
+        <div className="toast success-toast" role="status">
+          <strong>سفارش ثبت شد</strong>
+          <span>{orderMessage}</span>
+          <button type="button" onClick={() => setOrderMessage("")}>
+            ×
+          </button>
+        </div>
+      )}
+
+      {selectedOffer && (
+        <div
+          className="modal-backdrop"
+          role="presentation"
+          onMouseDown={() => setSelectedOffer(null)}
+        >
+          <section
+            className="offer-modal"
+            role="dialog"
+            aria-modal="true"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <button
+              className="modal-close"
+              type="button"
+              onClick={() => setSelectedOffer(null)}
+              aria-label="بستن"
+            >
+              ×
+            </button>
+            <div className="detail-image">
+              {selectedOffer.image_url ? (
+                <img src={selectedOffer.image_url} alt={selectedOffer.title} />
+              ) : (
+                <span>🍱</span>
+              )}
+              {discountPercent(selectedOffer) > 0 && (
+                <span className="discount-badge">
+                  {discountPercent(selectedOffer)}٪ تخفیف
+                </span>
+              )}
+            </div>
+            <div className="offer-detail-content">
+              <span className="merchant">
+                {selectedOffer.merchant.business_name} ·{" "}
+                {selectedOffer.merchant.city}
+              </span>
+              <h2>{selectedOffer.title}</h2>
+              {selectedOffer.description && (
+                <p className="detail-description">{selectedOffer.description}</p>
+              )}
+              <div className="detail-price">
+                <strong>{formatToman(selectedOffer.sale_price)}</strong>
+                <del>{formatToman(selectedOffer.original_price)}</del>
+              </div>
+              <div className="detail-meta">
+                <span>
+                  🕐 دریافت تا {formatPickupTime(selectedOffer.pickup_end)}
+                </span>
+                <span>
+                  📦 {selectedOffer.available_quantity} عدد موجود
+                </span>
+              </div>
+              <QuantityControl
+                value={selectedQuantity}
+                max={selectedOffer.available_quantity}
+                onChange={setSelectedQuantity}
+              />
+              <button
+                className="primary-button full-button"
+                type="button"
+                onClick={addToCart}
+              >
+                افزودن به سبد خرید
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+
+      <CartDrawer
+        cart={cart}
+        open={cartOpen}
+        loading={orderLoading}
+        error={orderError}
+        onClose={() => setCartOpen(false)}
+        onUpdateQuantity={updateCartQuantity}
+        onSubmit={() => void submitOrder()}
+      />
+
+      <AuthModal
+        open={authOpen}
+        mode={authMode}
+        loading={authLoading}
+        error={authError}
+        success={authSuccess}
+        name={name}
+        email={email}
+        password={password}
+        onClose={closeAuth}
+        onModeChange={(mode) => {
+          setAuthMode(mode);
+          setAuthError("");
+          setAuthSuccess("");
+        }}
+        onNameChange={setName}
+        onEmailChange={setEmail}
+        onPasswordChange={setPassword}
+        onSubmit={handleAuthSubmit}
+      />
+    </>
+  );
+}
+
+export default App;

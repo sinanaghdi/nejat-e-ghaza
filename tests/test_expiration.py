@@ -113,3 +113,27 @@ def test_recent_pending_order_is_not_expired(db):
     db.refresh(offer)
     assert order.status == OrderStatus.PENDING
     assert offer.available_quantity == 1
+
+
+def test_paid_payment_is_not_expired(db):
+    from app.db.models.payment import Payment
+
+    order, offer = _setup_expiring_order(db)
+    payment = Payment(
+        order_id=order.id,
+        provider="mock",
+        authority="MOCK-PAID-ORDER",
+        amount=order.total_amount,
+        status="PAID",
+        reference_id="REF-PAID-ORDER",
+    )
+    db.add(payment)
+    db.commit()
+
+    expired = expire_pending_orders(db)
+
+    assert expired == 0
+    db.refresh(order)
+    db.refresh(offer)
+    assert order.status == OrderStatus.PENDING
+    assert offer.available_quantity == 1

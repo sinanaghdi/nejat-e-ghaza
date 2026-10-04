@@ -51,6 +51,8 @@ export interface FoodOffer {
     business_name: string;
     city: string;
     address: string;
+    latitude: number | null;
+    longitude: number | null;
   };
   title: string;
   description: string | null;

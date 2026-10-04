@@ -43,8 +43,26 @@ def get_offer(db: Session, offer_id: int) -> FoodOffer:
     return offer
 
 
-def list_active_offers(db: Session, skip: int = 0, limit: int = 50) -> list[FoodOffer]:
-    return offer_repository.list_active(db, skip=skip, limit=limit)
+def list_active_offers(
+    db: Session,
+    skip: int = 0,
+    limit: int = 50,
+    query: str | None = None,
+    city: str | None = None,
+    min_price=None,
+    max_price=None,
+    sort: str = "newest",
+) -> list[FoodOffer]:
+    return offer_repository.list_active(
+        db,
+        skip=skip,
+        limit=limit,
+        query=query,
+        city=city,
+        min_price=min_price,
+        max_price=max_price,
+        sort=sort,
+    )
 
 
 def list_merchant_offers(db: Session, user: User) -> list[FoodOffer]:

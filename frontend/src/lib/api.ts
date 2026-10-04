@@ -79,7 +79,7 @@ export interface TokenResponse {
   token_type: string;
 }
 
-export type OfferSort = "newest" | "price_asc" | "price_desc" | "discount";
+export type OfferSort = "newest" | "price_asc" | "price_desc" | "discount" | "distance";
 
 export interface OfferFilters {
   query?: string;

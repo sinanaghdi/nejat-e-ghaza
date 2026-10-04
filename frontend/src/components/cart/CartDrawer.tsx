@@ -1,5 +1,5 @@
-import type { FoodOffer } from "../lib/api";
-import { formatToman } from "../lib/formatters";
+import type { FoodOffer } from "../../lib/api";
+import { formatToman } from "../../lib/formatters";
 
 export type CartItem = { offer: FoodOffer; quantity: number };
 

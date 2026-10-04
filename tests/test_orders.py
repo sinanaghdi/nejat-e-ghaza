@@ -378,3 +378,54 @@ def test_create_payment_is_idempotent(client, db):
     assert second.status_code == 200
     assert first.json()["payment"]["id"] == second.json()["payment"]["id"]
     assert first.json()["payment"]["authority"] == second.json()["payment"]["authority"]
+
+
+def test_failed_payment_can_be_retried(client, db, monkeypatch):
+    customer, _, _, offer = _setup_order(db)
+    token = _login(client, customer.email)
+
+    order_response = client.post(
+        "/api/orders",
+        json={"items": [{"food_offer_id": offer.id, "quantity": 1}]},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    order_id = order_response.json()["id"]
+
+    from app.services import payment as payment_service
+    from app.services.payment_provider import PaymentProvider, PaymentRequest, PaymentStartResult, PaymentVerifyResult
+
+    class RetryProvider(PaymentProvider):
+        name = "retry-test"
+
+        def start(self, request: PaymentRequest) -> PaymentStartResult:
+            return PaymentStartResult(
+                authority=f"RETRY-{request.order_id}-{request.amount}",
+                checkout_url="/checkout",
+            )
+
+        def verify(self, authority: str, amount: Decimal) -> PaymentVerifyResult:
+            return PaymentVerifyResult(success=False)
+
+    monkeypatch.setattr(payment_service, "get_payment_provider", lambda: RetryProvider())
+
+    first = client.post(
+        f"/api/payments/orders/{order_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert first.status_code == 200
+
+    authority = first.json()["payment"]["authority"]
+    failed = client.post(
+        "/api/payments/webhook",
+        json={"authority": authority},
+        headers={"X-Webhook-Secret": "change-me"},
+    )
+    assert failed.status_code == 400
+
+    second = client.post(
+        f"/api/payments/orders/{order_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert second.status_code == 200
+    assert second.json()["payment"]["status"] == "PENDING"
+    assert second.json()["payment"]["authority"] != authority

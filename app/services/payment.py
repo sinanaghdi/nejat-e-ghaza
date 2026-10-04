@@ -24,23 +24,43 @@ def create_payment(db: Session, user: User, order_id: int) -> Payment:
         raise HTTPException(status_code=403, detail="You do not have access to this order")
     if order.status != OrderStatus.PENDING:
         raise HTTPException(status_code=409, detail="Only pending orders can be paid")
-    if order.payment:
-        return order.payment
-
     provider = get_payment_provider()
+    existing_payment = order.payment
+
+    if existing_payment and existing_payment.status != "FAILED":
+        return existing_payment
+
     try:
-        result = provider.start(PaymentRequest(amount=order.total_amount, order_id=order.id))
+        result = provider.start(
+            PaymentRequest(amount=order.total_amount, order_id=order.id)
+        )
     except Exception as exc:
         db.rollback()
-        raise HTTPException(status_code=502, detail="Payment provider is temporarily unavailable") from exc
-    payment = Payment(
-        order_id=order.id,
-        provider=provider.name,
-        authority=result.authority,
-        amount=order.total_amount,
-        status="PENDING",
-    )
-    db.add(payment)
+        raise HTTPException(
+            status_code=502,
+            detail="Payment provider is temporarily unavailable",
+        ) from exc
+
+    if existing_payment:
+        payment = existing_payment
+        payment.provider = provider.name
+        payment.authority = result.authority
+        payment.amount = order.total_amount
+        payment.status = "PENDING"
+        payment.reference_id = None
+        payment.paid_at = None
+        retry = True
+    else:
+        payment = Payment(
+            order_id=order.id,
+            provider=provider.name,
+            authority=result.authority,
+            amount=order.total_amount,
+            status="PENDING",
+        )
+        db.add(payment)
+        retry = False
+
     record_event(
         db,
         action="payment.created",
@@ -48,7 +68,11 @@ def create_payment(db: Session, user: User, order_id: int) -> Payment:
         entity_id=order_id,
         actor=user,
         request_id=get_request_id(),
-        details={"provider": provider.name, "amount": str(order.total_amount)},
+        details={
+            "provider": provider.name,
+            "amount": str(order.total_amount),
+            "retry": retry,
+        },
     )
     db.commit()
     db.refresh(payment)

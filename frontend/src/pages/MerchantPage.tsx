@@ -35,6 +35,7 @@ export function MerchantPage(props: Props) {
           orders={props.orders}
           onClose={() => {}}
           onCreateProfile={props.onCreateProfile}
+          onEditProfile={props.onEditProfile}
           onCreateOffer={props.onCreateOffer}
           onEditOffer={props.onEditOffer}
           onDeactivate={props.onDeactivate}

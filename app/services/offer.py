@@ -84,6 +84,31 @@ def update_offer(db: Session, user: User, offer_id: int, payload: OfferUpdate) -
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this offer")
 
     values = payload.model_dump(exclude_unset=True)
+    previous_quantity = offer.quantity
+    previous_available_quantity = offer.available_quantity
+    sold_quantity = previous_quantity - previous_available_quantity
+
+    requested_quantity = values.pop("quantity", previous_quantity)
+    requested_available = values.pop("available_quantity", None)
+
+    if requested_quantity < sold_quantity:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="quantity cannot be lower than already sold quantity",
+        )
+
+    new_available_quantity = requested_quantity - sold_quantity
+    if requested_available is not None:
+        if requested_available > new_available_quantity:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="available_quantity cannot exceed unsold inventory",
+            )
+        new_available_quantity = requested_available
+
+    offer.quantity = requested_quantity
+    offer.available_quantity = new_available_quantity
+
     for field, value in values.items():
         setattr(offer, field, value)
 

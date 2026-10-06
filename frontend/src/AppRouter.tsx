@@ -14,6 +14,7 @@ export function AppRouter() {
         <Route path="/orders" element={<App />} />
         <Route path="/orders/:orderId" element={<App />} />
         <Route path="/profile" element={<App />} />
+        <Route path="/notifications" element={<App />} />
         <Route path="/dashboard" element={<App />} />
         <Route path="/merchant" element={<App />} />
         <Route path="/admin" element={<App />} />

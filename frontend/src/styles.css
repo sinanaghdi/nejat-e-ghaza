@@ -821,3 +821,154 @@ select {
     padding: 20px 16px;
   }
 }
+
+
+/* Demo access + role dashboards */
+.demo-login-panel {
+  margin-top: 24px;
+  padding-top: 22px;
+  border-top: 1px solid #e8ece6;
+}
+
+.demo-login-panel h2 {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+}
+
+.demo-login-panel > div:first-child > p:last-child {
+  margin: 0;
+  color: #738078;
+  font-size: .8rem;
+  line-height: 1.8;
+}
+
+.demo-role-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.demo-role-card {
+  display: grid;
+  gap: 4px;
+  padding: 15px 10px;
+  border: 1px solid #dfe5dd;
+  border-radius: 16px;
+  background: #fbfcfa;
+  color: #173c2b;
+  text-align: right;
+}
+
+.demo-role-card:hover {
+  border-color: #a9baa9;
+  background: #f4f8f2;
+  transform: translateY(-1px);
+}
+
+.demo-role-card span { font-size: 1.5rem; }
+.demo-role-card strong { font-size: .9rem; }
+.demo-role-card small { color: #758078; line-height: 1.6; }
+
+.admin-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.admin-summary-grid > div {
+  padding: 20px;
+  border: 1px solid #e1e6df;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(23,35,29,.04);
+}
+
+.admin-summary-grid strong {
+  display: block;
+  font-size: 1.7rem;
+  color: #173c2b;
+}
+
+.admin-summary-grid span {
+  color: #758078;
+  font-size: .78rem;
+}
+
+.admin-users-card {
+  padding: 24px;
+  border: 1px solid #e1e6df;
+  border-radius: 24px;
+  background: #fff;
+}
+
+.admin-user-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-user-row {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 150px;
+  gap: 12px;
+  align-items: center;
+  padding: 13px;
+  border: 1px solid #e7ebe5;
+  border-radius: 15px;
+  background: #fbfcfa;
+}
+
+.admin-user-avatar {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: #e4ece1;
+  color: #173c2b;
+  font-weight: 800;
+}
+
+.admin-user-info {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.admin-user-info strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-user-info span {
+  color: #7a847d;
+  font-size: .75rem;
+  overflow-wrap: anywhere;
+}
+
+.admin-user-row select {
+  width: 100%;
+  border: 1px solid #dce3da;
+  border-radius: 10px;
+  padding: 9px 10px;
+  background: #fff;
+  color: #334137;
+  font: inherit;
+}
+
+@media (max-width: 720px) {
+  .demo-role-grid,
+  .admin-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-user-row {
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+
+  .admin-user-row select {
+    grid-column: 1 / -1;
+  }
+}

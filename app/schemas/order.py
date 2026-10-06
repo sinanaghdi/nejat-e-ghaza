@@ -36,3 +36,7 @@ class OrderResponse(BaseModel):
     pickup_code: str
     created_at: datetime
     items: list[OrderItemResponse]
+
+
+class PickupVerifyRequest(BaseModel):
+    pickup_code: str = Field(min_length=4, max_length=32)

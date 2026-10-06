@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { Order, User } from "../lib/api";
-import { cancelOrder, getOrder } from "../lib/api";
+import { cancelOrder, createPayment, getOrder } from "../lib/api";
 import { getToken } from "../lib/auth";
 import { formatOrderDate, formatToman } from "../lib/formatters";
 import { Header } from "../components/Header";
@@ -43,6 +43,8 @@ export function OrderDetailPage({
   const [error, setError] = useState("");
   const [cancelLoading, setCancelLoading] = useState(false);
   const [cancelError, setCancelError] = useState("");
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentMessage, setPaymentMessage] = useState("");
 
   useEffect(() => {
     if (!getToken()) {
@@ -65,6 +67,26 @@ export function OrderDetailPage({
       active = false;
     };
   }, [orderId]);
+
+  async function handleRetryPayment() {
+    if (!order || order.status !== "PENDING") return;
+
+    setPaymentLoading(true);
+    setPaymentMessage("");
+    setCancelError("");
+    try {
+      const payment = await createPayment(getToken(), order.id);
+      if (payment.payment.provider === "zarinpal") {
+        window.location.assign(payment.checkout_url);
+        return;
+      }
+      setPaymentMessage("درگاه آزمایشی آماده شد. در محیط واقعی به صفحه پرداخت منتقل می‌شوی.");
+    } catch (err) {
+      setCancelError(err instanceof Error ? err.message : "شروع پرداخت انجام نشد.");
+    } finally {
+      setPaymentLoading(false);
+    }
+  }
 
   async function handleCancelOrder() {
     if (!order || order.status !== "PENDING") return;
@@ -146,15 +168,26 @@ export function OrderDetailPage({
             </div>
 
             {cancelError && <p className="form-message error-message">{cancelError}</p>}
+            {paymentMessage && <p className="form-message success-message">{paymentMessage}</p>}
             {order.status === "PENDING" && (
-              <button
-                className="secondary-button danger-action"
-                type="button"
-                disabled={cancelLoading}
-                onClick={() => void handleCancelOrder()}
-              >
-                {cancelLoading ? "در حال لغو..." : "لغو سفارش"}
-              </button>
+              <div className="order-action-stack">
+                <button
+                  className="primary-button"
+                  type="button"
+                  disabled={paymentLoading}
+                  onClick={() => void handleRetryPayment()}
+                >
+                  {paymentLoading ? "در حال آماده‌سازی پرداخت..." : "ادامه پرداخت"}
+                </button>
+                <button
+                  className="secondary-button danger-action"
+                  type="button"
+                  disabled={cancelLoading || paymentLoading}
+                  onClick={() => void handleCancelOrder()}
+                >
+                  {cancelLoading ? "در حال لغو..." : "لغو سفارش"}
+                </button>
+              </div>
             )}
 
             <time className="order-date" dateTime={order.created_at}>

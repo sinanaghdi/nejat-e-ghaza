@@ -177,8 +177,8 @@ test("customer can discover, authenticate, order, and review order status", asyn
   });
 
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "پیشنهادهای امروز" })).toBeVisible();
   expect(pageErrors, `Unexpected browser errors: ${pageErrors.join(" | ")}`).toEqual([]);
+  await expect(page.getByRole("heading", { name: "پیشنهادهای امروز" })).toBeVisible();
 
   await page.getByLabel("جست‌وجوی غذا یا فروشگاه").fill("باکس شام");
   await page.getByRole("button", { name: "جست‌وجو" }).click();

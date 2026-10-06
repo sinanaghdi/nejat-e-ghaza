@@ -444,19 +444,23 @@ export function createPayment(
       return Promise.reject(new ApiError("این سفارش در وضعیت قابل پرداخت نیست.", 409));
     }
 
+    const paidAt = new Date().toISOString();
+    const referenceId = "DEMO-" + orderId;
+    order.status = "PAID";
+
     return Promise.resolve({
       payment: {
         id: Date.now(),
         order_id: orderId,
         provider: "mock",
-        authority: "DEMO-" + orderId,
-        reference_id: null,
+        authority: referenceId,
+        reference_id: referenceId,
         amount: order.total_amount,
-        status: "PENDING",
-        created_at: new Date().toISOString(),
-        paid_at: null,
+        status: "PAID",
+        created_at: paidAt,
+        paid_at: paidAt,
       },
-      checkout_url: "#/payment/result?status=success&order_id=" + orderId + "&ref_id=DEMO-" + orderId,
+      checkout_url: "#/payment/result?status=success&order_id=" + orderId + "&ref_id=" + referenceId,
     });
   }
 

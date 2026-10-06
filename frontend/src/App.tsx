@@ -2,13 +2,10 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { ApiError, FoodOffer, getOrders, Order, MerchantProfile, createMerchantProfile, getMerchantProfile, getMyOffers, createOffer, deactivateOffer, updateOrderStatus, OfferPayload } from "./lib/api";
 import { getToken } from "./lib/auth";
-import { formatPickupTime, formatToman } from "./lib/formatters";
 import { useAuth } from "./hooks/useAuth";
 import { useCart } from "./hooks/useCart";
 import { useMerchant } from "./hooks/useMerchant";
 import { useMarketplace } from "./hooks/useMarketplace";
-import { OfferCard } from "./components/OfferCard";
-import { QuantityControl } from "./components/QuantityControl";
 import { StatusBadge } from "./components/StatusBadge";
 import { Header } from "./components/Header";
 import { Hero } from "./components/Hero";
@@ -26,11 +23,7 @@ import { HomePage } from "./pages/HomePage";
 import { OfferDetailPage } from "./pages/OfferDetailPage";
 import { PaymentResultPage } from "./pages/PaymentResultPage";
 import { MobileBottomNav } from "./components/MobileBottomNav";
-
-function discountPercent(offer: FoodOffer): number {
-  if (offer.original_price <= 0) return 0;
-  return Math.round((1 - offer.sale_price / offer.original_price) * 100);
-}
+import { OfferQuickViewModal } from "./components/OfferQuickViewModal";
 
 function App() {
   const location = useLocation();
@@ -493,73 +486,13 @@ function App() {
       )}
 
       {selectedOffer && (
-        <div
-          className="modal-backdrop"
-          role="presentation"
-          onMouseDown={() => setSelectedOffer(null)}
-        >
-          <section
-            className="offer-modal"
-            role="dialog"
-            aria-modal="true"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <button
-              className="modal-close"
-              type="button"
-              onClick={() => setSelectedOffer(null)}
-              aria-label="بستن"
-            >
-              ×
-            </button>
-            <div className="detail-image">
-              {selectedOffer.image_url ? (
-                <img src={selectedOffer.image_url} alt={selectedOffer.title} />
-              ) : (
-                <span>🍱</span>
-              )}
-              {discountPercent(selectedOffer) > 0 && (
-                <span className="discount-badge">
-                  {discountPercent(selectedOffer)}٪ تخفیف
-                </span>
-              )}
-            </div>
-            <div className="offer-detail-content">
-              <span className="merchant">
-                {selectedOffer.merchant.business_name} ·{" "}
-                {selectedOffer.merchant.city}
-              </span>
-              <h2>{selectedOffer.title}</h2>
-              {selectedOffer.description && (
-                <p className="detail-description">{selectedOffer.description}</p>
-              )}
-              <div className="detail-price">
-                <strong>{formatToman(selectedOffer.sale_price)}</strong>
-                <del>{formatToman(selectedOffer.original_price)}</del>
-              </div>
-              <div className="detail-meta">
-                <span>
-                  🕐 دریافت تا {formatPickupTime(selectedOffer.pickup_end)}
-                </span>
-                <span>
-                  📦 {selectedOffer.available_quantity} عدد موجود
-                </span>
-              </div>
-              <QuantityControl
-                value={selectedQuantity}
-                max={selectedOffer.available_quantity}
-                onChange={setSelectedQuantity}
-              />
-              <button
-                className="primary-button full-button"
-                type="button"
-                onClick={() => addToCart()}
-              >
-                افزودن به سبد خرید
-              </button>
-            </div>
-          </section>
-        </div>
+        <OfferQuickViewModal
+          offer={selectedOffer}
+          quantity={selectedQuantity}
+          onQuantityChange={setSelectedQuantity}
+          onAddToCart={() => addToCart()}
+          onClose={() => setSelectedOffer(null)}
+        />
       )}
 
       <CartDrawer

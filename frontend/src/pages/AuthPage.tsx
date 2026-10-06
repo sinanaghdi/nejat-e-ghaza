@@ -17,6 +17,7 @@ type Props = {
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onDemoLogin: (role: User["role"]) => void;
 };
 
 export function AuthPage({
@@ -33,6 +34,7 @@ export function AuthPage({
   onEmailChange,
   onPasswordChange,
   onSubmit,
+  onDemoLogin,
 }: Props) {
   const navigate = useNavigate();
 
@@ -74,6 +76,27 @@ export function AuthPage({
             {loading ? "در حال پردازش..." : mode === "login" ? "ورود به حساب" : "ساخت حساب"}
           </button>
         </form>
+
+        {import.meta.env.VITE_DEMO_MODE === "true" && (
+          <section className="demo-login-panel" aria-label="ورود سریع دمو">
+            <div>
+              <p className="eyebrow">حالت Demo</p>
+              <h2>برای دیدن پنل‌ها ورود سریع کن</h2>
+              <p>این حساب‌ها فقط برای مشاهده UI و workflow پروژه در GitHub Pages هستند.</p>
+            </div>
+            <div className="demo-role-grid">
+              <button type="button" className="demo-role-card" onClick={() => onDemoLogin("CUSTOMER")}>
+                <span>👤</span><strong>مشتری</strong><small>سفارش‌ها، پروفایل و خرید</small>
+              </button>
+              <button type="button" className="demo-role-card" onClick={() => onDemoLogin("MERCHANT")}>
+                <span>🏪</span><strong>فروشنده</strong><small>پیشنهادها و سفارش‌های فروشگاه</small>
+              </button>
+              <button type="button" className="demo-role-card" onClick={() => onDemoLogin("ADMIN")}>
+                <span>🛡️</span><strong>مدیر</strong><small>کاربران و نقش‌ها</small>
+              </button>
+            </div>
+          </section>
+        )}
 
         <Link className="auth-back-link" to="/offers">بازگشت به پیشنهادها</Link>
       </section>

@@ -1,6 +1,5 @@
-import { useEffect, useState, type FormEvent } from "react";
-import { useLocation, useParams } from "react-router-dom";
-import { ApiError, FoodOffer, Order, MerchantProfile, createMerchantProfile, getMerchantProfile, getMyOffers, createOffer, deactivateOffer, updateOrderStatus, OfferPayload } from "./lib/api";
+import { useEffect } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getToken } from "./lib/auth";
 import { useAuth } from "./hooks/useAuth";
 import { useCart } from "./hooks/useCart";
@@ -8,43 +7,44 @@ import { useMerchant } from "./hooks/useMerchant";
 import { useMarketplace } from "./hooks/useMarketplace";
 import { useOrders } from "./hooks/useOrders";
 import { Header } from "./components/Header";
-import { Hero } from "./components/Hero";
-import { HowItWorks } from "./components/HowItWorks";
 import { CartDrawer } from "./components/cart/CartDrawer";
 import { AuthModal } from "./components/auth/AuthModal";
 import { OrdersModal } from "./components/orders/OrdersModal";
 import { MerchantDashboard } from "./components/merchant/MerchantDashboard";
-import { MerchantPage } from "./pages/MerchantPage";
 import { MerchantProfileForm } from "./components/merchant/MerchantProfileForm";
 import { OfferForm } from "./components/merchant/OfferForm";
-import { OrdersPage } from "./pages/OrdersPage";
-import { ProfilePage } from "./pages/ProfilePage";
 import { HomePage } from "./pages/HomePage";
+import { OffersPage } from "./pages/OffersPage";
 import { OfferDetailPage } from "./pages/OfferDetailPage";
+import { MerchantProfilePage } from "./pages/MerchantProfilePage";
+import { OrdersPage } from "./pages/OrdersPage";
+import { OrderDetailPage } from "./pages/OrderDetailPage";
+import { CartPage } from "./pages/CartPage";
+import { CheckoutPage } from "./pages/CheckoutPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { MerchantPage } from "./pages/MerchantPage";
 import { PaymentResultPage } from "./pages/PaymentResultPage";
-import { MobileBottomNav } from "./components/MobileBottomNav";
-import { OfferQuickViewModal } from "./components/OfferQuickViewModal";
+import { AuthPage } from "./pages/AuthPage";
 
 function App() {
   const location = useLocation();
-  const { offerId } = useParams();
-  const {
-    offers,
-    loading,
-    error,
-    search,
-    city,
-    sort,
-    nearby,
-    locationStatus,
-    availableOffers,
-    setSearch,
-    setCity,
-    setSort,
-    loadOffers,
-    loadOffer,
-    enableNearby,
-  } = useMarketplace();
+  const navigate = useNavigate();
+  const { offerId, merchantId, orderId } = useParams();
+
+  const marketplace = useMarketplace();
+  const auth = useAuth();
+  const cartState = useCart({
+    openAuth: auth.openAuth,
+    refreshOffers: marketplace.loadOffers,
+  });
+  const ordersState = useOrders({
+    isOrdersPage: location.pathname === "/orders",
+    openAuth: auth.openAuth,
+  });
+  const merchantState = useMerchant({
+    isMerchantPage: location.pathname === "/merchant",
+    openAuth: auth.openAuth,
+  });
 
   const {
     user,
@@ -64,89 +64,37 @@ function App() {
     handleAuthSubmit,
     handleLogout: logout,
     switchAuthMode,
-  } = useAuth();
+  } = auth;
 
   const {
-    selectedOffer,
-    selectedQuantity,
     cart,
     cartOpen,
     orderLoading,
     orderMessage,
     orderError,
-    setSelectedOffer,
-    setSelectedQuantity,
     setCartOpen,
     setOrderMessage,
-    openOffer,
-    addToCart,
     updateCartQuantity,
     submitOrder,
-  } = useCart({
-    openAuth,
-    refreshOffers: loadOffers,
-  });
-  const {
-    orders,
-    ordersOpen,
-    ordersLoading,
-    ordersError,
-    setOrdersOpen,
-    clearOrders,
-    loadOrders,
-    openOrders,
-  } = useOrders({
-    isOrdersPage: location.pathname === "/orders",
-    openAuth,
-  });
-  const {
-    merchantOpen,
-    merchantProfile,
-    merchantOffers,
-    merchantOrders,
-    merchantLoading,
-    merchantError,
-    merchantFormOpen,
-    offerFormOpen,
-    merchantForm,
-    offerForm,
-    setMerchantOpen,
-    setMerchantFormOpen,
-    setOfferFormOpen,
-    setMerchantForm,
-    setOfferForm,
-    openMerchantDashboard,
-    removeMerchantOffer,
-    changeMerchantOrderStatus,
-    submitMerchantProfile,
-    submitOffer,
-  } = useMerchant({
-    isMerchantPage: location.pathname === "/merchant",
-    openAuth,
-  });
+  } = cartState;
+
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   async function handleLogout() {
     await logout();
-    clearOrders();
+    ordersState.clearOrders();
   }
 
   useEffect(() => {
-    if (!location.pathname.startsWith("/offers/") || !offerId) return;
-    const id = Number(offerId);
-    if (!Number.isInteger(id) || id <= 0) return;
-    const cached = offers.find((item) => item.id === id);
-    if (cached) {
-      setSelectedOffer(cached);
-      setSelectedQuantity(1);
-      return;
+    if (location.pathname.startsWith("/offers/") && offerId) {
+      const id = Number(offerId);
+      if (Number.isInteger(id) && id > 0) {
+        const cached = marketplace.offers.find((item) => item.id === id);
+        if (cached) return;
+        void marketplace.loadOffer(id);
+      }
     }
-    loadOffer(id)
-      .then((offer) => {
-        setSelectedOffer(offer);
-        setSelectedQuantity(1);
-      })
-      .catch(() => undefined);
-  }, [location.pathname, offerId, offers]);
+  }, [location.pathname, offerId]);
 
   useEffect(() => {
     if (location.pathname === "/merchant" && !getToken()) {
@@ -154,300 +102,264 @@ function App() {
     }
   }, [location.pathname]);
 
-  if (location.pathname === "/payment/result") {
-    return (
+  const header = (
+    <Header
+      user={user}
+      cartCount={cartCount}
+      onCart={() => setCartOpen(true)}
+      onOrders={() => void ordersState.openOrders()}
+      onMerchant={() => void merchantState.openMerchantDashboard()}
+      onLogin={() => openAuth("login")}
+      onLogout={() => void handleLogout()}
+    />
+  );
+
+  let page: JSX.Element;
+
+  if (location.pathname === "/login" || location.pathname === "/register") {
+    page = (
+      <AuthPage
+        mode={location.pathname === "/register" ? "register" : "login"}
+        user={user}
+        loading={authLoading}
+        error={authError}
+        success={authSuccess}
+        name={name}
+        email={email}
+        password={password}
+        onModeChange={switchAuthMode}
+        onNameChange={setName}
+        onEmailChange={setEmail}
+        onPasswordChange={setPassword}
+        onSubmit={handleAuthSubmit}
+      />
+    );
+  } else if (location.pathname === "/payment/result") {
+    page = (
       <>
-        <PaymentResultPage
-          user={user}
-          cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
-          onCart={() => setCartOpen(true)}
-        />
-        <CartDrawer
-          cart={cart}
-          open={cartOpen}
-          loading={orderLoading}
-          error={orderError}
-          onClose={() => setCartOpen(false)}
-          onUpdateQuantity={updateCartQuantity}
-          onSubmit={() => void submitOrder()}
-        />
+        {header}
+        <PaymentResultPage user={user} cartCount={cartCount} onCart={() => setCartOpen(true)} />
       </>
     );
-  }
-
-  if (location.pathname.startsWith("/offers/") && offerId) {
+  } else if (location.pathname.startsWith("/offers/") && offerId) {
     const id = Number(offerId);
-    const detailOffer =
-      selectedOffer?.id === id
-        ? selectedOffer
-        : offers.find((item) => item.id === id) || null;
-
-    return (
+    const detailOffer = marketplace.offers.find((item) => item.id === id) || null;
+    page = (
       <>
+        {header}
         <OfferDetailPage
           offer={detailOffer}
-          loading={loading}
-          error={error}
+          loading={marketplace.loading}
+          error={marketplace.error}
           user={user}
-          cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
-          quantity={selectedQuantity}
-          onQuantityChange={setSelectedQuantity}
+          cartCount={cartCount}
+          quantity={cartState.selectedQuantity}
+          onQuantityChange={cartState.setSelectedQuantity}
           onAddToCart={() => {
-            if (detailOffer) addToCart(detailOffer);
+            if (detailOffer) cartState.addToCart(detailOffer);
           }}
-          onBack={() => window.history.back()}
+          onBack={() => navigate("/offers")}
           onCart={() => setCartOpen(true)}
-        />
-        <CartDrawer
-          cart={cart}
-          open={cartOpen}
-          loading={orderLoading}
-          error={orderError}
-          onClose={() => setCartOpen(false)}
-          onUpdateQuantity={updateCartQuantity}
-          onSubmit={() => void submitOrder()}
-        />
-        <AuthModal
-          open={authOpen}
-          mode={authMode}
-          loading={authLoading}
-          error={authError}
-          success={authSuccess}
-          name={name}
-          email={email}
-          password={password}
-          onClose={closeAuth}
-          onModeChange={switchAuthMode}
-          onNameChange={setName}
-          onEmailChange={setEmail}
-          onPasswordChange={setPassword}
-          onSubmit={handleAuthSubmit}
         />
       </>
     );
-  }
-
-  if (location.pathname === "/profile") {
-    return (
+  } else if (location.pathname.startsWith("/merchants/") && merchantId) {
+    page = (
+      <MerchantProfilePage
+        merchantId={Number(merchantId)}
+        user={user}
+        cartCount={cartCount}
+        onOffer={(offer) => navigate(`/offers/${offer.id}`)}
+        onCart={() => setCartOpen(true)}
+        onOrders={() => navigate("/orders")}
+        onMerchant={() => navigate("/merchant")}
+        onLogin={() => navigate("/login")}
+        onLogout={() => void handleLogout()}
+      />
+    );
+  } else if (location.pathname === "/offers") {
+    page = (
+      <OffersPage
+        user={user}
+        cartCount={cartCount}
+        loading={marketplace.loading}
+        error={marketplace.error}
+        offers={marketplace.availableOffers}
+        search={marketplace.search}
+        city={marketplace.city}
+        sort={marketplace.sort}
+        nearby={marketplace.nearby}
+        locationStatus={marketplace.locationStatus}
+        onSearchChange={marketplace.setSearch}
+        onCityChange={marketplace.setCity}
+        onSortChange={marketplace.setSort}
+        onSearch={() => void marketplace.loadOffers()}
+        onNearby={marketplace.enableNearby}
+        onRetry={() => void marketplace.loadOffers()}
+        onOffer={(offer) => navigate(`/offers/${offer.id}`)}
+        onCart={() => setCartOpen(true)}
+        onOrders={() => navigate("/orders")}
+        onMerchant={() => navigate("/merchant")}
+        onLogin={() => navigate("/login")}
+        onLogout={() => void handleLogout()}
+      />
+    );
+  } else if (location.pathname === "/cart") {
+    page = (
+      <CartPage
+        user={user}
+        cartCount={cartCount}
+        cart={cart}
+        onUpdateQuantity={updateCartQuantity}
+        onOrders={() => navigate("/orders")}
+        onMerchant={() => navigate("/merchant")}
+        onLogin={() => navigate("/login")}
+        onLogout={() => void handleLogout()}
+      />
+    );
+  } else if (location.pathname === "/checkout") {
+    page = (
+      <CheckoutPage
+        user={user}
+        cartCount={cartCount}
+        cart={cart}
+        loading={orderLoading}
+        error={orderError}
+        message={orderMessage}
+        onSubmit={() => void submitOrder()}
+        onOrders={() => navigate("/orders")}
+        onMerchant={() => navigate("/merchant")}
+        onLogin={() => openAuth("login")}
+        onLogout={() => void handleLogout()}
+      />
+    );
+  } else if (location.pathname.startsWith("/orders/") && orderId) {
+    page = (
+      <OrderDetailPage
+        orderId={Number(orderId)}
+        user={user}
+        cartCount={cartCount}
+        onCart={() => setCartOpen(true)}
+        onOrders={() => navigate("/orders")}
+        onMerchant={() => navigate("/merchant")}
+        onLogin={() => navigate("/login")}
+        onLogout={() => void handleLogout()}
+      />
+    );
+  } else if (location.pathname === "/orders") {
+    page = (
       <>
+        {header}
+        <OrdersPage
+          orders={ordersState.orders}
+          loading={ordersState.ordersLoading}
+          error={ordersState.ordersError}
+          onRetry={() => void ordersState.loadOrders()}
+        />
+      </>
+    );
+  } else if (location.pathname === "/profile") {
+    page = (
+      <>
+        {header}
         <ProfilePage
           user={user}
-          onLogin={() => openAuth("login")}
+          onLogin={() => navigate("/login")}
           onLogout={() => void handleLogout()}
         />
-        <MobileBottomNav
-          cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
-          userRole={user?.role || null}
-          onCart={() => setCartOpen(true)}
-        />
-        <AuthModal
-          open={authOpen}
-          mode={authMode}
-          loading={authLoading}
-          error={authError}
-          success={authSuccess}
-          name={name}
-          email={email}
-          password={password}
-          onClose={closeAuth}
-          onModeChange={switchAuthMode}
-          onNameChange={setName}
-          onEmailChange={setEmail}
-          onPasswordChange={setPassword}
-          onSubmit={handleAuthSubmit}
-        />
       </>
     );
-  }
-
-  if (location.pathname === "/orders") {
-    return (
+  } else if (location.pathname === "/merchant") {
+    page = (
       <>
-        <OrdersPage
-          orders={orders}
-          loading={ordersLoading}
-          error={ordersError}
-          onRetry={() => void loadOrders()}
-        />
-        <MobileBottomNav
-          cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
-          userRole={user?.role || null}
-          onCart={() => setCartOpen(true)}
-        />
-        <AuthModal
-          open={authOpen}
-          mode={authMode}
-          loading={authLoading}
-          error={authError}
-          success={authSuccess}
-          name={name}
-          email={email}
-          password={password}
-          onClose={closeAuth}
-          onModeChange={switchAuthMode}
-          onNameChange={setName}
-          onEmailChange={setEmail}
-          onPasswordChange={setPassword}
-          onSubmit={handleAuthSubmit}
-        />
-      </>
-    );
-  }
-
-  if (location.pathname === "/merchant") {
-    return (
-      <>
+        {header}
         <MerchantPage
-          loading={merchantLoading}
-          error={merchantError}
-          profile={merchantProfile}
-          offers={merchantOffers}
-          orders={merchantOrders}
-          onCreateProfile={() => setMerchantFormOpen(true)}
-          onCreateOffer={() => setOfferFormOpen(true)}
-          onDeactivate={(id) => void removeMerchantOffer(id)}
-          onStatusChange={(id, status) =>
-            void changeMerchantOrderStatus(id, status)
-          }
+          loading={merchantState.merchantLoading}
+          error={merchantState.merchantError}
+          profile={merchantState.merchantProfile}
+          offers={merchantState.merchantOffers}
+          orders={merchantState.merchantOrders}
+          onCreateProfile={() => merchantState.setMerchantFormOpen(true)}
+          onCreateOffer={() => merchantState.setOfferFormOpen(true)}
+          onDeactivate={(id) => void merchantState.removeMerchantOffer(id)}
+          onStatusChange={(id, status) => void merchantState.changeMerchantOrderStatus(id, status)}
         />
-        <MobileBottomNav
-          cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
-          userRole={user?.role || "MERCHANT"}
-          onCart={() => setCartOpen(true)}
-        />
-        <CartDrawer
-          cart={cart}
-          open={cartOpen}
-          loading={orderLoading}
-          error={orderError}
-          onClose={() => setCartOpen(false)}
-          onUpdateQuantity={updateCartQuantity}
-          onSubmit={() => void submitOrder()}
-        />
-        <AuthModal
-          open={authOpen}
-          mode={authMode}
-          loading={authLoading}
-          error={authError}
-          success={authSuccess}
-          name={name}
-          email={email}
-          password={password}
-          onClose={closeAuth}
-          onModeChange={switchAuthMode}
-          onNameChange={setName}
-          onEmailChange={setEmail}
-          onPasswordChange={setPassword}
-          onSubmit={handleAuthSubmit}
-        />
-        {merchantFormOpen && (
-          <MerchantProfileForm
-            value={merchantForm}
-            onChange={setMerchantForm}
-            onSubmit={submitMerchantProfile}
-            onClose={() => setMerchantFormOpen(false)}
-          />
-        )}
-        {offerFormOpen && (
-          <OfferForm
-            value={offerForm}
-            onChange={setOfferForm}
-            onSubmit={submitOffer}
-            onClose={() => setOfferFormOpen(false)}
-          />
-        )}
       </>
+    );
+  } else {
+    page = (
+      <HomePage
+        user={user}
+        cartCount={cartCount}
+        loading={marketplace.loading}
+        error={marketplace.error}
+        featuredOffers={marketplace.availableOffers.slice(0, 3)}
+        onCart={() => setCartOpen(true)}
+        onOrders={() => navigate("/orders")}
+        onMerchant={() => navigate("/merchant")}
+        onLogin={() => navigate("/login")}
+        onLogout={() => void handleLogout()}
+        onRetry={() => void marketplace.loadOffers()}
+        onOffer={(offer) => navigate(`/offers/${offer.id}`)}
+      />
     );
   }
 
   return (
     <>
-      <HomePage
-        user={user}
-        cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
-        loading={loading}
-        error={error}
-        availableOffers={availableOffers}
-        search={search}
-        city={city}
-        sort={sort}
-        onSearchChange={setSearch}
-        onCityChange={setCity}
-        onSortChange={setSort}
-        onSearch={() => void loadOffers()}
-        nearby={nearby}
-        locationStatus={locationStatus}
-        onNearby={enableNearby}
-        onCart={() => setCartOpen(true)}
-        onOrders={() => void openOrders()}
-        onMerchant={() => void openMerchantDashboard()}
-        onLogin={() => openAuth("login")}
-        onLogout={handleLogout}
-        onRetry={() => void loadOffers()}
-        onOffer={openOffer}
-      />
+      {page}
 
-      <MerchantDashboard
-        open={merchantOpen}
-        loading={merchantLoading}
-        error={merchantError}
-        profile={merchantProfile}
-        offers={merchantOffers}
-        orders={merchantOrders}
-        onClose={() => setMerchantOpen(false)}
-        onCreateProfile={() => setMerchantFormOpen(true)}
-        onCreateOffer={() => setOfferFormOpen(true)}
-        onDeactivate={(id) => void removeMerchantOffer(id)}
-        onStatusChange={(id, status) =>
-          void changeMerchantOrderStatus(id, status)
-        }
-      />
+      {location.pathname === "/" && (
+        <>
+          <MerchantDashboard
+            open={merchantState.merchantOpen}
+            loading={merchantState.merchantLoading}
+            error={merchantState.merchantError}
+            profile={merchantState.merchantProfile}
+            offers={merchantState.merchantOffers}
+            orders={merchantState.merchantOrders}
+            onClose={() => merchantState.setMerchantOpen(false)}
+            onCreateProfile={() => merchantState.setMerchantFormOpen(true)}
+            onCreateOffer={() => merchantState.setOfferFormOpen(true)}
+            onDeactivate={(id) => void merchantState.removeMerchantOffer(id)}
+            onStatusChange={(id, status) => void merchantState.changeMerchantOrderStatus(id, status)}
+          />
 
-      {merchantFormOpen && (
-        <MerchantProfileForm
-          value={merchantForm}
-          onChange={setMerchantForm}
-          onSubmit={submitMerchantProfile}
-          onClose={() => setMerchantFormOpen(false)}
-        />
+          {merchantState.merchantFormOpen && (
+            <MerchantProfileForm
+              value={merchantState.merchantForm}
+              onChange={merchantState.setMerchantForm}
+              onSubmit={merchantState.submitMerchantProfile}
+              onClose={() => merchantState.setMerchantFormOpen(false)}
+            />
+          )}
+
+          {merchantState.offerFormOpen && (
+            <OfferForm
+              value={merchantState.offerForm}
+              onChange={merchantState.setOfferForm}
+              onSubmit={merchantState.submitOffer}
+              onClose={() => merchantState.setOfferFormOpen(false)}
+            />
+          )}
+
+          <OrdersModal
+            open={ordersState.ordersOpen}
+            orders={ordersState.orders}
+            loading={ordersState.ordersLoading}
+            error={ordersState.ordersError}
+            onClose={() => ordersState.setOrdersOpen(false)}
+            onRetry={() => void ordersState.openOrders()}
+          />
+        </>
       )}
-
-      {offerFormOpen && (
-        <OfferForm
-          value={offerForm}
-          onChange={setOfferForm}
-          onSubmit={submitOffer}
-          onClose={() => setOfferFormOpen(false)}
-        />
-      )}
-
-      <OrdersModal
-        open={ordersOpen}
-        orders={orders}
-        loading={ordersLoading}
-        error={ordersError}
-        onClose={() => setOrdersOpen(false)}
-        onRetry={() => void openOrders()}
-      />
 
       {orderMessage && (
         <div className="toast success-toast" role="status">
           <strong>سفارش ثبت شد</strong>
           <span>{orderMessage}</span>
-          <button type="button" onClick={() => setOrderMessage("")}>
-            ×
-          </button>
+          <button type="button" onClick={() => setOrderMessage("")}>×</button>
         </div>
-      )}
-
-      {selectedOffer && (
-        <OfferQuickViewModal
-          offer={selectedOffer}
-          quantity={selectedQuantity}
-          onQuantityChange={setSelectedQuantity}
-          onAddToCart={() => addToCart()}
-          onClose={() => setSelectedOffer(null)}
-        />
       )}
 
       <CartDrawer
@@ -461,7 +373,7 @@ function App() {
       />
 
       <AuthModal
-        open={authOpen}
+        open={authOpen && location.pathname !== "/login" && location.pathname !== "/register"}
         mode={authMode}
         loading={authLoading}
         error={authError}

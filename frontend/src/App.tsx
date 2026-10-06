@@ -26,6 +26,7 @@ import { MerchantPage } from "./pages/MerchantPage";
 import { PaymentResultPage } from "./pages/PaymentResultPage";
 import { AuthPage } from "./pages/AuthPage";
 import { AdminPage } from "./pages/AdminPage";
+import { CustomerDashboardPage } from "./pages/CustomerDashboardPage";
 
 function App() {
   const location = useLocation();
@@ -240,6 +241,18 @@ function App() {
     page = (
       <OrderDetailPage
         orderId={Number(orderId)}
+        user={user}
+        cartCount={cartCount}
+        onCart={() => setCartOpen(true)}
+        onOrders={() => navigate("/orders")}
+        onMerchant={() => navigate("/merchant")}
+        onLogin={() => navigate("/login")}
+        onLogout={() => void handleLogout()}
+      />
+    );
+  } else if (location.pathname === "/dashboard") {
+    page = (
+      <CustomerDashboardPage
         user={user}
         cartCount={cartCount}
         onCart={() => setCartOpen(true)}

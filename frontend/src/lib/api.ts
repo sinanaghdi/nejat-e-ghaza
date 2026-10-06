@@ -551,6 +551,14 @@ export function updateOrderStatus(
   }).then(normalizeOrder);
 }
 
+export function cancelOrder(token: string | null, orderId: number): Promise<Order> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const order = DEMO_ORDERS.find((item) => item.id === orderId) || DEMO_ORDERS[0];
+    return Promise.resolve({ ...order, id: orderId, status: "CANCELLED" });
+  }
+  return updateOrderStatus(token, orderId, "CANCELLED");
+}
+
 function normalizeFoodOffer(value: unknown): FoodOffer {
   const offer = value as Record<string, unknown>;
   const merchant = offer.merchant as Record<string, unknown>;

@@ -9,6 +9,7 @@ import {
   getMyOffers,
   getMerchantOrders,
   updateOrderStatus,
+  verifyPickupCode,
 } from "../lib/api";
 import { getToken } from "../lib/auth";
 import type { AuthMode } from "./useAuth";
@@ -128,6 +129,28 @@ export function useMerchant({ isMerchantPage, openAuth }: Params) {
     }
   }
 
+  async function verifyMerchantPickup(orderId: number) {
+    const token = getToken();
+    if (!token) return;
+
+    const pickupCode = window.prompt("کد دریافت ۴ تا ۳۲ رقمی را وارد کنید:");
+    if (!pickupCode?.trim()) return;
+
+    try {
+      const updated = await verifyPickupCode(token, orderId, pickupCode);
+      setMerchantOrders((items) =>
+        items.map((item) => (item.id === orderId ? updated : item)),
+      );
+      setMerchantError("");
+    } catch (err) {
+      setMerchantError(
+        err instanceof ApiError
+          ? err.message
+          : "تأیید تحویل انجام نشد.",
+      );
+    }
+  }
+
   async function changeMerchantOrderStatus(
     orderId: number,
     status: Order["status"],
@@ -227,6 +250,7 @@ export function useMerchant({ isMerchantPage, openAuth }: Params) {
     openMerchantDashboard,
     removeMerchantOffer,
     changeMerchantOrderStatus,
+    verifyMerchantPickup,
     submitMerchantProfile,
     submitOffer,
   };

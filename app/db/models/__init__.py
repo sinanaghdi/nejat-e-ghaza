@@ -5,5 +5,6 @@ from app.db.models.order import Order
 from app.db.models.order_item import OrderItem
 from app.db.models.payment import Payment
 from app.db.models.audit_log import AuditLog
+from app.db.models.notification import Notification
 
-__all__ = ["User", "Merchant", "FoodOffer", "Order", "OrderItem", "Payment", "AuditLog"]
+__all__ = ["User", "Merchant", "FoodOffer", "Order", "OrderItem", "Payment", "AuditLog", "Notification"]

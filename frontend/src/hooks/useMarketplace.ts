@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ApiError, getOffers, type FoodOffer, type OfferSort } from "../lib/api";
+import { ApiError, getOffer, getOffers, type FoodOffer, type OfferSort } from "../lib/api";
 
 export function useMarketplace() {
   const [offers, setOffers] = useState<FoodOffer[]>([]);
@@ -39,6 +39,30 @@ export function useMarketplace() {
           ? err.message
           : "ارتباط با سرور برقرار نشد. لطفاً دوباره تلاش کنید.",
       );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function loadOffer(offerId: number): Promise<FoodOffer> {
+    setLoading(true);
+    setError("");
+
+    try {
+      const offer = await getOffer(offerId);
+      setOffers((current) =>
+        current.some((item) => item.id === offer.id)
+          ? current
+          : [...current, offer],
+      );
+      return offer;
+    } catch (err) {
+      const apiError =
+        err instanceof ApiError
+          ? err
+          : new ApiError("دریافت این پیشنهاد انجام نشد.", 500);
+      setError(apiError.message);
+      throw apiError;
     } finally {
       setLoading(false);
     }
@@ -102,6 +126,7 @@ export function useMarketplace() {
     setCity,
     setSort,
     loadOffers,
+    loadOffer,
     enableNearby,
   };
 }

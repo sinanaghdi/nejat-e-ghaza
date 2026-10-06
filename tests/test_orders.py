@@ -434,3 +434,30 @@ def test_failed_payment_can_be_retried(client, db, monkeypatch):
     assert second.status_code == 200
     assert second.json()["payment"]["status"] == "PENDING"
     assert second.json()["payment"]["authority"] != authority
+
+def test_order_rejects_expired_offer(client, db):
+    customer, _, merchant, _ = _setup_order(db)
+    from app.db.models.food_offer import FoodOffer
+
+    expired = FoodOffer(
+        merchant_id=merchant.id,
+        title="Expired Box",
+        original_price=Decimal("100.00"),
+        sale_price=Decimal("50.00"),
+        quantity=2,
+        available_quantity=2,
+        pickup_start=datetime.now(timezone.utc) - timedelta(hours=2),
+        pickup_end=datetime.now(timezone.utc) - timedelta(minutes=1),
+    )
+    db.add(expired)
+    db.commit()
+
+    token = _login(client, customer.email)
+    response = client.post(
+        "/api/orders",
+        json={"items": [{"food_offer_id": expired.id, "quantity": 1}]},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 409
+    assert response.json()["detail"].endswith("has expired")

@@ -341,8 +341,9 @@ function App() {
           profile={merchantState.merchantProfile}
           offers={merchantState.merchantOffers}
           orders={merchantState.merchantOrders}
-          onCreateProfile={() => merchantState.setMerchantFormOpen(true)}
-          onCreateOffer={() => merchantState.setOfferFormOpen(true)}
+          onCreateProfile={() => merchantState.merchantProfile ? merchantState.openMerchantProfileEditor() : merchantState.setMerchantFormOpen(true)}
+          onCreateOffer={() => merchantState.startCreateOffer()}
+          onEditOffer={(id) => { const offer = merchantState.merchantOffers.find((item) => item.id === id); if (offer) merchantState.openOfferEditor(offer); }}
           onDeactivate={(id) => void merchantState.removeMerchantOffer(id)}
           onStatusChange={(id, status) => void merchantState.changeMerchantOrderStatus(id, status)}
           onVerifyPickup={(id) => void merchantState.verifyMerchantPickup(id)}
@@ -382,8 +383,9 @@ function App() {
             offers={merchantState.merchantOffers}
             orders={merchantState.merchantOrders}
             onClose={() => merchantState.setMerchantOpen(false)}
-            onCreateProfile={() => merchantState.setMerchantFormOpen(true)}
-            onCreateOffer={() => merchantState.setOfferFormOpen(true)}
+            onCreateProfile={() => merchantState.merchantProfile ? merchantState.openMerchantProfileEditor() : merchantState.setMerchantFormOpen(true)}
+            onCreateOffer={() => merchantState.startCreateOffer()}
+            onEditOffer={(id) => { const offer = merchantState.merchantOffers.find((item) => item.id === id); if (offer) merchantState.openOfferEditor(offer); }}
             onDeactivate={(id) => void merchantState.removeMerchantOffer(id)}
             onStatusChange={(id, status) => void merchantState.changeMerchantOrderStatus(id, status)}
             onVerifyPickup={(id) => void merchantState.verifyMerchantPickup(id)}
@@ -391,6 +393,7 @@ function App() {
 
           {merchantState.merchantFormOpen && (
             <MerchantProfileForm
+              editing={Boolean(merchantState.merchantProfile)}
               value={merchantState.merchantForm}
               onChange={merchantState.setMerchantForm}
               onSubmit={merchantState.submitMerchantProfile}
@@ -400,6 +403,7 @@ function App() {
 
           {merchantState.offerFormOpen && (
             <OfferForm
+              editing={merchantState.editingOfferId !== null}
               value={merchantState.offerForm}
               onChange={merchantState.setOfferForm}
               onSubmit={merchantState.submitOffer}

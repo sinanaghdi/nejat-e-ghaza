@@ -7,7 +7,7 @@ from app.core.dependencies import get_current_user, require_role
 from app.db.database import get_db
 from app.db.models.user import User
 from app.models.enums import UserRole, OrderStatus
-from app.schemas.order import OrderCreate, OrderResponse
+from app.schemas.order import OrderCreate, OrderResponse, PickupVerifyRequest
 from app.services import order as order_service
 
 class OrderStatusUpdate(BaseModel):
@@ -31,6 +31,16 @@ def list_merchant_orders(current_user: Annotated[User, Depends(require_role(User
 @router.get("/{order_id}", response_model=OrderResponse)
 def get_order(order_id: int, current_user: Annotated[User, Depends(require_role(UserRole.CUSTOMER))], db: Annotated[Session, Depends(get_db)]):
     return order_service.get_customer_order(db, current_user, order_id)
+
+@router.post("/{order_id}/pickup/verify", response_model=OrderResponse)
+def verify_pickup(
+    order_id: int,
+    payload: PickupVerifyRequest,
+    current_user: Annotated[User, Depends(require_role(UserRole.MERCHANT))],
+    db: Annotated[Session, Depends(get_db)],
+):
+    return order_service.verify_pickup_code(db, current_user, order_id, payload.pickup_code)
+
 
 @router.patch("/{order_id}/status", response_model=OrderResponse)
 def update_status(order_id: int, payload: OrderStatusUpdate, current_user: Annotated[User, Depends(get_current_user)], db: Annotated[Session, Depends(get_db)]):

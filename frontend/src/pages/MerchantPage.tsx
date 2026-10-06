@@ -8,6 +8,7 @@ type Props = {
   offers: FoodOffer[];
   orders: Order[];
   onCreateProfile: () => void;
+  onEditProfile: () => void;
   onCreateOffer: () => void;
   onEditOffer: (id: number) => void;
   onDeactivate: (id: number) => void;

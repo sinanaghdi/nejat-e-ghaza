@@ -10,6 +10,7 @@ from app.db.models.payment import Payment
 from app.db.models.user import User
 from app.models.enums import OrderStatus, UserRole
 from app.services.audit import record_event
+from app.services.notification import create_notification
 from app.services.payment_provider import PaymentRequest, get_payment_provider
 
 
@@ -133,6 +134,25 @@ def verify_payment(db: Session, authority: str, expected_order_id: int | None = 
     payment.reference_id = result.reference_id
     payment.paid_at = datetime.now(timezone.utc)
     order.status = OrderStatus.PAID
+    create_notification(
+        db,
+        user_id=order.customer_id,
+        title="پرداخت موفق",
+        body=f"پرداخت سفارش #{order.id} با موفقیت تأیید شد.",
+        notification_type="PAYMENT",
+        entity_type="order",
+        entity_id=order.id,
+    )
+    if order.merchant:
+        create_notification(
+            db,
+            user_id=order.merchant.user_id,
+            title="پرداخت سفارش تأیید شد",
+            body=f"پرداخت سفارش #{order.id} تأیید شد و سفارش آماده پردازش است.",
+            notification_type="PAYMENT",
+            entity_type="order",
+            entity_id=order.id,
+        )
     record_event(
         db,
         action="payment.verified",

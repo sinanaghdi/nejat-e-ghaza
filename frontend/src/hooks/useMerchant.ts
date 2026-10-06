@@ -7,7 +7,7 @@ import {
   deactivateOffer,
   getMerchantProfile,
   getMyOffers,
-  getOrders,
+  getMerchantOrders,
   updateOrderStatus,
 } from "../lib/api";
 import { getToken } from "../lib/auth";
@@ -77,7 +77,7 @@ export function useMerchant({ isMerchantPage, openAuth }: Params) {
       const [profile, offers, orders] = await Promise.all([
         getMerchantProfile(token),
         getMyOffers(token),
-        getOrders(token),
+        getMerchantOrders(token),
       ]);
       setMerchantProfile(profile);
       setMerchantOffers(offers);

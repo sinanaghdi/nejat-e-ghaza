@@ -3,6 +3,7 @@ import type { User } from "../lib/api";
 import {
   ApiError,
   getCurrentUser,
+  loginDemoUser,
   loginUser,
   logoutUser,
   registerUser,
@@ -30,6 +31,27 @@ export function useAuth() {
       })
       .catch(() => clearToken());
   }, []);
+
+  async function loginDemo(role: User["role"]) {
+    setAuthLoading(true);
+    setAuthError("");
+    setAuthSuccess("");
+    try {
+      const token = await loginDemoUser(role);
+      setToken(token.access_token);
+      const currentUser = await getCurrentUser(token.access_token);
+      setUser(currentUser);
+      setAuthOpen(false);
+      setAuthSuccess("");
+      setName("");
+      setEmail("");
+      setPassword("");
+    } catch (err) {
+      setAuthError(err instanceof ApiError ? err.message : "ورود دمو انجام نشد.");
+    } finally {
+      setAuthLoading(false);
+    }
+  }
 
   function openAuth(mode: AuthMode) {
     setAuthMode(mode);
@@ -109,5 +131,6 @@ export function useAuth() {
     handleAuthSubmit,
     handleLogout,
     switchAuthMode,
+    loginDemo,
   };
 }

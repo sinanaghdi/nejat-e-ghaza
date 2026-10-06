@@ -218,3 +218,46 @@ def test_merchant_cannot_update_other_merchants_offer(client, db):
     )
 
     assert response.status_code == 403
+
+def test_merchant_cannot_restore_sold_inventory(client, db):
+    from app.db.models.merchant import Merchant
+    from app.db.models.food_offer import FoodOffer
+    from datetime import datetime, timedelta, timezone
+
+    merchant_user = make_merchant(db, user_id=33)
+    merchant = Merchant(
+        user_id=merchant_user.id,
+        business_name="کافه موجودی",
+        address="خیابان اصلی",
+        city="کرمانشاه",
+    )
+    db.add(merchant)
+    db.commit()
+
+    now = datetime.now(timezone.utc)
+    offer = FoodOffer(
+        merchant_id=merchant.id,
+        title="باکس محدود",
+        original_price=200000,
+        sale_price=100000,
+        quantity=5,
+        available_quantity=2,
+        pickup_start=now + timedelta(hours=1),
+        pickup_end=now + timedelta(hours=3),
+    )
+    db.add(offer)
+    db.commit()
+
+    token = client.post(
+        "/api/auth/login",
+        json={"email": merchant_user.email, "password": "password123"},
+    ).json()["access_token"]
+
+    response = client.patch(
+        f"/api/offers/{offer.id}",
+        json={"quantity": 5, "available_quantity": 5},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 422
+    assert "unsold inventory" in response.json()["detail"]

@@ -303,6 +303,28 @@ export function createOrder(
   token: string | null,
   items: OrderItemCreate[],
 ): Promise<Order> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const first = items[0] || { food_offer_id: 1, quantity: 1 };
+    const offer = DEMO_OFFERS.find((item) => item.id === first.food_offer_id) || DEMO_OFFERS[0];
+    const quantity = Math.min(first.quantity, offer.available_quantity);
+    const order: Order = {
+      id: Date.now(),
+      customer_id: 11,
+      merchant_id: offer.merchant_id,
+      total_amount: offer.sale_price * quantity,
+      status: "PENDING",
+      pickup_code: String(Math.floor(1000 + Math.random() * 9000)),
+      created_at: new Date().toISOString(),
+      items: [{
+        id: Date.now(),
+        food_offer_id: offer.id,
+        quantity,
+        unit_price: offer.sale_price,
+        subtotal: offer.sale_price * quantity,
+      }],
+    };
+    return Promise.resolve(order);
+  }
   return authRequest<unknown>("/api/orders", token, {
     method: "POST",
     body: JSON.stringify({ items }),
@@ -330,6 +352,22 @@ export function createPayment(
   token: string | null,
   orderId: number,
 ): Promise<PaymentStartResponse> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    return Promise.resolve({
+      payment: {
+        id: Date.now(),
+        order_id: orderId,
+        provider: "mock",
+        authority: `DEMO-${orderId}`,
+        reference_id: null,
+        amount: 100000,
+        status: "PENDING",
+        created_at: new Date().toISOString(),
+        paid_at: null,
+      },
+      checkout_url: `#/payment/result?status=success&order_id=${orderId}&ref_id=DEMO-${orderId}`,
+    });
+  }
   return authRequest<unknown>(`/api/payments/orders/${orderId}`, token, {
     method: "POST",
   }).then((payload) => {
@@ -361,6 +399,9 @@ export function getMerchantOrders(token: string | null): Promise<Order[]> {
 }
 
 export function getOrder(token: string | null, orderId: number): Promise<Order> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    return Promise.resolve({ ...DEMO_ORDERS[0], id: orderId });
+  }
   return authRequest<unknown>(`/api/orders/${orderId}`, token).then(
     normalizeOrder,
   );

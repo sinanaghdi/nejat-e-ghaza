@@ -21,7 +21,7 @@ export function OfferCard({ offer, onSelect }: Props) {
         {discount > 0 && <span className="discount-badge">{discount}٪ تخفیف</span>}
       </div>
       <div className="offer-content">
-        <span className="merchant">فروشنده #{offer.merchant_id}</span>
+        <span className="merchant">{offer.merchant.business_name} · {offer.merchant.city}</span>
         <h3>{offer.title}</h3>
         {offer.description && <p className="description">{offer.description}</p>}
         <div className="price-row">

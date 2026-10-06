@@ -11,6 +11,7 @@ type Props = {
   onCreateOffer: () => void;
   onDeactivate: (id: number) => void;
   onStatusChange: (id: number, status: Order["status"]) => void;
+  onVerifyPickup: (id: number) => void;
 };
 
 export function MerchantPage(props: Props) {
@@ -35,6 +36,7 @@ export function MerchantPage(props: Props) {
           onCreateOffer={props.onCreateOffer}
           onDeactivate={props.onDeactivate}
           onStatusChange={props.onStatusChange}
+          onVerifyPickup={props.onVerifyPickup}
         />
       </div>
     </main>

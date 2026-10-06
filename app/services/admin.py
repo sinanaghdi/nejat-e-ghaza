@@ -1,5 +1,7 @@
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.orm import Session, selectinload
+
 
 from app.core.request_context import get_request_id
 from app.db.models.user import User
@@ -33,3 +35,14 @@ def update_user_role(db: Session, target_user_id: int, role: UserRole, actor: Us
     db.commit()
     db.refresh(user)
     return user
+
+
+def list_orders(db: Session):
+    from app.db.models.order import Order
+    statement = (
+        select(Order)
+        .options(selectinload(Order.items))
+        .order_by(Order.created_at.desc())
+        .limit(100)
+    )
+    return list(db.scalars(statement).all())

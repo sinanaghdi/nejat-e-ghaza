@@ -1,11 +1,12 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import { ApiError, FoodOffer, getOrders, Order, MerchantProfile, createMerchantProfile, getMerchantProfile, getMyOffers, createOffer, deactivateOffer, updateOrderStatus, OfferPayload } from "./lib/api";
+import { ApiError, FoodOffer, Order, MerchantProfile, createMerchantProfile, getMerchantProfile, getMyOffers, createOffer, deactivateOffer, updateOrderStatus, OfferPayload } from "./lib/api";
 import { getToken } from "./lib/auth";
 import { useAuth } from "./hooks/useAuth";
 import { useCart } from "./hooks/useCart";
 import { useMerchant } from "./hooks/useMerchant";
 import { useMarketplace } from "./hooks/useMarketplace";
+import { useOrders } from "./hooks/useOrders";
 import { Header } from "./components/Header";
 import { Hero } from "./components/Hero";
 import { HowItWorks } from "./components/HowItWorks";
@@ -85,10 +86,19 @@ function App() {
     openAuth,
     refreshOffers: loadOffers,
   });
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [ordersOpen, setOrdersOpen] = useState(false);
-  const [ordersLoading, setOrdersLoading] = useState(false);
-  const [ordersError, setOrdersError] = useState("");
+  const {
+    orders,
+    ordersOpen,
+    ordersLoading,
+    ordersError,
+    setOrdersOpen,
+    clearOrders,
+    loadOrders,
+    openOrders,
+  } = useOrders({
+    isOrdersPage: location.pathname === "/orders",
+    openAuth,
+  });
   const {
     merchantOpen,
     merchantProfile,
@@ -117,8 +127,7 @@ function App() {
 
   async function handleLogout() {
     await logout();
-    setOrders([]);
-    setOrdersOpen(false);
+    clearOrders();
   }
 
   useEffect(() => {
@@ -138,40 +147,6 @@ function App() {
       })
       .catch(() => undefined);
   }, [location.pathname, offerId, offers]);
-
-  useEffect(() => {
-    if (location.pathname !== "/orders") return;
-    const token = getToken();
-    if (!token) return;
-    setOrdersLoading(true);
-    setOrdersError("");
-    getOrders(token)
-      .then(setOrders)
-      .catch((err) => setOrdersError(err instanceof ApiError ? err.message : "دریافت سفارش‌ها انجام نشد."))
-      .finally(() => setOrdersLoading(false));
-  }, [location.pathname]);
-
-  useEffect(() => {
-    void loadOffers();
-  }, []);
-
-  async function openOrders() {
-    const token = getToken();
-    if (!token) {
-      openAuth("login");
-      return;
-    }
-    setOrdersOpen(true);
-    setOrdersLoading(true);
-    setOrdersError("");
-    try {
-      setOrders(await getOrders(token));
-    } catch (err) {
-      setOrdersError(err instanceof ApiError ? err.message : "دریافت سفارش‌ها انجام نشد.");
-    } finally {
-      setOrdersLoading(false);
-    }
-  }
 
   useEffect(() => {
     if (location.pathname === "/merchant" && !getToken()) {
@@ -292,26 +267,7 @@ function App() {
           orders={orders}
           loading={ordersLoading}
           error={ordersError}
-          onRetry={() => {
-            const token = getToken();
-            if (!token) {
-              openAuth("login");
-              return;
-            }
-
-            setOrdersLoading(true);
-            setOrdersError("");
-            getOrders(token)
-              .then(setOrders)
-              .catch((err) =>
-                setOrdersError(
-                  err instanceof ApiError
-                    ? err.message
-                    : "دریافت سفارش‌ها انجام نشد.",
-                ),
-              )
-              .finally(() => setOrdersLoading(false));
-          }}
+          onRetry={() => void loadOrders()}
         />
         <MobileBottomNav
           cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}

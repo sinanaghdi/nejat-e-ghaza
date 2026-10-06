@@ -558,9 +558,12 @@ export function updateUserRole(
   role: User["role"],
 ): Promise<User> {
   if (import.meta.env.VITE_DEMO_MODE === "true") {
-    const user = DEMO_ADMIN_USERS.find((item) => item.id === userId);
-    return Promise.resolve({ ...(user || DEMO_USERS.CUSTOMER), role });
+    const current = DEMO_ADMIN_USERS.find((item) => item.id === userId);
+    if (!current) return Promise.reject(new ApiError("کاربر پیدا نشد.", 404));
+    current.role = role;
+    return Promise.resolve({ ...current });
   }
+
   return authRequest<unknown>(`/api/admin/users/${userId}/role`, token, {
     method: "PATCH",
     body: JSON.stringify({ role }),
@@ -618,6 +621,7 @@ export function createOffer(
       is_active: true,
       created_at: new Date().toISOString(),
     };
+    DEMO_OFFERS.unshift(offer);
     return Promise.resolve(offer);
   }
   return authRequest<unknown>("/api/offers", token, {
@@ -631,9 +635,14 @@ export function deactivateOffer(
   offerId: number,
 ): Promise<FoodOffer> {
   if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    if (role !== "MERCHANT") return Promise.reject(new ApiError("Merchant access required", 403));
     const offer = DEMO_OFFERS.find((item) => item.id === offerId);
-    return Promise.resolve(offer ? { ...offer, is_active: false } : { ...DEMO_OFFERS[0], id: offerId, is_active: false });
+    if (!offer || offer.merchant_id !== 101) return Promise.reject(new ApiError("پیشنهاد پیدا نشد.", 404));
+    offer.is_active = false;
+    return Promise.resolve({ ...offer });
   }
+
   return authRequest<unknown>(`/api/offers/${offerId}`, token, {
     method: "DELETE",
   }).then(normalizeFoodOffer);
@@ -645,9 +654,32 @@ export function updateOrderStatus(
   status: Order["status"],
 ): Promise<Order> {
   if (import.meta.env.VITE_DEMO_MODE === "true") {
-    const order = DEMO_ORDERS.find((item) => item.id === orderId) || DEMO_ORDERS[0];
-    return Promise.resolve({ ...order, id: orderId, status });
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    const order = DEMO_ORDERS.find((item) => item.id === orderId);
+    if (!order) return Promise.reject(new ApiError("سفارش پیدا نشد.", 404));
+
+    const allowed =
+      role === "CUSTOMER" ? (order.status === "PENDING" && status === "CANCELLED") :
+      role === "MERCHANT" ? (
+        (order.status === "PENDING" && status === "CANCELLED") ||
+        (order.status === "PAID" && status === "READY_FOR_PICKUP") ||
+        (order.status === "READY_FOR_PICKUP" && status === "COMPLETED")
+      ) :
+      role === "ADMIN";
+
+    if (!allowed) return Promise.reject(new ApiError("تغییر این وضعیت مجاز نیست.", 403));
+
+    if (status === "CANCELLED") {
+      for (const item of order.items) {
+        const offer = DEMO_OFFERS.find((candidate) => candidate.id === item.food_offer_id);
+        if (offer) offer.available_quantity += item.quantity;
+      }
+    }
+
+    order.status = status;
+    return Promise.resolve({ ...order, items: order.items.map((item) => ({ ...item })) });
   }
+
   return authRequest<unknown>(`/api/orders/${orderId}/status`, token, {
     method: "PATCH",
     body: JSON.stringify({ status }),
@@ -655,10 +687,6 @@ export function updateOrderStatus(
 }
 
 export function cancelOrder(token: string | null, orderId: number): Promise<Order> {
-  if (import.meta.env.VITE_DEMO_MODE === "true") {
-    const order = DEMO_ORDERS.find((item) => item.id === orderId) || DEMO_ORDERS[0];
-    return Promise.resolve({ ...order, id: orderId, status: "CANCELLED" });
-  }
   return updateOrderStatus(token, orderId, "CANCELLED");
 }
 

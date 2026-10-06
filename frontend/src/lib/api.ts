@@ -141,6 +141,42 @@ export interface User {
   role: "CUSTOMER" | "MERCHANT" | "ADMIN";
 }
 
+const DEMO_USERS: Record<User["role"], User> = {
+  CUSTOMER: { id: 11, name: "مشتری دمو", email: "customer@demo.local", role: "CUSTOMER" },
+  MERCHANT: { id: 21, name: "فروشنده دمو", email: "merchant@demo.local", role: "MERCHANT" },
+  ADMIN: { id: 1, name: "مدیر دمو", email: "admin@demo.local", role: "ADMIN" },
+};
+
+const DEMO_ORDERS: Order[] = [
+  {
+    id: 1001,
+    customer_id: 11,
+    merchant_id: 101,
+    total_amount: 178000,
+    status: "PAID",
+    pickup_code: "4182",
+    created_at: "2026-10-06T11:30:00Z",
+    items: [{ id: 1, food_offer_id: 1, quantity: 2, unit_price: 89000, subtotal: 178000 }],
+  },
+];
+
+const DEMO_MERCHANT_PROFILE: MerchantProfile = {
+  id: 101,
+  user_id: 21,
+  business_name: "کافه سبز",
+  description: "کافه دمو برای نمایش پنل فروشنده نجات غذا",
+  address: "بلوار طاق‌بستان",
+  city: "کرمانشاه",
+  latitude: 34.329,
+  longitude: 47.077,
+};
+
+const DEMO_ADMIN_USERS = [
+  { id: 1, name: "مدیر دمو", email: "admin@demo.local", role: "ADMIN" as const },
+  { id: 11, name: "مشتری دمو", email: "customer@demo.local", role: "CUSTOMER" as const },
+  { id: 21, name: "فروشنده دمو", email: "merchant@demo.local", role: "MERCHANT" as const },
+];
+
 export interface TokenResponse {
   access_token: string | null;
   token_type: string;
@@ -187,6 +223,20 @@ export function getOffers(filters: OfferFilters = {}): Promise<FoodOffer[]> {
 export function getOffer(offerId: number): Promise<FoodOffer> {
   if (import.meta.env.VITE_DEMO_MODE === "true") { const offer = DEMO_OFFERS.find((item) => item.id === offerId); return offer ? Promise.resolve(offer) : Promise.reject(new ApiError("پیشنهاد پیدا نشد.", 404)); }
   return request<unknown>(`/api/offers/${offerId}`).then(normalizeFoodOffer);
+}
+
+export function loginDemoUser(role: User["role"]): Promise<TokenResponse> {
+  const user = DEMO_USERS[role];
+  setCsrfToken("demo-csrf-token");
+  return Promise.resolve({
+    access_token: `demo:${role}`,
+    token_type: "demo",
+    csrf_token: "demo-csrf-token",
+  });
+}
+
+export function getDemoUser(role: User["role"]): User {
+  return DEMO_USERS[role];
 }
 
 export function registerUser(
@@ -240,6 +290,12 @@ export interface Order {
 }
 
 export function getCurrentUser(token: string | null): Promise<User> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    return role && DEMO_USERS[role]
+      ? Promise.resolve(DEMO_USERS[role])
+      : Promise.reject(new ApiError("برای دمو وارد نشده‌اید.", 401));
+  }
   return authRequest<User>("/api/auth/me", token);
 }
 
@@ -286,7 +342,20 @@ export function createPayment(
 }
 
 export function getOrders(token: string | null): Promise<Order[]> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const role = token?.startsWith("demo:") ? token.slice(5) : "CUSTOMER";
+    return Promise.resolve(role === "MERCHANT" ? DEMO_ORDERS : DEMO_ORDERS);
+  }
   return authRequest<unknown[]>("/api/orders", token).then((items) =>
+    items.map(normalizeOrder),
+  );
+}
+
+export function getMerchantOrders(token: string | null): Promise<Order[]> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    return Promise.resolve(DEMO_ORDERS);
+  }
+  return authRequest<unknown[]>("/api/orders/merchant", token).then((items) =>
     items.map(normalizeOrder),
   );
 }
@@ -320,7 +389,46 @@ export interface OfferPayload {
 }
 
 export function getMerchantProfile(token: string | null): Promise<MerchantProfile> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") return Promise.resolve(DEMO_MERCHANT_PROFILE);
   return authRequest<MerchantProfile>("/api/merchant/profile", token);
+}
+
+export function getAdminUsers(token: string | null): Promise<User[]> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") return Promise.resolve(DEMO_ADMIN_USERS);
+  return authRequest<unknown[]>("/api/admin/users", token).then((items) =>
+    items.map((value) => {
+      const item = value as Record<string, unknown>;
+      return {
+        id: Number(item.id),
+        name: String(item.name),
+        email: String(item.email),
+        role: String(item.role) as User["role"],
+      };
+    }),
+  );
+}
+
+export function updateUserRole(
+  token: string | null,
+  userId: number,
+  role: User["role"],
+): Promise<User> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const user = DEMO_ADMIN_USERS.find((item) => item.id === userId);
+    return Promise.resolve({ ...(user || DEMO_USERS.CUSTOMER), role });
+  }
+  return authRequest<unknown>(`/api/admin/users/${userId}/role`, token, {
+    method: "PATCH",
+    body: JSON.stringify({ role }),
+  }).then((value) => {
+    const item = value as Record<string, unknown>;
+    return {
+      id: Number(item.id),
+      name: String(item.name),
+      email: String(item.email),
+      role: String(item.role) as User["role"],
+    };
+  });
 }
 
 export function createMerchantProfile(
@@ -343,6 +451,25 @@ export function createOffer(
   token: string | null,
   payload: OfferPayload,
 ): Promise<FoodOffer> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const offer: FoodOffer = {
+      id: Date.now(),
+      merchant_id: 101,
+      merchant: DEMO_MERCHANT_PROFILE,
+      title: payload.title,
+      description: payload.description || null,
+      original_price: payload.original_price,
+      sale_price: payload.sale_price,
+      quantity: payload.quantity,
+      available_quantity: payload.quantity,
+      pickup_start: payload.pickup_start,
+      pickup_end: payload.pickup_end,
+      image_url: payload.image_url || null,
+      is_active: true,
+      created_at: new Date().toISOString(),
+    };
+    return Promise.resolve(offer);
+  }
   return authRequest<unknown>("/api/offers", token, {
     method: "POST",
     body: JSON.stringify(payload),
@@ -353,6 +480,10 @@ export function deactivateOffer(
   token: string | null,
   offerId: number,
 ): Promise<FoodOffer> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const offer = DEMO_OFFERS.find((item) => item.id === offerId);
+    return Promise.resolve(offer ? { ...offer, is_active: false } : { ...DEMO_OFFERS[0], id: offerId, is_active: false });
+  }
   return authRequest<unknown>(`/api/offers/${offerId}`, token, {
     method: "DELETE",
   }).then(normalizeFoodOffer);
@@ -363,6 +494,10 @@ export function updateOrderStatus(
   orderId: number,
   status: Order["status"],
 ): Promise<Order> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const order = DEMO_ORDERS.find((item) => item.id === orderId) || DEMO_ORDERS[0];
+    return Promise.resolve({ ...order, id: orderId, status });
+  }
   return authRequest<unknown>(`/api/orders/${orderId}/status`, token, {
     method: "PATCH",
     body: JSON.stringify({ status }),
@@ -459,6 +594,9 @@ function normalizePayment(value: unknown): PaymentResponse {
 
 
 export function logoutUser(): Promise<{ status: string }> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    return Promise.resolve({ status: "ok" });
+  }
   return authRequest<{ status: string }>("/api/auth/logout", null, {
     method: "POST",
   });

@@ -218,6 +218,41 @@ const DEMO_MERCHANT_PROFILE: MerchantProfile = {
   longitude: 47.077,
 };
 
+let DEMO_NOTIFICATIONS: AppNotification[] = [
+  {
+    id: 9001,
+    user_id: 11,
+    title: "به نجات غذا خوش آمدی",
+    body: "اعلان‌های سفارش و پرداخت از اینجا قابل پیگیری هستند.",
+    notification_type: "INFO",
+    entity_type: null,
+    entity_id: null,
+    is_read: false,
+    created_at: new Date().toISOString(),
+  },
+];
+
+function addDemoNotification(
+  role: User["role"],
+  title: string,
+  body: string,
+  notificationType: string,
+  entityType: string | null = null,
+  entityId: number | null = null,
+): void {
+  DEMO_NOTIFICATIONS.unshift({
+    id: Date.now() + Math.floor(Math.random() * 1000),
+    user_id: DEMO_USERS[role].id,
+    title,
+    body,
+    notification_type: notificationType,
+    entity_type: entityType,
+    entity_id: entityId,
+    is_read: false,
+    created_at: new Date().toISOString(),
+  });
+}
+
 const DEMO_ADMIN_USERS = [
   { id: 1, name: "مدیر دمو", email: "admin@demo.local", role: "ADMIN" as const },
   { id: 11, name: "مشتری دمو", email: "customer@demo.local", role: "CUSTOMER" as const },
@@ -304,6 +339,23 @@ export async function loginUser(
   });
   setCsrfToken(response.csrf_token);
   return response;
+}
+
+export interface AppNotification {
+  id: number;
+  user_id?: number;
+  title: string;
+  body: string;
+  notification_type: string;
+  entity_type: string | null;
+  entity_id: number | null;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface NotificationListResponse {
+  items: AppNotification[];
+  unread_count: number;
 }
 
 export interface OrderItemCreate {
@@ -402,6 +454,8 @@ export function createOrder(
     };
 
     DEMO_ORDERS.unshift(order);
+    addDemoNotification("CUSTOMER", "سفارش ثبت شد", `سفارش #${order.id} ثبت شد و آماده پرداخت است.`, "ORDER", "order", order.id);
+    addDemoNotification("MERCHANT", "سفارش جدید", `سفارش #${order.id} برای فروشگاه شما ثبت شد.`, "ORDER", "order", order.id);
     return Promise.resolve(order);
   }
 
@@ -447,6 +501,8 @@ export function createPayment(
     const paidAt = new Date().toISOString();
     const referenceId = "DEMO-" + orderId;
     order.status = "PAID";
+    addDemoNotification("CUSTOMER", "پرداخت موفق", `پرداخت سفارش #${order.id} با موفقیت ثبت شد.`, "PAYMENT", "order", order.id);
+    addDemoNotification("MERCHANT", "پرداخت سفارش تأیید شد", `پرداخت سفارش #${order.id} تأیید شد.`, "PAYMENT", "order", order.id);
 
     return Promise.resolve({
       payment: {
@@ -737,6 +793,15 @@ export function updateOrderStatus(
     }
 
     order.status = status;
+    if (role === "MERCHANT" || role === "ADMIN") {
+      const title =
+        status === "READY_FOR_PICKUP" ? "سفارش آماده دریافت است" :
+        status === "COMPLETED" ? "سفارش تحویل شد" :
+        status === "CANCELLED" ? "سفارش لغو شد" :
+        status === "EXPIRED" ? "سفارش منقضی شد" :
+        `وضعیت سفارش #${order.id} تغییر کرد`;
+      addDemoNotification("CUSTOMER", title, `وضعیت سفارش #${order.id} به‌روزرسانی شد.`, "ORDER", "order", order.id);
+    }
     return Promise.resolve({ ...order, items: order.items.map((item) => ({ ...item })) });
   }
 
@@ -858,6 +923,52 @@ function normalizePayment(value: unknown): PaymentResponse {
         ? null
         : String(payment.paid_at),
   };
+}
+
+
+export function getNotifications(token: string | null): Promise<NotificationListResponse> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    if (!role) return Promise.reject(new ApiError("ابتدا وارد حساب شوید.", 401));
+    const userId = DEMO_USERS[role].id;
+    const items = DEMO_NOTIFICATIONS
+      .filter((item) => item.user_id === userId)
+      .map(({ user_id: _userId, ...item }) => item);
+    return Promise.resolve({
+      items,
+      unread_count: items.filter((item) => !item.is_read).length,
+    });
+  }
+  return authRequest<NotificationListResponse>("/api/notifications", token);
+}
+
+export function markNotificationRead(token: string | null, notificationId: number): Promise<AppNotification> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    const userId = role ? DEMO_USERS[role].id : 0;
+    const item = DEMO_NOTIFICATIONS.find((notification) => notification.id === notificationId && notification.user_id === userId);
+    if (!item) return Promise.reject(new ApiError("اعلان پیدا نشد.", 404));
+    item.is_read = true;
+    return Promise.resolve({ ...item });
+  }
+  return authRequest<AppNotification>(`/api/notifications/${notificationId}/read`, token, { method: "PATCH" });
+}
+
+export function markAllNotificationsRead(token: string | null): Promise<number> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    const userId = role ? DEMO_USERS[role].id : 0;
+    let updated = 0;
+    for (const item of DEMO_NOTIFICATIONS) {
+      if (item.user_id === userId && !item.is_read) {
+        item.is_read = true;
+        updated += 1;
+      }
+    }
+    return Promise.resolve(updated);
+  }
+  return authRequest<{ updated_count: number }>("/api/notifications/read-all", token, { method: "POST" })
+    .then((result) => result.updated_count);
 }
 
 

@@ -175,6 +175,19 @@ export function useMerchant({ isMerchantPage, openAuth }: Params) {
     }
   }
 
+  function openMerchantProfileEditor() {
+    if (!merchantProfile) return;
+    setMerchantForm({
+      business_name: merchantProfile.business_name,
+      description: merchantProfile.description || "",
+      address: merchantProfile.address,
+      city: merchantProfile.city,
+      latitude: merchantProfile.latitude?.toString() || "",
+      longitude: merchantProfile.longitude?.toString() || "",
+    });
+    setMerchantFormOpen(true);
+  }
+
   async function submitMerchantProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -182,16 +195,17 @@ export function useMerchant({ isMerchantPage, openAuth }: Params) {
     if (!token) return;
 
     try {
-      const profile = await createMerchantProfile(token, {
+      const payload = {
         business_name: merchantForm.business_name,
         description: merchantForm.description || null,
         address: merchantForm.address,
         city: merchantForm.city,
         latitude: merchantForm.latitude ? Number(merchantForm.latitude) : null,
-        longitude: merchantForm.longitude
-          ? Number(merchantForm.longitude)
-          : null,
-      });
+        longitude: merchantForm.longitude ? Number(merchantForm.longitude) : null,
+      };
+      const profile = merchantProfile
+        ? await updateMerchantProfile(token, payload)
+        : await createMerchantProfile(token, payload);
       setMerchantProfile(profile);
       setMerchantFormOpen(false);
       setMerchantError("");
@@ -202,6 +216,21 @@ export function useMerchant({ isMerchantPage, openAuth }: Params) {
           : "ساخت پروفایل فروشگاه انجام نشد.",
       );
     }
+  }
+
+  function openOfferEditor(offer: FoodOffer) {
+    setEditingOfferId(offer.id);
+    setOfferForm({
+      title: offer.title,
+      description: offer.description || "",
+      original_price: String(offer.original_price),
+      sale_price: String(offer.sale_price),
+      quantity: String(offer.quantity),
+      pickup_start: new Date(offer.pickup_start).toISOString().slice(0, 16),
+      pickup_end: new Date(offer.pickup_end).toISOString().slice(0, 16),
+      image_url: offer.image_url || "",
+    });
+    setOfferFormOpen(true);
   }
 
   async function submitOffer(event: FormEvent<HTMLFormElement>) {
@@ -221,8 +250,15 @@ export function useMerchant({ isMerchantPage, openAuth }: Params) {
         pickup_end: new Date(offerForm.pickup_end).toISOString(),
         image_url: offerForm.image_url || undefined,
       };
-      const offer = await createOffer(token, payload);
-      setMerchantOffers((items) => [offer, ...items]);
+      const offer = editingOfferId
+        ? await updateOffer(token, editingOfferId, payload)
+        : await createOffer(token, payload);
+      setMerchantOffers((items) =>
+        editingOfferId
+          ? items.map((item) => (item.id === editingOfferId ? offer : item))
+          : [offer, ...items],
+      );
+      setEditingOfferId(null);
       setOfferFormOpen(false);
       setMerchantError("");
     } catch (err) {
@@ -248,9 +284,12 @@ export function useMerchant({ isMerchantPage, openAuth }: Params) {
     setMerchantOpen,
     setMerchantFormOpen,
     setOfferFormOpen,
+    editingOfferId,
     setMerchantForm,
     setOfferForm,
     openMerchantDashboard,
+    openMerchantProfileEditor,
+    openOfferEditor,
     removeMerchantOffer,
     changeMerchantOrderStatus,
     verifyMerchantPickup,

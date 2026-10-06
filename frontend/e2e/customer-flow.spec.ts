@@ -185,8 +185,9 @@ test("customer can discover, authenticate, order, and review order status", asyn
   await expect(page.getByRole("heading", { name: "باکس شام نجات" })).toBeVisible();
 
   await page.locator(".nav").getByRole("link", { name: "ورود" }).click();
-  await expect(page.getByRole("heading", { name: "حساب کاربری بساز" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "خوش آمدی" })).toBeVisible();
   await page.locator(".auth-tabs").getByRole("button", { name: "ثبت‌نام" }).click();
+  await expect(page.getByRole("heading", { name: "حساب کاربری بساز" })).toBeVisible();
   await expect(page.getByText("نام و نام خانوادگی", { exact: true })).toBeVisible();
   await page.getByRole("textbox", { name: "نام و نام خانوادگی" }).fill(customer.name);
   await page.getByRole("textbox", { name: "ایمیل" }).fill(customer.email);

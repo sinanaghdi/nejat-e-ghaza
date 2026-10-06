@@ -185,10 +185,12 @@ test("customer can discover, authenticate, order, and review order status", asyn
   await expect(page.getByRole("heading", { name: "باکس شام نجات" })).toBeVisible();
 
   await page.locator(".nav").getByRole("link", { name: "ورود" }).click();
-  await page.getByRole("button", { name: "ثبت‌نام" }).click();
-  await page.getByLabel("نام و نام خانوادگی").fill(customer.name);
-  await page.getByLabel("ایمیل").fill(customer.email);
-  await page.getByLabel("رمز عبور").fill("password123");
+  await expect(page.getByRole("heading", { name: "حساب کاربری بساز" })).toBeVisible();
+  await page.locator(".auth-tabs").getByRole("button", { name: "ثبت‌نام" }).click();
+  await expect(page.getByText("نام و نام خانوادگی", { exact: true })).toBeVisible();
+  await page.getByRole("textbox", { name: "نام و نام خانوادگی" }).fill(customer.name);
+  await page.getByRole("textbox", { name: "ایمیل" }).fill(customer.email);
+  await page.getByRole("textbox", { name: "رمز عبور" }).fill("password123");
   await page.getByRole("button", { name: "ساخت حساب" }).click();
   await expect(page.getByText("حساب شما ساخته شد. حالا با ایمیل و رمز عبور وارد شوید.")).toBeVisible();
 

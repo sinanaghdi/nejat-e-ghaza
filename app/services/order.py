@@ -31,7 +31,6 @@ CUSTOMER_ALLOWED_TRANSITIONS = {
 MERCHANT_ALLOWED_TRANSITIONS = {
     OrderStatus.PENDING: {OrderStatus.CANCELLED},
     OrderStatus.PAID: {OrderStatus.READY_FOR_PICKUP},
-    OrderStatus.READY_FOR_PICKUP: {OrderStatus.COMPLETED},
 }
 
 def _assert_actor_can_transition(user: User, order: Order, new_status: OrderStatus) -> None:
@@ -228,6 +227,44 @@ def expire_pending_orders(db: Session) -> int:
 
         db.commit()
         return expired_count
+    except Exception:
+        db.rollback()
+        raise
+
+
+def verify_pickup_code(db: Session, user: User, order_id: int, pickup_code: str) -> Order:
+    if user.role != UserRole.MERCHANT:
+        raise HTTPException(status_code=403, detail="Merchant access required")
+
+    order = db.scalar(
+        select(Order)
+        .where(Order.id == order_id)
+        .with_for_update()
+    )
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if not order.merchant or order.merchant.user_id != user.id:
+        raise HTTPException(status_code=403, detail="You do not own this order")
+    if order.status != OrderStatus.READY_FOR_PICKUP:
+        raise HTTPException(status_code=409, detail="Order is not ready for pickup")
+
+    if not secrets.compare_digest(order.pickup_code, pickup_code.strip()):
+        raise HTTPException(status_code=403, detail="Invalid pickup code")
+
+    try:
+        order.status = OrderStatus.COMPLETED
+        record_event(
+            db,
+            action="order.pickup_verified",
+            entity_type="order",
+            entity_id=order.id,
+            actor=user,
+            request_id=get_request_id(),
+            details={"order_id": order.id},
+        )
+        db.commit()
+        db.refresh(order)
+        return order
     except Exception:
         db.rollback()
         raise

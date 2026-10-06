@@ -16,21 +16,25 @@ export function Header({ user, cartCount, onCart, onOrders, onMerchant, onLogin,
     <nav className="nav">
       <Link className="brand" to="/" aria-label="صفحه اصلی نجات غذا">نجات غذا</Link>
       <div className="nav-links">
-        <NavLink to="/#offers">پیشنهادها</NavLink>
+        <NavLink to="/offers">پیشنهادها</NavLink>
         <NavLink to="/#how-it-works">چطور کار می‌کند؟</NavLink>
-        <button className="cart-button" type="button" onClick={onCart}>
+        <Link className="cart-button" to="/cart" onClick={() => { if (onCart) onCart(); }}>
           سبد خرید{cartCount > 0 && <span>{cartCount}</span>}
-        </button>
+        </Link>
         {user ? (
           <>
-            <button className="orders-button" type="button" onClick={onOrders}>سفارش‌های من</button>
+            <Link className="orders-button" to="/orders" onClick={onOrders}>سفارش‌های من</Link>
+            <Link className="orders-button" to="/profile">پروفایل</Link>
             {user.role === "MERCHANT" && (
-              <button className="orders-button" type="button" onClick={onMerchant}>پنل فروشنده</button>
+              <Link className="orders-button" to="/merchant" onClick={onMerchant}>پنل فروشنده</Link>
             )}
             <button className="login-button" type="button" onClick={onLogout}>خروج</button>
           </>
         ) : (
-          <button className="login-button" type="button" onClick={onLogin}>ورود</button>
+          <>
+            <Link className="login-button" to="/login">ورود</Link>
+            <Link className="signup-button" to="/register">ثبت‌نام</Link>
+          </>
         )}
       </div>
     </nav>

@@ -1,4 +1,5 @@
 name: Deploy frontend to GitHub Pages
+# GitHub Pages deployment workflow
 
 on:
   push:

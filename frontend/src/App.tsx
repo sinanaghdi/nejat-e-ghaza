@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import { ApiError, createOrder, createPayment, FoodOffer, getCurrentUser, getOffer, getOffers, getOrders, loginUser, logoutUser, registerUser, User, Order, MerchantProfile, createMerchantProfile, getMerchantProfile, getMyOffers, createOffer, deactivateOffer, updateOrderStatus, OfferPayload } from "./lib/api";
-import { clearToken, getToken, setToken } from "./lib/auth";
+import { ApiError, FoodOffer, getOffer, getOffers, getOrders, Order, MerchantProfile, createMerchantProfile, getMerchantProfile, getMyOffers, createOffer, deactivateOffer, updateOrderStatus, OfferPayload } from "./lib/api";
+import { getToken } from "./lib/auth";
 import { formatPickupTime, formatToman } from "./lib/formatters";
+import { useAuth } from "./hooks/useAuth";
+import { useCart } from "./hooks/useCart";
 import { OfferCard } from "./components/OfferCard";
 import { QuantityControl } from "./components/QuantityControl";
 import { StatusBadge } from "./components/StatusBadge";
@@ -23,32 +25,6 @@ import { OfferDetailPage } from "./pages/OfferDetailPage";
 import { PaymentResultPage } from "./pages/PaymentResultPage";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 
-type AuthMode = "login" | "register";
-
-type LegacyCartItem = {
-  offer: FoodOffer;
-  quantity: number;
-};
-
-function statusLabel(status: Order["status"]): string {
-  const labels: Record<Order["status"], string> = {
-    PENDING: "در انتظار پرداخت",
-    PAID: "پرداخت شده",
-    READY_FOR_PICKUP: "آماده دریافت",
-    COMPLETED: "تکمیل شده",
-    CANCELLED: "لغو شده",
-    EXPIRED: "منقضی شده",
-  };
-  return labels[status];
-}
-
-function formatOrderDate(value: string): string {
-  return new Intl.DateTimeFormat("fa-IR", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
-
 function discountPercent(offer: FoodOffer): number {
   if (offer.original_price <= 0) return 0;
   return Math.round((1 - offer.sale_price / offer.original_price) * 100);
@@ -66,22 +42,46 @@ function App() {
   const [nearby, setNearby] = useState(false);
   const [locationStatus, setLocationStatus] = useState<"idle" | "loading" | "denied" | "ready">("idle");
   const [userCoordinates, setUserCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [authMode, setAuthMode] = useState<AuthMode>("login");
-  const [authOpen, setAuthOpen] = useState(false);
-  const [authLoading, setAuthLoading] = useState(false);
-  const [authError, setAuthError] = useState("");
-  const [authSuccess, setAuthSuccess] = useState("");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [selectedOffer, setSelectedOffer] = useState<FoodOffer | null>(null);
-  const [selectedQuantity, setSelectedQuantity] = useState(1);
-  const [cart, setCart] = useState<LegacyCartItem[]>([]);
-  const [cartOpen, setCartOpen] = useState(false);
-  const [orderLoading, setOrderLoading] = useState(false);
-  const [orderMessage, setOrderMessage] = useState("");
-  const [orderError, setOrderError] = useState("");
+  const {
+    user,
+    authMode,
+    authOpen,
+    authLoading,
+    authError,
+    authSuccess,
+    name,
+    email,
+    password,
+    setName,
+    setEmail,
+    setPassword,
+    openAuth,
+    closeAuth,
+    handleAuthSubmit,
+    handleLogout,
+    switchAuthMode,
+  } = useAuth();
+
+  const {
+    selectedOffer,
+    selectedQuantity,
+    cart,
+    cartOpen,
+    orderLoading,
+    orderMessage,
+    orderError,
+    setSelectedOffer,
+    setSelectedQuantity,
+    setCartOpen,
+    setOrderMessage,
+    openOffer,
+    addToCart,
+    updateCartQuantity,
+    submitOrder,
+  } = useCart({
+    openAuth,
+    refreshOffers: loadOffers,
+  });
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersOpen, setOrdersOpen] = useState(false);
   const [ordersLoading, setOrdersLoading] = useState(false);
@@ -168,12 +168,6 @@ function App() {
 
   useEffect(() => {
     void loadOffers();
-    getCurrentUser(getToken())
-      .then((currentUser) => {
-        setUser(currentUser);
-        setToken(null);
-      })
-      .catch(() => clearToken());
   }, []);
 
   function enableNearby() {
@@ -197,118 +191,6 @@ function App() {
       },
       { enableHighAccuracy: false, maximumAge: 300000, timeout: 10000 },
     );
-  }
-
-  function openAuth(mode: AuthMode) {
-    setAuthMode(mode);
-    setAuthOpen(true);
-    setAuthError("");
-    setAuthSuccess("");
-  }
-
-  function closeAuth() {
-    if (!authLoading) setAuthOpen(false);
-  }
-
-  async function handleAuthSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setAuthLoading(true);
-    setAuthError("");
-    setAuthSuccess("");
-
-    try {
-      if (authMode === "register") {
-        await registerUser({ name, email, password });
-        setAuthMode("login");
-        setPassword("");
-        setAuthSuccess("حساب شما ساخته شد. حالا با ایمیل و رمز عبور وارد شوید.");
-      } else {
-        const token = await loginUser({ email, password });
-        setToken(token.access_token);
-        const currentUser = await getCurrentUser(token.access_token);
-        setUser(currentUser);
-        setAuthOpen(false);
-        setName("");
-        setEmail("");
-        setPassword("");
-      }
-    } catch (err) {
-      setAuthError(err instanceof ApiError ? err.message : "عملیات انجام نشد. لطفاً دوباره تلاش کنید.");
-    } finally {
-      setAuthLoading(false);
-    }
-  }
-
-  function openOffer(offer: FoodOffer) {
-    setSelectedOffer(offer);
-    setSelectedQuantity(1);
-    setOrderError("");
-  }
-
-  function addToCart(offerOverride?: FoodOffer) {
-    const offerToAdd = offerOverride || selectedOffer;
-    if (!offerToAdd) return;
-    const existingMerchantId = cart[0]?.offer.merchant_id;
-    if (existingMerchantId !== undefined && existingMerchantId !== offerToAdd.merchant_id) {
-      setOrderError("در هر سفارش فقط می‌توانی از یک فروشنده خرید کنی.");
-      return;
-    }
-    const quantity = Math.min(selectedQuantity, offerToAdd.available_quantity);
-    setCart((current) => {
-      const existing = current.find((item) => item.offer.id === offerToAdd.id);
-      if (existing) {
-        return current.map((item) =>
-          item.offer.id === offerToAdd.id
-            ? { ...item, quantity: Math.min(item.quantity + quantity, offerToAdd.available_quantity) }
-            : item,
-        );
-      }
-      return [...current, { offer: offerToAdd, quantity }];
-    });
-    setSelectedOffer(null);
-    setCartOpen(true);
-  }
-
-  function updateCartQuantity(offerId: number, quantity: number) {
-    setCart((current) =>
-      current
-        .map((item) =>
-          item.offer.id === offerId
-            ? { ...item, quantity: Math.max(0, Math.min(quantity, item.offer.available_quantity)) }
-            : item,
-        )
-        .filter((item) => item.quantity > 0),
-    );
-  }
-
-  async function submitOrder() {
-    const token = getToken();
-    if (!token || cart.length === 0) {
-      openAuth("login");
-      return;
-    }
-    setOrderLoading(true);
-    setOrderError("");
-    setOrderMessage("");
-    try {
-      const order = await createOrder(token, cart.map((item) => ({
-        food_offer_id: item.offer.id,
-        quantity: item.quantity,
-      })));
-      const payment = await createPayment(token, order.id);
-      setCart([]);
-      setCartOpen(false);
-      await loadOffers();
-      if (payment.payment.provider === "zarinpal") {
-        window.location.assign(payment.checkout_url);
-        return;
-      }
-      setOrderMessage(`سفارش #${order.id} ثبت شد. درگاه آزمایشی فعال است؛ پرداخت واقعی هنوز انجام نشده است.`);
-    } catch (err) {
-      setOrderError(err instanceof ApiError ? err.message : "ثبت سفارش انجام نشد.");
-    } finally {
-      setOrderLoading(false);
-    }
   }
 
   async function openOrders() {
@@ -372,18 +254,6 @@ function App() {
       const offer = await createOffer(token, payload); setMerchantOffers((items) => [offer, ...items]); setOfferFormOpen(false);
     } catch (err) { setMerchantError(err instanceof ApiError ? err.message : "ایجاد پیشنهاد انجام نشد."); }
   }
-  async function handleLogout() {
-    try {
-      await logoutUser();
-    } catch {
-      // Local state is cleared even if the server session is already invalid.
-    }
-    clearToken();
-    setUser(null);
-    setOrders([]);
-    setOrdersOpen(false);
-  }
-
   const availableOffers = useMemo(
     () => offers.filter((offer) => offer.is_active && offer.available_quantity > 0),
     [offers],
@@ -464,11 +334,7 @@ function App() {
           email={email}
           password={password}
           onClose={closeAuth}
-          onModeChange={(mode) => {
-            setAuthMode(mode);
-            setAuthError("");
-            setAuthSuccess("");
-          }}
+          onModeChange={switchAuthMode}
           onNameChange={setName}
           onEmailChange={setEmail}
           onPasswordChange={setPassword}
@@ -501,11 +367,7 @@ function App() {
           email={email}
           password={password}
           onClose={closeAuth}
-          onModeChange={(mode) => {
-            setAuthMode(mode);
-            setAuthError("");
-            setAuthSuccess("");
-          }}
+          onModeChange={switchAuthMode}
           onNameChange={setName}
           onEmailChange={setEmail}
           onPasswordChange={setPassword}
@@ -558,11 +420,7 @@ function App() {
           email={email}
           password={password}
           onClose={closeAuth}
-          onModeChange={(mode) => {
-            setAuthMode(mode);
-            setAuthError("");
-            setAuthSuccess("");
-          }}
+          onModeChange={switchAuthMode}
           onNameChange={setName}
           onEmailChange={setEmail}
           onPasswordChange={setPassword}
@@ -612,11 +470,7 @@ function App() {
           email={email}
           password={password}
           onClose={closeAuth}
-          onModeChange={(mode) => {
-            setAuthMode(mode);
-            setAuthError("");
-            setAuthSuccess("");
-          }}
+          onModeChange={switchAuthMode}
           onNameChange={setName}
           onEmailChange={setEmail}
           onPasswordChange={setPassword}
@@ -812,11 +666,7 @@ function App() {
         email={email}
         password={password}
         onClose={closeAuth}
-        onModeChange={(mode) => {
-          setAuthMode(mode);
-          setAuthError("");
-          setAuthSuccess("");
-        }}
+        onModeChange={switchAuthMode}
         onNameChange={setName}
         onEmailChange={setEmail}
         onPasswordChange={setPassword}

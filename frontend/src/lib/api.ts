@@ -435,6 +435,9 @@ export function createMerchantProfile(
   token: string | null,
   payload: Omit<MerchantProfile, "id" | "user_id">,
 ): Promise<MerchantProfile> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    return Promise.resolve({ ...DEMO_MERCHANT_PROFILE, ...payload });
+  }
   return authRequest<MerchantProfile>("/api/merchant/profile", token, {
     method: "POST",
     body: JSON.stringify(payload),
@@ -442,6 +445,9 @@ export function createMerchantProfile(
 }
 
 export function getMyOffers(token: string | null): Promise<FoodOffer[]> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    return Promise.resolve(DEMO_OFFERS.filter((offer) => offer.merchant_id === 101));
+  }
   return authRequest<unknown[]>("/api/offers/mine", token).then((items) =>
     items.map(normalizeFoodOffer),
   );

@@ -341,7 +341,8 @@ function App() {
           profile={merchantState.merchantProfile}
           offers={merchantState.merchantOffers}
           orders={merchantState.merchantOrders}
-          onCreateProfile={() => merchantState.merchantProfile ? merchantState.openMerchantProfileEditor() : merchantState.setMerchantFormOpen(true)}
+          onCreateProfile={() => merchantState.setMerchantFormOpen(true)}
+          onEditProfile={() => merchantState.openMerchantProfileEditor()}
           onCreateOffer={() => merchantState.startCreateOffer()}
           onEditOffer={(id) => { const offer = merchantState.merchantOffers.find((item) => item.id === id); if (offer) merchantState.openOfferEditor(offer); }}
           onDeactivate={(id) => void merchantState.removeMerchantOffer(id)}
@@ -383,7 +384,8 @@ function App() {
             offers={merchantState.merchantOffers}
             orders={merchantState.merchantOrders}
             onClose={() => merchantState.setMerchantOpen(false)}
-            onCreateProfile={() => merchantState.merchantProfile ? merchantState.openMerchantProfileEditor() : merchantState.setMerchantFormOpen(true)}
+            onCreateProfile={() => merchantState.setMerchantFormOpen(true)}
+          onEditProfile={() => merchantState.openMerchantProfileEditor()}
             onCreateOffer={() => merchantState.startCreateOffer()}
             onEditOffer={(id) => { const offer = merchantState.merchantOffers.find((item) => item.id === id); if (offer) merchantState.openOfferEditor(offer); }}
             onDeactivate={(id) => void merchantState.removeMerchantOffer(id)}

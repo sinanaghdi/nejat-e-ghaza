@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -71,6 +73,8 @@ def create_order(db: Session, user: User, payload: OrderCreate) -> Order:
             offer = by_id[requested.food_offer_id]
             if not offer.is_active:
                 raise HTTPException(status_code=409, detail=f"Food offer {offer.id} is inactive")
+            if offer.pickup_end <= datetime.now(timezone.utc):
+                raise HTTPException(status_code=409, detail=f"Food offer {offer.id} has expired")
             if offer.available_quantity < requested.quantity:
                 raise HTTPException(status_code=409, detail=f"Insufficient inventory for food offer {offer.id}")
             if merchant_id is None:

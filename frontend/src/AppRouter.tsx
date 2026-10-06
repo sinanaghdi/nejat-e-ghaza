@@ -15,6 +15,7 @@ export function AppRouter() {
         <Route path="/orders/:orderId" element={<App />} />
         <Route path="/profile" element={<App />} />
         <Route path="/merchant" element={<App />} />
+        <Route path="/admin" element={<App />} />
         <Route path="/login" element={<App />} />
         <Route path="/register" element={<App />} />
         <Route path="/payment/result" element={<App />} />

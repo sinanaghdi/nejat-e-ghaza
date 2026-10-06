@@ -15,6 +15,13 @@ from app.repositories import order as order_repository
 from app.schemas.order import OrderCreate
 import secrets
 
+
+def _as_utc(value: datetime) -> datetime:
+    """Normalize database datetimes to timezone-aware UTC for comparisons."""
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
 ALLOWED_STATUS_TRANSITIONS = {
     OrderStatus.PENDING: {OrderStatus.PAID, OrderStatus.CANCELLED, OrderStatus.EXPIRED},
     OrderStatus.PAID: {OrderStatus.READY_FOR_PICKUP},
@@ -72,7 +79,7 @@ def create_order(db: Session, user: User, payload: OrderCreate) -> Order:
             offer = by_id[requested.food_offer_id]
             if not offer.is_active:
                 raise HTTPException(status_code=409, detail=f"Food offer {offer.id} is inactive")
-            if offer.pickup_end <= datetime.now(timezone.utc):
+            if _as_utc(offer.pickup_end) <= datetime.now(timezone.utc):
                 raise HTTPException(status_code=409, detail=f"Food offer {offer.id} has expired")
             if offer.available_quantity < requested.quantity:
                 raise HTTPException(status_code=409, detail=f"Insufficient inventory for food offer {offer.id}")

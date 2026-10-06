@@ -1064,3 +1064,15 @@ select {
     flex-direction: column;
   }
 }
+
+
+/* Order actions */
+.danger-action {
+  border: 1px solid #e7c9c1;
+  background: #fff5f2;
+  color: #8b3929;
+}
+.danger-action:disabled {
+  cursor: wait;
+  opacity: .65;
+}

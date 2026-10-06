@@ -345,6 +345,7 @@ function App() {
           onCreateOffer={() => merchantState.setOfferFormOpen(true)}
           onDeactivate={(id) => void merchantState.removeMerchantOffer(id)}
           onStatusChange={(id, status) => void merchantState.changeMerchantOrderStatus(id, status)}
+          onVerifyPickup={(id) => void merchantState.verifyMerchantPickup(id)}
         />
       </>
     );
@@ -385,6 +386,7 @@ function App() {
             onCreateOffer={() => merchantState.setOfferFormOpen(true)}
             onDeactivate={(id) => void merchantState.removeMerchantOffer(id)}
             onStatusChange={(id, status) => void merchantState.changeMerchantOrderStatus(id, status)}
+            onVerifyPickup={(id) => void merchantState.verifyMerchantPickup(id)}
           />
 
           {merchantState.merchantFormOpen && (

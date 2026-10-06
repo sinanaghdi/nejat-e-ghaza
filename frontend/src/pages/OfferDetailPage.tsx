@@ -35,7 +35,7 @@ export function OfferDetailPage({ offer, loading, error, user, cartCount, quanti
             {discountPercent(offer) > 0 && <span className="discount-badge">{discountPercent(offer)}٪ تخفیف</span>}
           </div>
           <div className="offer-detail-content">
-            <span className="merchant">فروشنده #{offer.merchant_id}</span>
+            <a className="merchant merchant-link" href={`#/merchants/${offer.merchant_id}`}>{offer.merchant.business_name} · {offer.merchant.city}</a>
             <h1>{offer.title}</h1>
             {offer.description && <p className="detail-description">{offer.description}</p>}
             <div className="detail-price"><strong>{formatToman(offer.sale_price)}</strong><del>{formatToman(offer.original_price)}</del></div>

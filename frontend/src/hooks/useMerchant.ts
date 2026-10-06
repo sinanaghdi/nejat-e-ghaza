@@ -175,6 +175,21 @@ export function useMerchant({ isMerchantPage, openAuth }: Params) {
     }
   }
 
+  function startCreateOffer() {
+    setEditingOfferId(null);
+    setOfferForm({
+      title: "",
+      description: "",
+      original_price: "",
+      sale_price: "",
+      quantity: "1",
+      pickup_start: "",
+      pickup_end: "",
+      image_url: "",
+    });
+    setOfferFormOpen(true);
+  }
+
   function openMerchantProfileEditor() {
     if (!merchantProfile) return;
     setMerchantForm({
@@ -290,6 +305,7 @@ export function useMerchant({ isMerchantPage, openAuth }: Params) {
     openMerchantDashboard,
     openMerchantProfileEditor,
     openOfferEditor,
+    startCreateOffer,
     removeMerchantOffer,
     changeMerchantOrderStatus,
     verifyMerchantPickup,

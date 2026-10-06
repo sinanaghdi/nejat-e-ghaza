@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import type { User } from "../lib/api";
-import { getAdminUsers, updateUserRole } from "../lib/api";
+import type { Order, User } from "../lib/api";
+import { getAdminOrders, getAdminUsers, updateOrderStatus, updateUserRole } from "../lib/api";
 import { getToken } from "../lib/auth";
 import { Header } from "../components/Header";
 import { MobileBottomNav } from "../components/MobileBottomNav";
@@ -25,6 +25,7 @@ const roleLabels: Record<User["role"], string> = {
 export function AdminPage(props: Props) {
   const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -34,12 +35,15 @@ export function AdminPage(props: Props) {
       return;
     }
     let active = true;
-    getAdminUsers(getToken())
-      .then((items) => {
-        if (active) setUsers(items);
+    Promise.all([getAdminUsers(getToken()), getAdminOrders(getToken())])
+      .then(([userItems, orderItems]) => {
+        if (active) {
+          setUsers(userItems);
+          setOrders(orderItems);
+        }
       })
       .catch((err) => {
-        if (active) setError(err instanceof Error ? err.message : "اطلاعات کاربران دریافت نشد.");
+        if (active) setError(err instanceof Error ? err.message : "اطلاعات مدیریت دریافت نشد.");
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -48,8 +52,21 @@ export function AdminPage(props: Props) {
   }, [props.user]);
 
   async function changeRole(id: number, role: User["role"]) {
-    const updated = await updateUserRole(getToken(), id, role);
-    setUsers((items) => items.map((item) => item.id === id ? updated : item));
+    try {
+      const updated = await updateUserRole(getToken(), id, role);
+      setUsers((items) => items.map((item) => item.id === id ? updated : item));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "تغییر نقش انجام نشد.");
+    }
+  }
+
+  async function changeOrderStatus(id: number, status: Order["status"]) {
+    try {
+      const updated = await updateOrderStatus(getToken(), id, status);
+      setOrders((items) => items.map((item) => item.id === id ? updated : item));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "تغییر وضعیت سفارش انجام نشد.");
+    }
   }
 
   if (!props.user) {
@@ -82,34 +99,59 @@ export function AdminPage(props: Props) {
         <section className="admin-summary-grid">
           <div><strong>{users.length}</strong><span>کاربر</span></div>
           <div><strong>{users.filter((item) => item.role === "MERCHANT").length}</strong><span>فروشنده</span></div>
-          <div><strong>{users.filter((item) => item.role === "CUSTOMER").length}</strong><span>مشتری</span></div>
-          <div><strong>{users.filter((item) => item.role === "ADMIN").length}</strong><span>مدیر</span></div>
+          <div><strong>{users.filter((item) => item.role === "CUSTOMER").length}</span><span>مشتری</span></div>
+          <div><strong>{orders.length}</strong><span>سفارش</span></div>
         </section>
 
-        {loading && <div className="state-card"><div className="spinner" />در حال دریافت کاربران...</div>}
+        {loading && <div className="state-card"><div className="spinner" />در حال دریافت اطلاعات مدیریت...</div>}
         {!loading && error && <div className="state-card error-state"><div className="state-icon">!</div><h3>دریافت اطلاعات ناموفق بود</h3><p>{error}</p></div>}
 
         {!loading && !error && (
-          <section className="admin-users-card">
-            <div className="section-heading">
-              <div><p className="eyebrow">Users</p><h2>کاربران</h2></div>
-              <span className="offer-count">{users.length} حساب</span>
-            </div>
-            <div className="admin-user-list">
-              {users.map((item) => (
-                <article className="admin-user-row" key={item.id}>
-                  <div className="admin-user-avatar">{item.name.trim().charAt(0) || "ن"}</div>
-                  <div className="admin-user-info">
-                    <strong>{item.name}</strong>
-                    <span dir="ltr">{item.email}</span>
-                  </div>
-                  <select value={item.role} onChange={(event) => void changeRole(item.id, event.target.value as User["role"])}>
-                    {Object.entries(roleLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-                  </select>
-                </article>
-              ))}
-            </div>
-          </section>
+          <>
+            <section className="admin-users-card">
+              <div className="section-heading">
+                <div><p className="eyebrow">Users</p><h2>کاربران</h2></div>
+                <span className="offer-count">{users.length} حساب</span>
+              </div>
+              <div className="admin-user-list">
+                {users.map((item) => (
+                  <article className="admin-user-row" key={item.id}>
+                    <div className="admin-user-avatar">{item.name.trim().charAt(0) || "ن"}</div>
+                    <div className="admin-user-info">
+                      <strong>{item.name}</strong>
+                      <span dir="ltr">{item.email}</span>
+                    </div>
+                    <select value={item.role} onChange={(event) => void changeRole(item.id, event.target.value as User["role"])}>
+                      {Object.entries(roleLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                    </select>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="admin-users-card admin-orders-card">
+              <div className="section-heading">
+                <div><p className="eyebrow">Orders</p><h2>سفارش‌ها</h2></div>
+                <span className="offer-count">{orders.length} سفارش</span>
+              </div>
+              <div className="admin-order-list">
+                {orders.length === 0 ? <p className="muted">هنوز سفارشی ثبت نشده است.</p> : orders.slice(0, 50).map((order) => (
+                  <article className="admin-user-row" key={order.id}>
+                    <div className="admin-user-info">
+                      <strong>سفارش #{order.id}</strong>
+                      <span>{order.items.length} قلم · مبلغ {order.total_amount.toLocaleString("fa-IR")} تومان</span>
+                    </div>
+                    <select value={order.status} onChange={(event) => void changeOrderStatus(order.id, event.target.value as Order["status"])}>
+                      <option value={order.status}>{order.status}</option>
+                      {order.status === "PENDING" && <><option value="CANCELLED">CANCELLED</option><option value="EXPIRED">EXPIRED</option></>}
+                      {order.status === "PAID" && <option value="READY_FOR_PICKUP">READY_FOR_PICKUP</option>}
+                      {order.status === "READY_FOR_PICKUP" && <option value="EXPIRED">EXPIRED</option>}
+                    </select>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </>
         )}
       </section>
       <MobileBottomNav cartCount={props.cartCount} userRole={props.user?.role || null} onCart={props.onCart} />

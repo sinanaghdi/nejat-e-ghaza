@@ -144,7 +144,7 @@ function App() {
       user={user}
       cartCount={cartCount}
       onCart={() => setCartOpen(true)}
-      onOrders={() => void ordersState.openOrders()}
+      onOrders={() => navigate("/orders")}
       onMerchant={() => void merchantState.openMerchantDashboard()}
       onLogin={() => openAuth("login")}
       onLogout={() => void handleLogout()}

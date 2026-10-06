@@ -552,6 +552,20 @@ export function getAdminUsers(token: string | null): Promise<User[]> {
   );
 }
 
+export function getAdminOrders(token: string | null): Promise<Order[]> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    if (role !== "ADMIN") return Promise.reject(new ApiError("Admin access required", 403));
+    return Promise.resolve(DEMO_ORDERS.map((order) => ({
+      ...order,
+      items: order.items.map((item) => ({ ...item })),
+    })));
+  }
+  return authRequest<unknown[]>("/api/admin/orders", token).then((items) =>
+    items.map(normalizeOrder),
+  );
+}
+
 export function updateUserRole(
   token: string | null,
   userId: number,

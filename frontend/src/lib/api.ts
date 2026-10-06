@@ -433,21 +433,33 @@ export function createPayment(
   orderId: number,
 ): Promise<PaymentStartResponse> {
   if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    if (role !== "CUSTOMER") {
+      return Promise.reject(new ApiError("فقط مشتری می‌تواند پرداخت را شروع کند.", 403));
+    }
+
+    const order = DEMO_ORDERS.find((item) => item.id === orderId);
+    if (!order) return Promise.reject(new ApiError("سفارش پیدا نشد.", 404));
+    if (order.status !== "PENDING") {
+      return Promise.reject(new ApiError("این سفارش در وضعیت قابل پرداخت نیست.", 409));
+    }
+
     return Promise.resolve({
       payment: {
         id: Date.now(),
         order_id: orderId,
         provider: "mock",
-        authority: `DEMO-${orderId}`,
+        authority: "DEMO-" + orderId,
         reference_id: null,
-        amount: 100000,
+        amount: order.total_amount,
         status: "PENDING",
         created_at: new Date().toISOString(),
         paid_at: null,
       },
-      checkout_url: `#/payment/result?status=success&order_id=${orderId}&ref_id=DEMO-${orderId}`,
+      checkout_url: "#/payment/result?status=success&order_id=" + orderId + "&ref_id=DEMO-" + orderId,
     });
   }
+
   return authRequest<unknown>(`/api/payments/orders/${orderId}`, token, {
     method: "POST",
   }).then((payload) => {
@@ -461,9 +473,11 @@ export function createPayment(
 
 export function getOrders(token: string | null): Promise<Order[]> {
   if (import.meta.env.VITE_DEMO_MODE === "true") {
-    const role = token?.startsWith("demo:") ? token.slice(5) : "CUSTOMER";
-    return Promise.resolve(role === "MERCHANT" ? DEMO_ORDERS : DEMO_ORDERS);
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    if (role !== "CUSTOMER") return Promise.reject(new ApiError("Customer access required", 403));
+    return Promise.resolve(DEMO_ORDERS.filter((order) => order.customer_id === 11));
   }
+
   return authRequest<unknown[]>("/api/orders", token).then((items) =>
     items.map(normalizeOrder),
   );
@@ -471,8 +485,11 @@ export function getOrders(token: string | null): Promise<Order[]> {
 
 export function getMerchantOrders(token: string | null): Promise<Order[]> {
   if (import.meta.env.VITE_DEMO_MODE === "true") {
-    return Promise.resolve(DEMO_ORDERS);
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    if (role !== "MERCHANT") return Promise.reject(new ApiError("Merchant access required", 403));
+    return Promise.resolve(DEMO_ORDERS.filter((order) => order.merchant_id === 101));
   }
+
   return authRequest<unknown[]>("/api/orders/merchant", token).then((items) =>
     items.map(normalizeOrder),
   );
@@ -480,8 +497,14 @@ export function getMerchantOrders(token: string | null): Promise<Order[]> {
 
 export function getOrder(token: string | null, orderId: number): Promise<Order> {
   if (import.meta.env.VITE_DEMO_MODE === "true") {
-    return Promise.resolve({ ...DEMO_ORDERS[0], id: orderId });
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    if (role !== "CUSTOMER") return Promise.reject(new ApiError("Customer access required", 403));
+    const order = DEMO_ORDERS.find((item) => item.id === orderId && item.customer_id === 11);
+    return order
+      ? Promise.resolve({ ...order, items: order.items.map((item) => ({ ...item })) })
+      : Promise.reject(new ApiError("سفارش پیدا نشد.", 404));
   }
+
   return authRequest<unknown>(`/api/orders/${orderId}`, token).then(
     normalizeOrder,
   );

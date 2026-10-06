@@ -591,6 +591,21 @@ export function createMerchantProfile(
   });
 }
 
+export function updateMerchantProfile(
+  token: string | null,
+  payload: Omit<MerchantProfile, "id" | "user_id">,
+): Promise<MerchantProfile> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const updated = { ...DEMO_MERCHANT_PROFILE, ...payload };
+    Object.assign(DEMO_MERCHANT_PROFILE, updated);
+    return Promise.resolve(updated);
+  }
+  return authRequest<MerchantProfile>("/api/merchant/profile", token, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
 export function getMyOffers(token: string | null): Promise<FoodOffer[]> {
   if (import.meta.env.VITE_DEMO_MODE === "true") {
     return Promise.resolve(DEMO_OFFERS.filter((offer) => offer.merchant_id === 101));
@@ -626,6 +641,33 @@ export function createOffer(
   }
   return authRequest<unknown>("/api/offers", token, {
     method: "POST",
+    body: JSON.stringify(payload),
+  }).then(normalizeFoodOffer);
+}
+
+export function updateOffer(
+  token: string | null,
+  offerId: number,
+  payload: OfferPayload,
+): Promise<FoodOffer> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    const offer = DEMO_OFFERS.find((item) => item.id === offerId);
+    if (role !== "MERCHANT") return Promise.reject(new ApiError("Merchant access required", 403));
+    if (!offer || offer.merchant_id !== 101) return Promise.reject(new ApiError("پیشنهاد پیدا نشد.", 404));
+    offer.title = payload.title;
+    offer.description = payload.description || null;
+    offer.original_price = payload.original_price;
+    offer.sale_price = payload.sale_price;
+    offer.quantity = payload.quantity;
+    offer.available_quantity = Math.min(offer.available_quantity, payload.quantity);
+    offer.pickup_start = payload.pickup_start;
+    offer.pickup_end = payload.pickup_end;
+    offer.image_url = payload.image_url || null;
+    return Promise.resolve({ ...offer });
+  }
+  return authRequest<unknown>(`/api/offers/${offerId}`, token, {
+    method: "PATCH",
     body: JSON.stringify(payload),
   }).then(normalizeFoodOffer);
 }

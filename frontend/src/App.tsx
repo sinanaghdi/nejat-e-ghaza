@@ -25,6 +25,7 @@ import { ProfilePage } from "./pages/ProfilePage";
 import { MerchantPage } from "./pages/MerchantPage";
 import { PaymentResultPage } from "./pages/PaymentResultPage";
 import { AuthPage } from "./pages/AuthPage";
+import { AdminPage } from "./pages/AdminPage";
 
 function App() {
   const location = useLocation();
@@ -64,6 +65,7 @@ function App() {
     handleAuthSubmit,
     handleLogout: logout,
     switchAuthMode,
+    loginDemo,
   } = auth;
 
   const {
@@ -97,10 +99,10 @@ function App() {
   }, [location.pathname, offerId]);
 
   useEffect(() => {
-    if (location.pathname === "/merchant" && !getToken()) {
-      openAuth("login");
+    if ((location.pathname === "/merchant" || location.pathname === "/admin") && !getToken()) {
+      navigate("/login", { replace: true });
     }
-  }, [location.pathname]);
+  }, [location.pathname, navigate]);
 
   const header = (
     <Header
@@ -132,6 +134,7 @@ function App() {
         onEmailChange={setEmail}
         onPasswordChange={setPassword}
         onSubmit={handleAuthSubmit}
+        onDemoLogin={loginDemo}
       />
     );
   } else if (location.pathname === "/payment/result") {
@@ -268,6 +271,18 @@ function App() {
           onLogout={() => void handleLogout()}
         />
       </>
+    );
+  } else if (location.pathname === "/admin") {
+    page = (
+      <AdminPage
+        user={user}
+        cartCount={cartCount}
+        onCart={() => setCartOpen(true)}
+        onOrders={() => navigate("/orders")}
+        onMerchant={() => navigate("/merchant")}
+        onLogin={() => navigate("/login")}
+        onLogout={() => void handleLogout()}
+      />
     );
   } else if (location.pathname === "/merchant") {
     page = (

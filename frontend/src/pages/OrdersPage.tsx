@@ -27,7 +27,7 @@ export function OrdersPage({ orders, loading, error, onRetry }: Props) {
               <div className="order-items">{order.items.map(item => <div className="order-item-row" key={item.id}><span>غذا #{item.food_offer_id} × {item.quantity}</span><strong>{formatToman(item.subtotal)}</strong></div>)}</div>
               <div className="order-total"><span>مبلغ کل</span><strong>{formatToman(order.total_amount)}</strong></div>
               <div className="pickup-code"><span>کد دریافت</span><strong>{order.pickup_code}</strong></div>
-              <time className="order-date" dateTime={order.created_at}>ثبت شده در {formatOrderDate(order.created_at)}</time>
+              <div className="order-card-actions"><a className="secondary-button compact" href={`#/orders/${order.id}`}>مشاهده جزئیات</a><time className="order-date" dateTime={order.created_at}>ثبت شده در {formatOrderDate(order.created_at)}</time></div>
             </article>
           ))}
         </div>

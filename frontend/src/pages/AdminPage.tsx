@@ -99,7 +99,7 @@ export function AdminPage(props: Props) {
         <section className="admin-summary-grid">
           <div><strong>{users.length}</strong><span>کاربر</span></div>
           <div><strong>{users.filter((item) => item.role === "MERCHANT").length}</strong><span>فروشنده</span></div>
-          <div><strong>{users.filter((item) => item.role === "CUSTOMER").length}</span><span>مشتری</span></div>
+          <div><strong>{users.filter((item) => item.role === "CUSTOMER").length}</strong><span>مشتری</span></div>
           <div><strong>{orders.length}</strong><span>سفارش</span></div>
         </section>
 

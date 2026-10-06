@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     payment_webhook_secret: str = "change-me"
     payment_provider: str = "mock"
     payment_callback_url: str = "http://localhost:8000/api/payments/zarinpal/callback"
-    frontend_payment_result_url: str = "http://localhost:5173/payment/result"
+    frontend_payment_result_url: str = "http://localhost:5173/#/payment/result"
     payment_http_timeout_seconds: float = 10.0
     zarinpal_merchant_id: str | None = None
     zarinpal_sandbox: bool = True

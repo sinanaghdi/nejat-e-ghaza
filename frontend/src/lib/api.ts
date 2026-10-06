@@ -2,43 +2,90 @@ import { getCsrfToken, setCsrfToken } from "./auth";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
 
+const DEMO_NOW = Date.now();
+
+function demoDate(offsetHours: number): string {
+  return new Date(DEMO_NOW + offsetHours * 60 * 60 * 1000).toISOString();
+}
+
 const DEMO_OFFERS: FoodOffer[] = [
   {
     id: 1, merchant_id: 101,
-    merchant: { id: 101, business_name: "کافه سبز", city: "کرمانشاه", address: "بلوار طاق‌بستان", latitude: null, longitude: null },
+    merchant: { id: 101, business_name: "کافه سبز", city: "کرمانشاه", address: "بلوار طاق‌بستان", latitude: 34.329, longitude: 47.077 },
     title: "باکس صبحانه ویژه", description: "ترکیبی از صبحانه تازه و خوراکی‌های روز کافه با تخفیف ویژه.",
     original_price: 180000, sale_price: 89000, quantity: 8, available_quantity: 5,
-    pickup_start: "2026-10-04T18:00:00", pickup_end: "2026-10-04T21:00:00", image_url: null, is_active: true, created_at: "2026-10-04T10:00:00",
+    pickup_start: demoDate(1), pickup_end: demoDate(4), image_url: null, is_active: true, created_at: demoDate(-1),
   },
   {
     id: 2, merchant_id: 102,
-    merchant: { id: 102, business_name: "فست‌فود هفت", city: "کرمانشاه", address: "خیابان برق", latitude: null, longitude: null },
+    merchant: { id: 102, business_name: "فست‌فود هفت", city: "کرمانشاه", address: "خیابان برق", latitude: 34.317, longitude: 47.082 },
     title: "باکس پیتزا و سیب‌زمینی", description: "غذای مازاد تازه امشب با قیمت کمتر؛ مناسب یک نفر.",
     original_price: 320000, sale_price: 159000, quantity: 6, available_quantity: 3,
-    pickup_start: "2026-10-04T20:00:00", pickup_end: "2026-10-04T23:00:00", image_url: null, is_active: true, created_at: "2026-10-04T11:00:00",
+    pickup_start: demoDate(2), pickup_end: demoDate(5), image_url: null, is_active: true, created_at: demoDate(-0.5),
   },
   {
     id: 3, merchant_id: 103,
-    merchant: { id: 103, business_name: "رستوران خانه", city: "کرمانشاه", address: "میدان آزادگان", latitude: null, longitude: null },
+    merchant: { id: 103, business_name: "رستوران خانه", city: "کرمانشاه", address: "میدان آزادگان", latitude: 34.301, longitude: 47.088 },
     title: "باکس شام خانوادگی", description: "چند غذای محبوب رستوران برای جلوگیری از هدررفت مواد غذایی.",
     original_price: 540000, sale_price: 249000, quantity: 4, available_quantity: 2,
-    pickup_start: "2026-10-04T19:30:00", pickup_end: "2026-10-04T22:30:00", image_url: null, is_active: true, created_at: "2026-10-04T12:00:00",
+    pickup_start: demoDate(1.5), pickup_end: demoDate(4.5), image_url: null, is_active: true, created_at: demoDate(-2),
   },
 ];
 
+function demoDistanceKm(latitude: number, longitude: number, offer: FoodOffer): number {
+  if (offer.merchant.latitude === null || offer.merchant.longitude === null) return Number.POSITIVE_INFINITY;
+  const toRadians = (value: number) => value * Math.PI / 180;
+  const lat1 = toRadians(latitude);
+  const lat2 = toRadians(offer.merchant.latitude);
+  const deltaLat = lat2 - lat1;
+  const deltaLon = toRadians(offer.merchant.longitude - longitude);
+  const a = Math.sin(deltaLat / 2) ** 2
+    + Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 function demoOffers(filters: OfferFilters = {}): FoodOffer[] {
-  let items = [...DEMO_OFFERS];
+  let items = DEMO_OFFERS.filter((item) =>
+    item.is_active &&
+    item.available_quantity > 0 &&
+    new Date(item.pickup_end).getTime() > Date.now()
+  );
+
   if (filters.query?.trim()) {
     const q = filters.query.trim().toLowerCase();
-    items = items.filter((item) => `${item.title} ${item.description ?? ""} ${item.merchant.business_name}`.toLowerCase().includes(q));
+    items = items.filter((item) =>
+      [item.title, item.description ?? "", item.merchant.business_name].join(" ").toLowerCase().includes(q)
+    );
   }
   if (filters.city?.trim()) {
     const city = filters.city.trim().toLowerCase();
     items = items.filter((item) => item.merchant.city.toLowerCase().includes(city));
   }
+  if (filters.min_price !== undefined) {
+    items = items.filter((item) => item.sale_price >= filters.min_price!);
+  }
+  if (filters.max_price !== undefined) {
+    items = items.filter((item) => item.sale_price <= filters.max_price!);
+  }
+  if (filters.radius_km !== undefined && filters.latitude !== undefined && filters.longitude !== undefined) {
+    items = items.filter((item) => demoDistanceKm(filters.latitude!, filters.longitude!, item) <= filters.radius_km!);
+  }
+
   if (filters.sort === "price_asc") items.sort((a, b) => a.sale_price - b.sale_price);
-  if (filters.sort === "price_desc") items.sort((a, b) => b.sale_price - a.sale_price);
-  if (filters.sort === "discount") items.sort((a, b) => ((b.original_price-b.sale_price)/b.original_price) - ((a.original_price-a.sale_price)/a.original_price));
+  else if (filters.sort === "price_desc") items.sort((a, b) => b.sale_price - a.sale_price);
+  else if (filters.sort === "discount") items.sort((a, b) =>
+    ((b.original_price - b.sale_price) / b.original_price) -
+    ((a.original_price - a.sale_price) / a.original_price)
+  );
+  else if (filters.sort === "distance" && filters.latitude !== undefined && filters.longitude !== undefined) {
+    items.sort((a, b) =>
+      demoDistanceKm(filters.latitude!, filters.longitude!, a) -
+      demoDistanceKm(filters.latitude!, filters.longitude!, b)
+    );
+  } else {
+    items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }
+
   return items;
 }
 
@@ -147,7 +194,7 @@ const DEMO_USERS: Record<User["role"], User> = {
   ADMIN: { id: 1, name: "مدیر دمو", email: "admin@demo.local", role: "ADMIN" },
 };
 
-const DEMO_ORDERS: Order[] = [
+let DEMO_ORDERS: Order[] = [
   {
     id: 1001,
     customer_id: 11,
@@ -304,27 +351,60 @@ export function createOrder(
   items: OrderItemCreate[],
 ): Promise<Order> {
   if (import.meta.env.VITE_DEMO_MODE === "true") {
-    const first = items[0] || { food_offer_id: 1, quantity: 1 };
-    const offer = DEMO_OFFERS.find((item) => item.id === first.food_offer_id) || DEMO_OFFERS[0];
-    const quantity = Math.min(first.quantity, offer.available_quantity);
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    if (role !== "CUSTOMER") return Promise.reject(new ApiError("فقط حساب مشتری می‌تواند سفارش ثبت کند.", 403));
+    if (!items.length) return Promise.reject(new ApiError("سبد خرید خالی است.", 422));
+
+    const ids = items.map((item) => item.food_offer_id);
+    if (new Set(ids).size !== ids.length) return Promise.reject(new ApiError("هر پیشنهاد فقط یک‌بار در سفارش مجاز است.", 422));
+
+    const offers = items.map((item) => DEMO_OFFERS.find((offer) => offer.id === item.food_offer_id));
+    if (offers.some((offer) => !offer)) return Promise.reject(new ApiError("یکی از پیشنهادها پیدا نشد.", 404));
+
+    const resolved = offers as FoodOffer[];
+    const merchantId = resolved[0].merchant_id;
+    if (resolved.some((offer) => offer.merchant_id !== merchantId)) {
+      return Promise.reject(new ApiError("در هر سفارش فقط از یک فروشنده خرید کن.", 422));
+    }
+
+    for (let index = 0; index < items.length; index += 1) {
+      const requested = items[index];
+      const offer = resolved[index];
+      if (!offer.is_active || new Date(offer.pickup_end).getTime() <= Date.now()) {
+        return Promise.reject(new ApiError("یکی از پیشنهادها دیگر فعال نیست.", 409));
+      }
+      if (offer.available_quantity < requested.quantity) {
+        return Promise.reject(new ApiError("موجودی یکی از پیشنهادها کافی نیست.", 409));
+      }
+    }
+
+    const orderItems = items.map((requested, index) => {
+      const offer = resolved[index];
+      offer.available_quantity -= requested.quantity;
+      return {
+        id: Date.now() + index,
+        food_offer_id: offer.id,
+        quantity: requested.quantity,
+        unit_price: offer.sale_price,
+        subtotal: offer.sale_price * requested.quantity,
+      };
+    });
+
     const order: Order = {
       id: Date.now(),
       customer_id: 11,
-      merchant_id: offer.merchant_id,
-      total_amount: offer.sale_price * quantity,
+      merchant_id: merchantId,
+      total_amount: orderItems.reduce((sum, item) => sum + item.subtotal, 0),
       status: "PENDING",
       pickup_code: String(Math.floor(1000 + Math.random() * 9000)),
       created_at: new Date().toISOString(),
-      items: [{
-        id: Date.now(),
-        food_offer_id: offer.id,
-        quantity,
-        unit_price: offer.sale_price,
-        subtotal: offer.sale_price * quantity,
-      }],
+      items: orderItems,
     };
+
+    DEMO_ORDERS.unshift(order);
     return Promise.resolve(order);
   }
+
   return authRequest<unknown>("/api/orders", token, {
     method: "POST",
     body: JSON.stringify({ items }),

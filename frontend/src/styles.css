@@ -1087,3 +1087,32 @@ select {
 .order-action-stack .secondary-button {
   margin-top: 0;
 }
+
+.notifications-page { padding-bottom: 90px; }
+.notifications-header { align-items: center; }
+.notifications-list { display: grid; gap: 12px; max-width: 820px; }
+.notification-card {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  align-items: start;
+  text-align: right;
+  border: 1px solid #e2e7e0;
+  border-radius: 17px;
+  padding: 16px;
+  background: #fff;
+  color: inherit;
+  box-shadow: 0 7px 22px rgba(23,35,29,.04);
+}
+.notification-card.unread { border-color: #bfd2c0; background: #f7fbf6; }
+.notification-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; background: #e9f0e7; font-size: 1.2rem; }
+.notification-content { min-width: 0; display: grid; gap: 5px; }
+.notification-content strong { font-size: .95rem; color: #25362b; }
+.notification-content span { color: #68736c; line-height: 1.8; font-size: .82rem; }
+.notification-content time { color: #8a928c; font-size: .7rem; }
+.notification-dot { width: 9px; height: 9px; border-radius: 50%; background: #2f6b42; margin-top: 7px; }
+@media (max-width: 700px) {
+  .notifications-header { align-items: flex-start; }
+  .notifications-header .secondary-button { width: auto; }
+}

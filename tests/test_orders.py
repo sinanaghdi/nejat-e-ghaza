@@ -461,3 +461,82 @@ def test_order_rejects_expired_offer(client, db):
 
     assert response.status_code == 409
     assert response.json()["detail"].endswith("has expired")
+
+def test_merchant_cannot_complete_ready_order_without_pickup_verification(client, db):
+    customer, merchant_user, _, offer = _setup_order(db)
+    customer_token = _login(client, customer.email)
+    merchant_token = _login(client, merchant_user.email)
+
+    response = client.post(
+        "/api/orders",
+        json={"items": [{"food_offer_id": offer.id, "quantity": 1}]},
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    order_id = response.json()["id"]
+
+    from app.db.models.order import Order
+    from app.models.enums import OrderStatus
+    order = db.get(Order, order_id)
+    order.status = OrderStatus.READY_FOR_PICKUP
+    db.commit()
+
+    response = client.patch(
+        f"/api/orders/{order_id}/status",
+        json={"status": "COMPLETED"},
+        headers={"Authorization": f"Bearer {merchant_token}"},
+    )
+    assert response.status_code == 403
+
+
+def test_merchant_can_complete_ready_order_with_pickup_code(client, db):
+    customer, merchant_user, _, offer = _setup_order(db)
+    customer_token = _login(client, customer.email)
+    merchant_token = _login(client, merchant_user.email)
+
+    response = client.post(
+        "/api/orders",
+        json={"items": [{"food_offer_id": offer.id, "quantity": 1}]},
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    order_id = response.json()["id"]
+    pickup_code = response.json()["pickup_code"]
+
+    from app.db.models.order import Order
+    from app.models.enums import OrderStatus
+    order = db.get(Order, order_id)
+    order.status = OrderStatus.READY_FOR_PICKUP
+    db.commit()
+
+    response = client.post(
+        f"/api/orders/{order_id}/pickup/verify",
+        json={"pickup_code": pickup_code},
+        headers={"Authorization": f"Bearer {merchant_token}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "COMPLETED"
+
+
+def test_merchant_rejects_wrong_pickup_code(client, db):
+    customer, merchant_user, _, offer = _setup_order(db)
+    customer_token = _login(client, customer.email)
+    merchant_token = _login(client, merchant_user.email)
+
+    response = client.post(
+        "/api/orders",
+        json={"items": [{"food_offer_id": offer.id, "quantity": 1}]},
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    order_id = response.json()["id"]
+
+    from app.db.models.order import Order
+    from app.models.enums import OrderStatus
+    order = db.get(Order, order_id)
+    order.status = OrderStatus.READY_FOR_PICKUP
+    db.commit()
+
+    response = client.post(
+        f"/api/orders/{order_id}/pickup/verify",
+        json={"pickup_code": "0000"},
+        headers={"Authorization": f"Bearer {merchant_token}"},
+    )
+    assert response.status_code == 403

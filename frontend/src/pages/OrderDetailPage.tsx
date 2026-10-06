@@ -80,7 +80,8 @@ export function OrderDetailPage({
         window.location.assign(payment.checkout_url);
         return;
       }
-      setPaymentMessage("درگاه آزمایشی آماده شد. در محیط واقعی به صفحه پرداخت منتقل می‌شوی.");
+      setOrder((current) => current ? { ...current, status: "PAID" } : current);
+      setPaymentMessage("پرداخت دمو با موفقیت ثبت شد. سفارش آماده پردازش فروشنده است.");
     } catch (err) {
       setCancelError(err instanceof Error ? err.message : "شروع پرداخت انجام نشد.");
     } finally {

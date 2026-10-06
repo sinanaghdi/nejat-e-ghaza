@@ -690,6 +690,28 @@ export function cancelOrder(token: string | null, orderId: number): Promise<Orde
   return updateOrderStatus(token, orderId, "CANCELLED");
 }
 
+export function verifyPickupCode(
+  token: string | null,
+  orderId: number,
+  pickupCode: string,
+): Promise<Order> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const order = DEMO_ORDERS.find((item) => item.id === orderId);
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    if (role !== "MERCHANT") return Promise.reject(new ApiError("Merchant access required", 403));
+    if (!order || order.merchant_id !== 101) return Promise.reject(new ApiError("سفارش پیدا نشد.", 404));
+    if (order.status !== "READY_FOR_PICKUP") return Promise.reject(new ApiError("سفارش آماده تحویل نیست.", 409));
+    if (order.pickup_code !== pickupCode.trim()) return Promise.reject(new ApiError("کد دریافت اشتباه است.", 403));
+    order.status = "COMPLETED";
+    return Promise.resolve({ ...order, items: order.items.map((item) => ({ ...item })) });
+  }
+
+  return authRequest<unknown>(`/api/orders/${orderId}/pickup/verify`, token, {
+    method: "POST",
+    body: JSON.stringify({ pickup_code: pickupCode }),
+  }).then(normalizeOrder);
+}
+
 function normalizeFoodOffer(value: unknown): FoodOffer {
   const offer = value as Record<string, unknown>;
   const merchant = offer.merchant as Record<string, unknown>;

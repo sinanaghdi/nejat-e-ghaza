@@ -8,6 +8,7 @@ from app.db.database import get_db
 from app.db.models.user import User
 from app.models.enums import UserRole
 from app.schemas.user import RoleUpdate, UserAdminResponse
+from app.schemas.order import OrderResponse
 from app.services import admin as admin_service
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -19,6 +20,14 @@ def list_users(
     db: Annotated[Session, Depends(get_db)],
 ):
     return admin_service.list_users(db)
+
+
+@router.get("/orders", response_model=list[OrderResponse])
+def list_orders(
+    current_user: Annotated[User, Depends(require_role(UserRole.ADMIN))],
+    db: Annotated[Session, Depends(get_db)],
+):
+    return admin_service.list_orders(db)
 
 
 @router.patch("/users/{user_id}/role", response_model=UserAdminResponse)

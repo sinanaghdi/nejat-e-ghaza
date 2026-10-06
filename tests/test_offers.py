@@ -120,3 +120,101 @@ def test_expired_offer_is_not_publicly_listed(client, db):
     response = client.get("/api/offers")
     assert response.status_code == 200
     assert all(item["title"] != "پیشنهاد منقضی" for item in response.json())
+
+def test_merchant_can_update_own_offer(client, db):
+    from app.db.models.merchant import Merchant
+    from app.db.models.food_offer import FoodOffer
+    from datetime import datetime, timedelta, timezone
+
+    merchant_user = make_merchant(db, user_id=30)
+    merchant = Merchant(
+        user_id=merchant_user.id,
+        business_name="کافه ویرایش",
+        address="خیابان اصلی",
+        city="کرمانشاه",
+    )
+    db.add(merchant)
+    db.commit()
+
+    now = datetime.now(timezone.utc)
+    offer = FoodOffer(
+        merchant_id=merchant.id,
+        title="باکس قدیمی",
+        original_price=200000,
+        sale_price=100000,
+        quantity=5,
+        available_quantity=5,
+        pickup_start=now + timedelta(hours=1),
+        pickup_end=now + timedelta(hours=3),
+    )
+    db.add(offer)
+    db.commit()
+
+    token = client.post(
+        "/api/auth/login",
+        json={"email": merchant_user.email, "password": "password123"},
+    ).json()["access_token"]
+
+    response = client.patch(
+        f"/api/offers/{offer.id}",
+        json={
+            "title": "باکس جدید",
+            "description": "تازه شد",
+            "original_price": "220000",
+            "sale_price": "110000",
+            "quantity": 4,
+            "available_quantity": 4,
+            "pickup_start": (now + timedelta(hours=2)).isoformat(),
+            "pickup_end": (now + timedelta(hours=4)).isoformat(),
+        },
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["title"] == "باکس جدید"
+    assert response.json()["available_quantity"] == 4
+
+
+def test_merchant_cannot_update_other_merchants_offer(client, db):
+    from app.db.models.merchant import Merchant
+    from app.db.models.food_offer import FoodOffer
+    from datetime import datetime, timedelta, timezone
+
+    merchant_one = make_merchant(db, user_id=31)
+    merchant_two_user = make_merchant(db, user_id=32)
+
+    merchant_two = Merchant(
+        user_id=merchant_two_user.id,
+        business_name="کافه دوم",
+        address="خیابان دوم",
+        city="کرمانشاه",
+    )
+    db.add(merchant_two)
+    db.commit()
+
+    now = datetime.now(timezone.utc)
+    offer = FoodOffer(
+        merchant_id=merchant_two.id,
+        title="غذای دوم",
+        original_price=100000,
+        sale_price=50000,
+        quantity=2,
+        available_quantity=2,
+        pickup_start=now + timedelta(hours=1),
+        pickup_end=now + timedelta(hours=3),
+    )
+    db.add(offer)
+    db.commit()
+
+    token = client.post(
+        "/api/auth/login",
+        json={"email": merchant_one.email, "password": "password123"},
+    ).json()["access_token"]
+
+    response = client.patch(
+        f"/api/offers/{offer.id}",
+        json={"title": "نباید تغییر کند"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 403

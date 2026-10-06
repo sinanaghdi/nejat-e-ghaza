@@ -23,7 +23,9 @@ export function Header({ user, cartCount, onOrders, onMerchant, onLogin, onLogou
         </Link>
         {user ? (
           <>
-            <Link className="orders-button" to="/orders" onClick={onOrders}>سفارش‌های من</Link>
+            {user.role === "CUSTOMER" && (
+              <Link className="orders-button" to="/orders" onClick={onOrders}>سفارش‌های من</Link>
+            )}
             <Link className="orders-button" to="/profile">پروفایل</Link>
             {user.role === "MERCHANT" && (
               <Link className="orders-button" to="/merchant" onClick={onMerchant}>پنل فروشنده</Link>

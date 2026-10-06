@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FoodOffer } from "../lib/api";
 import {
   ApiError,
@@ -18,14 +18,31 @@ type Params = {
   refreshOffers: () => Promise<void>;
 };
 
+const STORAGE_KEY = "nejat-e-ghaza-cart";
+
+function readStoredCart(): CartItem[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as CartItem[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 export function useCart({ openAuth, refreshOffers }: Params) {
   const [selectedOffer, setSelectedOffer] = useState<FoodOffer | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(readStoredCart);
   const [cartOpen, setCartOpen] = useState(false);
   const [orderLoading, setOrderLoading] = useState(false);
   const [orderMessage, setOrderMessage] = useState("");
   const [orderError, setOrderError] = useState("");
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+  }, [cart]);
 
   function openOffer(offer: FoodOffer) {
     setSelectedOffer(offer);

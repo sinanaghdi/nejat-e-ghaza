@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from sqlalchemy import and_, func, or_, select
 from app.db.models.merchant import Merchant
 from sqlalchemy.orm import Session
@@ -37,6 +39,7 @@ def list_active(
     filters = [
         FoodOffer.is_active.is_(True),
         FoodOffer.available_quantity > 0,
+        FoodOffer.pickup_end > datetime.now(timezone.utc),
     ]
 
     if query:

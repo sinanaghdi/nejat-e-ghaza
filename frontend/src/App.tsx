@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import { ApiError, FoodOffer, getOffer, getOffers, getOrders, Order, MerchantProfile, createMerchantProfile, getMerchantProfile, getMyOffers, createOffer, deactivateOffer, updateOrderStatus, OfferPayload } from "./lib/api";
+import { ApiError, FoodOffer, getOrders, Order, MerchantProfile, createMerchantProfile, getMerchantProfile, getMyOffers, createOffer, deactivateOffer, updateOrderStatus, OfferPayload } from "./lib/api";
 import { getToken } from "./lib/auth";
 import { formatPickupTime, formatToman } from "./lib/formatters";
 import { useAuth } from "./hooks/useAuth";
@@ -49,6 +49,7 @@ function App() {
     setCity,
     setSort,
     loadOffers,
+    loadOffer,
     enableNearby,
   } = useMarketplace();
 
@@ -138,16 +139,12 @@ function App() {
       setSelectedQuantity(1);
       return;
     }
-    setLoading(true);
-    setError("");
-    getOffer(id)
+    loadOffer(id)
       .then((offer) => {
-        setOffers((current) => current.some((item) => item.id === offer.id) ? current : [...current, offer]);
         setSelectedOffer(offer);
         setSelectedQuantity(1);
       })
-      .catch((err) => setError(err instanceof ApiError ? err.message : "دریافت این پیشنهاد انجام نشد."))
-      .finally(() => setLoading(false));
+      .catch(() => undefined);
   }, [location.pathname, offerId, offers]);
 
   useEffect(() => {

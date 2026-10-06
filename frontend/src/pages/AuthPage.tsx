@@ -39,7 +39,12 @@ export function AuthPage({
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) navigate("/", { replace: true });
+    if (!user) return;
+    const destination =
+      user.role === "MERCHANT" ? "/merchant" :
+      user.role === "ADMIN" ? "/admin" :
+      "/dashboard";
+    navigate(destination, { replace: true });
   }, [user, navigate]);
 
   return (

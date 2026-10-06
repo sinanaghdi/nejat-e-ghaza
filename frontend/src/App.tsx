@@ -58,7 +58,7 @@ function App() {
     openAuth,
     closeAuth,
     handleAuthSubmit,
-    handleLogout,
+    handleLogout: logout,
     switchAuthMode,
   } = useAuth();
 
@@ -96,6 +96,12 @@ function App() {
   const [offerFormOpen, setOfferFormOpen] = useState(false);
   const [merchantForm, setMerchantForm] = useState({ business_name: "", description: "", address: "", city: "", latitude: "", longitude: "" });
   const [offerForm, setOfferForm] = useState({ title: "", description: "", original_price: "", sale_price: "", quantity: "1", pickup_start: "", pickup_end: "", image_url: "" });
+
+  async function handleLogout() {
+    await logout();
+    setOrders([]);
+    setOrdersOpen(false);
+  }
 
   async function loadOffers() {
     setLoading(true);

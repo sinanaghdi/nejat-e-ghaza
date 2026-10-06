@@ -6,7 +6,6 @@ import { useAuth } from "./hooks/useAuth";
 import { useCart } from "./hooks/useCart";
 import { useMerchant } from "./hooks/useMerchant";
 import { useMarketplace } from "./hooks/useMarketplace";
-import { StatusBadge } from "./components/StatusBadge";
 import { Header } from "./components/Header";
 import { Hero } from "./components/Hero";
 import { HowItWorks } from "./components/HowItWorks";

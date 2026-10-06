@@ -95,12 +95,33 @@ export function AdminPage(props: Props) {
           <h1>داشبورد مدیر</h1>
           <p>مدیریت کاربران و نقش‌ها در یک نمای ساده و قابل ارائه.</p>
         </header>
-        <section className="admin-summary-grid">
-          <div><strong>{users.length}</strong><span>کاربر</span></div>
-          <div><strong>{users.filter((item) => item.role === "MERCHANT").length}</strong><span>فروشنده</span></div>
-          <div><strong>{users.filter((item) => item.role === "CUSTOMER").length}</strong><span>مشتری</span></div>
-          <div><strong>{orders.length}</strong><span>سفارش</span></div>
-        </section>
+        {(() => {
+          const completedOrders = orders.filter((order) => order.status === "COMPLETED");
+          const activeOrders = orders.filter((order) =>
+            ["PAID", "READY_FOR_PICKUP", "COMPLETED"].includes(order.status),
+          );
+          const rescuedMeals = completedOrders.reduce(
+            (sum, order) => sum + order.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
+            0,
+          );
+          const grossSales = activeOrders.reduce((sum, order) => sum + order.total_amount, 0);
+          const cancellationRate = orders.length
+            ? Math.round((orders.filter((order) => order.status === "CANCELLED").length / orders.length) * 100)
+            : 0;
+
+          return (
+            <section className="admin-summary-grid">
+              <div><strong>{users.length}</strong><span>کاربر</span></div>
+              <div><strong>{users.filter((item) => item.role === "MERCHANT").length}</strong><span>فروشنده</span></div>
+              <div><strong>{users.filter((item) => item.role === "CUSTOMER").length}</strong><span>مشتری</span></div>
+              <div><strong>{orders.length}</strong><span>سفارش</span></div>
+              <div><strong>{completedOrders.length}</strong><span>سفارش تکمیل‌شده</span></div>
+              <div><strong>{rescuedMeals}</strong><span>غذای نجات‌یافته</span></div>
+              <div><strong>{grossSales.toLocaleString("fa-IR")}</strong><span>فروش ثبت‌شده (تومان)</span></div>
+              <div><strong>{cancellationRate}٪</strong><span>نرخ لغو</span></div>
+            </section>
+          );
+        })()}
 
         {loading && <div className="state-card"><div className="spinner" />در حال دریافت اطلاعات مدیریت...</div>}
         {!loading && error && <div className="state-card error-state"><div className="state-icon">!</div><h3>دریافت اطلاعات ناموفق بود</h3><p>{error}</p></div>}

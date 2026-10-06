@@ -16,7 +16,7 @@ export function Header({ user, cartCount, onCart, onOrders, onMerchant, onLogin,
     <nav className="nav">
       <Link className="brand" to="/" aria-label="صفحه اصلی نجات غذا">نجات غذا</Link>
       <div className="nav-links">
-        <NavLink to="/offers">پیشنهادها</NavLink>
+        <NavLink to="/#offers">پیشنهادها</NavLink>
         <NavLink to="/#how-it-works">چطور کار می‌کند؟</NavLink>
         <button className="cart-button" type="button" onClick={onCart}>
           سبد خرید{cartCount > 0 && <span>{cartCount}</span>}

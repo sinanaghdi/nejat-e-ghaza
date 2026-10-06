@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { Order, User } from "../lib/api";
-import { getOrder } from "../lib/api";
+import { cancelOrder, getOrder } from "../lib/api";
 import { getToken } from "../lib/auth";
 import { formatOrderDate, formatToman } from "../lib/formatters";
 import { Header } from "../components/Header";
@@ -41,6 +41,8 @@ export function OrderDetailPage({
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [cancelError, setCancelError] = useState("");
 
   useEffect(() => {
     if (!getToken()) {
@@ -63,6 +65,22 @@ export function OrderDetailPage({
       active = false;
     };
   }, [orderId]);
+
+  async function handleCancelOrder() {
+    if (!order || order.status !== "PENDING") return;
+    if (!window.confirm("سفارش در حال انتظار پرداخت لغو شود؟")) return;
+
+    setCancelLoading(true);
+    setCancelError("");
+    try {
+      const updated = await cancelOrder(getToken(), order.id);
+      setOrder(updated);
+    } catch (err) {
+      setCancelError(err instanceof Error ? err.message : "لغو سفارش انجام نشد.");
+    } finally {
+      setCancelLoading(false);
+    }
+  }
 
   return (
     <main className="app">
@@ -126,6 +144,18 @@ export function OrderDetailPage({
               <span>مبلغ کل</span>
               <strong>{formatToman(order.total_amount)}</strong>
             </div>
+
+            {cancelError && <p className="form-message error-message">{cancelError}</p>}
+            {order.status === "PENDING" && (
+              <button
+                className="secondary-button danger-action"
+                type="button"
+                disabled={cancelLoading}
+                onClick={() => void handleCancelOrder()}
+              >
+                {cancelLoading ? "در حال لغو..." : "لغو سفارش"}
+              </button>
+            )}
 
             <time className="order-date" dateTime={order.created_at}>
               ثبت شده در {formatOrderDate(order.created_at)}

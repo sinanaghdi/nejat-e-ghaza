@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, type ReactElement } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getToken } from "./lib/auth";
 import { useAuth } from "./hooks/useAuth";
@@ -114,7 +114,7 @@ function App() {
     />
   );
 
-  let page: JSX.Element;
+  let page: ReactElement;
 
   if (location.pathname === "/login" || location.pathname === "/register") {
     page = (

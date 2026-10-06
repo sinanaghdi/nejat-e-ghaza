@@ -72,6 +72,8 @@ jobs:
         run: npm run typecheck
 
       - name: Build
+        env:
+          VITE_BASE_PATH: "/"
         run: npm run build
 
       - name: Install Playwright browser

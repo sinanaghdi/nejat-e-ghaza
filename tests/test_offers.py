@@ -86,3 +86,37 @@ def test_nearby_offer_sort_requires_coordinates(client):
 def test_nearby_offer_requires_coordinate_pair(client):
     response = client.get("/api/offers", params={"latitude": 34.3})
     assert response.status_code == 422
+
+def test_expired_offer_is_not_publicly_listed(client, db):
+    from app.db.models.merchant import Merchant
+    from app.db.models.food_offer import FoodOffer
+
+    merchant_user = make_merchant(db, user_id=20)
+    merchant = Merchant(
+        user_id=merchant_user.id,
+        business_name="کافه قدیمی",
+        address="خیابان اصلی",
+        city="کرمانشاه",
+    )
+    db.add(merchant)
+    db.commit()
+
+    now = datetime.now(timezone.utc)
+    db.add(
+        FoodOffer(
+            merchant_id=merchant.id,
+            title="پیشنهاد منقضی",
+            original_price=100000,
+            sale_price=50000,
+            quantity=2,
+            available_quantity=2,
+            pickup_start=now - timedelta(hours=2),
+            pickup_end=now - timedelta(minutes=1),
+            is_active=True,
+        )
+    )
+    db.commit()
+
+    response = client.get("/api/offers")
+    assert response.status_code == 200
+    assert all(item["title"] != "پیشنهاد منقضی" for item in response.json())

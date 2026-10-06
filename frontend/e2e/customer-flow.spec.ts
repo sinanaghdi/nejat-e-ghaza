@@ -184,7 +184,7 @@ test("customer can discover, authenticate, order, and review order status", asyn
   await page.getByRole("button", { name: "جست‌وجو" }).click();
   await expect(page.getByRole("heading", { name: "باکس شام نجات" })).toBeVisible();
 
-  await page.getByRole("button", { name: "ورود" }).click();
+  await page.locator(".nav").getByRole("link", { name: "ورود" }).click();
   await page.getByRole("button", { name: "ثبت‌نام" }).click();
   await page.getByLabel("نام و نام خانوادگی").fill(customer.name);
   await page.getByLabel("ایمیل").fill(customer.email);
@@ -204,7 +204,7 @@ test("customer can discover, authenticate, order, and review order status", asyn
   await page.getByRole("button", { name: "ثبت سفارش" }).click();
   await expect(page.getByText("سفارش #1 ثبت شد")).toBeVisible();
 
-  await page.getByRole("button", { name: "سفارش‌های من" }).click();
+  await page.locator(".nav").getByRole("link", { name: "سفارش‌های من" }).click();
   await expect(page.getByRole("heading", { name: "سفارش‌های من" })).toBeVisible();
   await expect(page.getByText("پرداخت شده")).toBeVisible();
   await expect(page.getByText("#1", { exact: true })).toBeVisible();

@@ -105,6 +105,40 @@ function App() {
     }
   }, [location.pathname, navigate]);
 
+  useEffect(() => {
+    if (!user) return;
+
+    const path = location.pathname;
+    const roleHome =
+      user.role === "MERCHANT" ? "/merchant" :
+      user.role === "ADMIN" ? "/admin" :
+      "/dashboard";
+
+    if (path === "/dashboard" && user.role !== "CUSTOMER") {
+      navigate(roleHome, { replace: true });
+      return;
+    }
+
+    if (path === "/merchant" && user.role !== "MERCHANT") {
+      navigate(roleHome, { replace: true });
+      return;
+    }
+
+    if (path === "/admin" && user.role !== "ADMIN") {
+      navigate(roleHome, { replace: true });
+      return;
+    }
+
+    if ((path === "/orders" || path.startsWith("/orders/")) && user.role !== "CUSTOMER") {
+      navigate(roleHome, { replace: true });
+      return;
+    }
+
+    if (path === "/checkout" && user.role !== "CUSTOMER") {
+      navigate(roleHome, { replace: true });
+    }
+  }, [location.pathname, navigate, user]);
+ 
   const header = (
     <Header
       user={user}

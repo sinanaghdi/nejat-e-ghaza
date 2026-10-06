@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { ApiError, FoodOffer, getOffer, getOffers, getOrders, Order, MerchantProfile, createMerchantProfile, getMerchantProfile, getMyOffers, createOffer, deactivateOffer, updateOrderStatus, OfferPayload } from "./lib/api";
 import { getToken } from "./lib/auth";
@@ -6,6 +6,7 @@ import { formatPickupTime, formatToman } from "./lib/formatters";
 import { useAuth } from "./hooks/useAuth";
 import { useCart } from "./hooks/useCart";
 import { useMerchant } from "./hooks/useMerchant";
+import { useMarketplace } from "./hooks/useMarketplace";
 import { OfferCard } from "./components/OfferCard";
 import { QuantityControl } from "./components/QuantityControl";
 import { StatusBadge } from "./components/StatusBadge";
@@ -34,15 +35,23 @@ function discountPercent(offer: FoodOffer): number {
 function App() {
   const location = useLocation();
   const { offerId } = useParams();
-  const [offers, setOffers] = useState<FoodOffer[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [search, setSearch] = useState("");
-  const [city, setCity] = useState("");
-  const [sort, setSort] = useState<"newest" | "price_asc" | "price_desc" | "discount">("newest");
-  const [nearby, setNearby] = useState(false);
-  const [locationStatus, setLocationStatus] = useState<"idle" | "loading" | "denied" | "ready">("idle");
-  const [userCoordinates, setUserCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
+  const {
+    offers,
+    loading,
+    error,
+    search,
+    city,
+    sort,
+    nearby,
+    locationStatus,
+    availableOffers,
+    setSearch,
+    setCity,
+    setSort,
+    loadOffers,
+    enableNearby,
+  } = useMarketplace();
+
   const {
     user,
     authMode,
@@ -119,25 +128,6 @@ function App() {
     setOrdersOpen(false);
   }
 
-  async function loadOffers() {
-    setLoading(true);
-    setError("");
-    try {
-      setOffers(await getOffers({
-        query: search,
-        city,
-        sort: nearby && userCoordinates ? "distance" : sort,
-        latitude: nearby && userCoordinates ? userCoordinates.latitude : undefined,
-        longitude: nearby && userCoordinates ? userCoordinates.longitude : undefined,
-        radius_km: nearby && userCoordinates ? 10 : undefined,
-      }));
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "ارتباط با سرور برقرار نشد. لطفاً دوباره تلاش کنید.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
     if (!location.pathname.startsWith("/offers/") || !offerId) return;
     const id = Number(offerId);
@@ -176,29 +166,6 @@ function App() {
     void loadOffers();
   }, []);
 
-  function enableNearby() {
-    if (!navigator.geolocation) {
-      setLocationStatus("denied");
-      return;
-    }
-    setLocationStatus("loading");
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserCoordinates({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
-        setNearby(true);
-        setLocationStatus("ready");
-      },
-      () => {
-        setNearby(false);
-        setLocationStatus("denied");
-      },
-      { enableHighAccuracy: false, maximumAge: 300000, timeout: 10000 },
-    );
-  }
-
   async function openOrders() {
     const token = getToken();
     if (!token) {
@@ -217,22 +184,11 @@ function App() {
     }
   }
 
-  const availableOffers = useMemo(
-    () => offers.filter((offer) => offer.is_active && offer.available_quantity > 0),
-    [offers],
-  );
-
   useEffect(() => {
     if (location.pathname === "/merchant" && !getToken()) {
       openAuth("login");
     }
   }, [location.pathname]);
-
-  useEffect(() => {
-    if (nearby && userCoordinates) {
-      void loadOffers();
-    }
-  }, [nearby, userCoordinates]);
 
   if (location.pathname === "/payment/result") {
     return (

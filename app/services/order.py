@@ -10,6 +10,7 @@ from app.db.models.payment import Payment
 from app.db.models.user import User
 from app.core.request_context import get_request_id
 from app.services.audit import record_event
+from app.services.notification import create_notification
 from app.models.enums import OrderStatus, UserRole
 from app.repositories import order as order_repository
 from app.schemas.order import OrderCreate
@@ -94,6 +95,25 @@ def create_order(db: Session, user: User, payload: OrderCreate) -> Order:
         order = Order(customer_id=user.id, merchant_id=merchant_id, total_amount=total, status=OrderStatus.PENDING, pickup_code=secrets.token_hex(4).upper(), items=items)
         db.add(order)
         db.flush()
+        create_notification(
+            db,
+            user_id=user.id,
+            title="سفارش ثبت شد",
+            body=f"سفارش #{order.id} با موفقیت ثبت شد و در انتظار پرداخت است.",
+            notification_type="ORDER",
+            entity_type="order",
+            entity_id=order.id,
+        )
+        if order.merchant:
+            create_notification(
+                db,
+                user_id=order.merchant.user_id,
+                title="سفارش جدید",
+                body=f"سفارش #{order.id} برای فروشگاه شما ثبت شد.",
+                notification_type="ORDER",
+                entity_type="order",
+                entity_id=order.id,
+            )
         record_event(
             db,
             action="order.created",
@@ -159,6 +179,22 @@ def update_order_status(db: Session, user: User, order_id: int, new_status: Orde
                     offer.available_quantity += item.quantity
 
         order.status = new_status
+        status_message = {
+            OrderStatus.CANCELLED: ("سفارش لغو شد", f"سفارش #{order.id} لغو شد."),
+            OrderStatus.READY_FOR_PICKUP: ("سفارش آماده دریافت است", f"سفارش #{order.id} اکنون آماده دریافت است."),
+            OrderStatus.COMPLETED: ("سفارش تحویل شد", f"سفارش #{order.id} با موفقیت تحویل شد."),
+            OrderStatus.EXPIRED: ("سفارش منقضی شد", f"سفارش #{order.id} به دلیل پایان مهلت منقضی شد."),
+        }.get(new_status)
+        if status_message:
+            create_notification(
+                db,
+                user_id=order.customer_id,
+                title=status_message[0],
+                body=status_message[1],
+                notification_type="ORDER",
+                entity_type="order",
+                entity_id=order.id,
+            )
         record_event(
             db,
             action="order.status_changed",
@@ -223,6 +259,15 @@ def expire_pending_orders(db: Session) -> int:
                     offer.available_quantity += item.quantity
 
             order.status = OrderStatus.EXPIRED
+            create_notification(
+                db,
+                user_id=order.customer_id,
+                title="سفارش منقضی شد",
+                body=f"سفارش #{order.id} منقضی شد و موجودی آن آزاد شد.",
+                notification_type="ORDER",
+                entity_type="order",
+                entity_id=order.id,
+            )
             record_event(
                 db,
                 action="order.expired",

@@ -34,6 +34,9 @@ const customer = {
 test("customer can discover, authenticate, order, and review order status", async ({ page }) => {
   let orderCreated = false;
   let authenticated = false;
+  const pageErrors: string[] = [];
+
+  page.on("pageerror", (error) => pageErrors.push(error.message));
 
   await page.route("**/api/**", async (route) => {
     const request = route.request();
@@ -173,8 +176,9 @@ test("customer can discover, authenticate, order, and review order status", asyn
     });
   });
 
-  await page.goto("/offers");
+  await page.goto("/");
   await expect(page.getByRole("heading", { name: "پیشنهادهای امروز" })).toBeVisible();
+  expect(pageErrors, `Unexpected browser errors: ${pageErrors.join(" | ")}`).toEqual([]);
 
   await page.getByLabel("جست‌وجوی غذا یا فروشگاه").fill("باکس شام");
   await page.getByRole("button", { name: "جست‌وجو" }).click();

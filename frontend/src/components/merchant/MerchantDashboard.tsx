@@ -102,20 +102,31 @@ export function MerchantDashboard({
               </div>
             ) : (
               <>
-                <div className="merchant-stats">
-                  <div>
-                    <strong>{offers.filter((offer) => offer.is_active).length}</strong>
-                    <span>پیشنهاد فعال</span>
-                  </div>
-                  <div>
-                    <strong>{orders.length}</strong>
-                    <span>سفارش</span>
-                  </div>
-                  <div>
-                    <strong>{orders.filter((order) => order.status === "COMPLETED").length}</strong>
-                    <span>تکمیل‌شده</span>
-                  </div>
-                </div>
+                {(() => {
+                  const activeOrders = orders.filter((order) =>
+                    ["PAID", "READY_FOR_PICKUP", "COMPLETED"].includes(order.status),
+                  );
+                  const completedOrders = orders.filter((order) => order.status === "COMPLETED");
+                  const rescuedMeals = completedOrders.reduce(
+                    (sum, order) => sum + order.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
+                    0,
+                  );
+                  const grossSales = activeOrders.reduce((sum, order) => sum + order.total_amount, 0);
+                  const cancellationRate = orders.length
+                    ? Math.round((orders.filter((order) => order.status === "CANCELLED").length / orders.length) * 100)
+                    : 0;
+
+                  return (
+                    <div className="merchant-stats">
+                      <div><strong>{offers.filter((offer) => offer.is_active).length}</strong><span>پیشنهاد فعال</span></div>
+                      <div><strong>{orders.length}</strong><span>کل سفارش</span></div>
+                      <div><strong>{completedOrders.length}</strong><span>تحویل‌شده</span></div>
+                      <div><strong>{rescuedMeals}</strong><span>غذای نجات‌یافته</span></div>
+                      <div><strong>{grossSales.toLocaleString("fa-IR")}</strong><span>فروش ثبت‌شده (تومان)</span></div>
+                      <div><strong>{cancellationRate}٪</strong><span>نرخ لغو</span></div>
+                    </div>
+                  );
+                })()}
 
                 <div className="merchant-grid">
                   <div>

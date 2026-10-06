@@ -27,6 +27,7 @@ import { PaymentResultPage } from "./pages/PaymentResultPage";
 import { AuthPage } from "./pages/AuthPage";
 import { AdminPage } from "./pages/AdminPage";
 import { CustomerDashboardPage } from "./pages/CustomerDashboardPage";
+import { NotificationsPage } from "./pages/NotificationsPage";
 
 function App() {
   const location = useLocation();
@@ -307,6 +308,18 @@ function App() {
           onRetry={() => void ordersState.loadOrders()}
         />
       </>
+    );
+  } else if (location.pathname === "/notifications") {
+    page = (
+      <NotificationsPage
+        user={user}
+        cartCount={cartCount}
+        onCart={() => setCartOpen(true)}
+        onOrders={() => navigate("/orders")}
+        onMerchant={() => navigate("/merchant")}
+        onLogin={() => openAuth("login")}
+        onLogout={() => void handleLogout()}
+      />
     );
   } else if (location.pathname === "/profile") {
     page = (

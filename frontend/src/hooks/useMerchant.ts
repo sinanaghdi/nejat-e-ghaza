@@ -3,12 +3,14 @@ import type { FoodOffer, MerchantProfile, OfferPayload, Order } from "../lib/api
 import {
   ApiError,
   createMerchantProfile,
+  updateMerchantProfile,
   createOffer,
   deactivateOffer,
   getMerchantProfile,
   getMyOffers,
   getMerchantOrders,
   updateOrderStatus,
+  updateOffer,
   verifyPickupCode,
 } from "../lib/api";
 import { getToken } from "../lib/auth";
@@ -48,6 +50,7 @@ export function useMerchant({ isMerchantPage, openAuth }: Params) {
   const [merchantError, setMerchantError] = useState("");
   const [merchantFormOpen, setMerchantFormOpen] = useState(false);
   const [offerFormOpen, setOfferFormOpen] = useState(false);
+  const [editingOfferId, setEditingOfferId] = useState<number | null>(null);
   const [merchantForm, setMerchantForm] = useState<MerchantForm>({
     business_name: "",
     description: "",

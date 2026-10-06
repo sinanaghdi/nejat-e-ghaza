@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import type { Order, User } from "../lib/api";
 import { getAdminOrders, getAdminUsers, updateOrderStatus, updateUserRole } from "../lib/api";
 import { getToken } from "../lib/auth";
@@ -23,7 +23,6 @@ const roleLabels: Record<User["role"], string> = {
 };
 
 export function AdminPage(props: Props) {
-  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);

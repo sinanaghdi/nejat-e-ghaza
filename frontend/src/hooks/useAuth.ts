@@ -27,7 +27,7 @@ export function useAuth() {
     getCurrentUser(getToken())
       .then((currentUser) => {
         setUser(currentUser);
-        setToken(null);
+        if (import.meta.env.VITE_DEMO_MODE !== "true") setToken(null);
       })
       .catch(() => clearToken());
   }, []);

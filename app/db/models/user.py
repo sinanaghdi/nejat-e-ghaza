@@ -16,3 +16,4 @@ class User(Base):
 
     merchant_profile = relationship("Merchant", back_populates="user", uselist=False)
     orders = relationship("Order", back_populates="customer")
+    notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")

@@ -23,6 +23,22 @@ def get_by_id(db: Session, offer_id: int) -> FoodOffer | None:
     return db.scalar(statement)
 
 
+def get_public_by_id(db: Session, offer_id: int) -> FoodOffer | None:
+    statement = (
+        select(FoodOffer)
+        .join(Merchant, FoodOffer.merchant_id == Merchant.id)
+        .where(
+            FoodOffer.id == offer_id,
+            FoodOffer.is_active.is_(True),
+            FoodOffer.available_quantity > 0,
+            FoodOffer.pickup_end > datetime.now(timezone.utc),
+            Merchant.verification_status == "VERIFIED",
+            FoodOffer.moderation_status == "APPROVED",
+        )
+    )
+    return db.scalar(statement)
+
+
 def list_active(
     db: Session,
     skip: int = 0,
@@ -40,6 +56,8 @@ def list_active(
         FoodOffer.is_active.is_(True),
         FoodOffer.available_quantity > 0,
         FoodOffer.pickup_end > datetime.now(timezone.utc),
+        Merchant.verification_status == "VERIFIED",
+        FoodOffer.moderation_status == "APPROVED",
     ]
 
     if query:

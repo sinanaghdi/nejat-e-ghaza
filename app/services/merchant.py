@@ -19,7 +19,12 @@ def create_profile(db: Session, user: User, payload: MerchantCreate) -> Merchant
         raise HTTPException(status_code=403, detail="Merchant access required")
     if merchant_repository.get_by_user_id(db, user.id):
         raise HTTPException(status_code=409, detail="Merchant profile already exists")
-    merchant = Merchant(user_id=user.id, **payload.model_dump())
+    merchant = Merchant(
+        user_id=user.id,
+        verification_status="PENDING",
+        verification_reason=None,
+        **payload.model_dump(),
+    )
     db.add(merchant)
     db.commit()
     db.refresh(merchant)

@@ -30,6 +30,14 @@ const DEMO_OFFERS: FoodOffer[] = [
     original_price: 540000, sale_price: 249000, quantity: 4, available_quantity: 2,
     pickup_start: demoDate(1.5), pickup_end: demoDate(4.5), image_url: null, is_active: true, created_at: demoDate(-2),
   },
+  {
+    id: 4, merchant_id: 101,
+    merchant: { id: 101, business_name: "کافه سبز", city: "کرمانشاه", address: "بلوار طاق‌بستان", latitude: 34.329, longitude: 47.077 },
+    title: "باکس در انتظار بررسی", description: "پیشنهاد نمونه برای نمایش صف بررسی مدیر.",
+    original_price: 210000, sale_price: 99000, quantity: 5, available_quantity: 5,
+    pickup_start: demoDate(2), pickup_end: demoDate(5), image_url: null,
+    is_active: true, moderation_status: "PENDING", moderation_reason: null, moderated_at: null, created_at: demoDate(-0.2),
+  },
 ];
 
 function demoDistanceKm(latitude: number, longitude: number, offer: FoodOffer): number {
@@ -157,6 +165,9 @@ async function getCsrfTokenFromServer(): Promise<string> {
   return payload.csrf_token;
 }
 
+export type MerchantVerificationStatus = "PENDING" | "VERIFIED" | "SUSPENDED";
+export type OfferModerationStatus = "PENDING" | "APPROVED" | "REJECTED";
+
 export interface FoodOffer {
   id: number;
   merchant_id: number;
@@ -178,6 +189,9 @@ export interface FoodOffer {
   pickup_end: string;
   image_url: string | null;
   is_active: boolean;
+  moderation_status: OfferModerationStatus;
+  moderation_reason: string | null;
+  moderated_at: string | null;
   created_at: string;
 }
 

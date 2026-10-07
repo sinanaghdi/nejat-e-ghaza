@@ -5,6 +5,16 @@ class UserRole(str, Enum):
     MERCHANT = "MERCHANT"
     ADMIN = "ADMIN"
 
+class MerchantVerificationStatus(str, Enum):
+    PENDING = "PENDING"
+    VERIFIED = "VERIFIED"
+    SUSPENDED = "SUSPENDED"
+
+class OfferModerationStatus(str, Enum):
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+
 class OrderStatus(str, Enum):
     PENDING = "PENDING"
     PAID = "PAID"

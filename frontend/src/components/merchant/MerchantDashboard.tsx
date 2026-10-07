@@ -94,6 +94,19 @@ export function MerchantDashboard({
 
             {error && <p className="form-message error-message">{error}</p>}
 
+            {profile && (
+              <div className={`merchant-verification-banner verification-${profile.verification_status.toLowerCase()}`}>
+                <strong>
+                  وضعیت احراز: {{
+                    PENDING: "در انتظار بررسی",
+                    VERIFIED: "تأییدشده",
+                    SUSPENDED: "تعلیق‌شده",
+                  }[profile.verification_status]}
+                </strong>
+                {profile.verification_reason && <span>علت: {profile.verification_reason}</span>}
+              </div>
+            )}
+
             {!profile ? (
               <div className="state-card">
                 <div className="state-icon">🏪</div>

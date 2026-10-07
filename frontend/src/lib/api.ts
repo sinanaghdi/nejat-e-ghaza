@@ -230,6 +230,8 @@ const DEMO_MERCHANT_PROFILE: MerchantProfile = {
   city: "کرمانشاه",
   latitude: 34.329,
   longitude: 47.077,
+  verification_status: "VERIFIED",
+  verification_reason: null,
 };
 
 let DEMO_NOTIFICATIONS: AppNotification[] = [
@@ -271,6 +273,13 @@ const DEMO_ADMIN_USERS = [
   { id: 1, name: "مدیر دمو", email: "admin@demo.local", role: "ADMIN" as const },
   { id: 11, name: "مشتری دمو", email: "customer@demo.local", role: "CUSTOMER" as const },
   { id: 21, name: "فروشنده دمو", email: "merchant@demo.local", role: "MERCHANT" as const },
+];
+
+const DEMO_ADMIN_MERCHANTS: AdminMerchant[] = [
+  { id: 101, user_id: 21, business_name: "کافه سبز", address: "بلوار طاق‌بستان", city: "کرمانشاه", verification_status: "VERIFIED", verification_reason: null, created_at: demoDate(-24) },
+  { id: 102, user_id: 22, business_name: "فست‌فود هفت", address: "خیابان برق", city: "کرمانشاه", verification_status: "VERIFIED", verification_reason: null, created_at: demoDate(-48) },
+  { id: 103, user_id: 23, business_name: "رستوران خانه", address: "میدان آزادگان", city: "کرمانشاه", verification_status: "VERIFIED", verification_reason: null, created_at: demoDate(-72) },
+  { id: 104, user_id: 24, business_name: "کافه در انتظار تایید", address: "خیابان دانشگاه", city: "کرمانشاه", verification_status: "PENDING", verification_reason: null, created_at: demoDate(-4) },
 ];
 
 export interface TokenResponse {
@@ -593,6 +602,37 @@ export interface MerchantProfile {
   city: string;
   latitude: number | null;
   longitude: number | null;
+  verification_status: MerchantVerificationStatus;
+  verification_reason: string | null;
+}
+
+export interface AdminMerchant {
+  id: number;
+  user_id: number;
+  business_name: string;
+  address: string;
+  city: string;
+  verification_status: MerchantVerificationStatus;
+  verification_reason: string | null;
+  created_at: string;
+}
+
+export interface AdminModerationOffer {
+  id: number;
+  merchant_id: number;
+  merchant: FoodOffer["merchant"];
+  title: string;
+  sale_price: number;
+  quantity: number;
+  available_quantity: number;
+  pickup_start: string;
+  pickup_end: string;
+  image_url: string | null;
+  is_active: boolean;
+  moderation_status: OfferModerationStatus;
+  moderation_reason: string | null;
+  moderated_at: string | null;
+  created_at: string;
 }
 
 export interface OfferPayload {
@@ -668,7 +708,7 @@ export function updateUserRole(
 
 export function createMerchantProfile(
   token: string | null,
-  payload: Omit<MerchantProfile, "id" | "user_id">,
+  payload: Omit<MerchantProfile, "id" | "user_id" | "verification_status" | "verification_reason">,
 ): Promise<MerchantProfile> {
   if (import.meta.env.VITE_DEMO_MODE === "true") {
     return Promise.resolve({ ...DEMO_MERCHANT_PROFILE, ...payload });
@@ -681,7 +721,7 @@ export function createMerchantProfile(
 
 export function updateMerchantProfile(
   token: string | null,
-  payload: Omit<MerchantProfile, "id" | "user_id">,
+  payload: Omit<MerchantProfile, "id" | "user_id" | "verification_status" | "verification_reason">,
 ): Promise<MerchantProfile> {
   if (import.meta.env.VITE_DEMO_MODE === "true") {
     const updated = { ...DEMO_MERCHANT_PROFILE, ...payload };

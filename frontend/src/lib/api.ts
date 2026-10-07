@@ -833,6 +833,9 @@ export function createOffer(
       pickup_end: payload.pickup_end,
       image_url: payload.image_url || null,
       is_active: true,
+      moderation_status: "PENDING",
+      moderation_reason: null,
+      moderated_at: null,
       created_at: new Date().toISOString(),
     };
     DEMO_OFFERS.unshift(offer);
@@ -863,6 +866,9 @@ export function updateOffer(
     offer.pickup_start = payload.pickup_start;
     offer.pickup_end = payload.pickup_end;
     offer.image_url = payload.image_url || null;
+    offer.moderation_status = "PENDING";
+    offer.moderation_reason = null;
+    offer.moderated_at = null;
     return Promise.resolve({ ...offer });
   }
   return authRequest<unknown>(`/api/offers/${offerId}`, token, {
@@ -999,6 +1005,15 @@ function normalizeFoodOffer(value: unknown): FoodOffer {
         ? null
         : String(offer.image_url),
     is_active: Boolean(offer.is_active),
+    moderation_status: String(offer.moderation_status ?? "APPROVED") as OfferModerationStatus,
+    moderation_reason:
+      offer.moderation_reason === null || offer.moderation_reason === undefined
+        ? null
+        : String(offer.moderation_reason),
+    moderated_at:
+      offer.moderated_at === null || offer.moderated_at === undefined
+        ? null
+        : String(offer.moderated_at),
     created_at: String(offer.created_at),
   };
 }

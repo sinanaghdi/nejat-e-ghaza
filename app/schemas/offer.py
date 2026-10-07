@@ -3,6 +3,8 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from app.models.enums import OfferModerationStatus
+
 
 class OfferCreate(BaseModel):
     title: str = Field(min_length=2, max_length=150)
@@ -77,3 +79,31 @@ class OfferResponse(BaseModel):
     image_url: str | None
     is_active: bool
     created_at: datetime
+    moderation_status: OfferModerationStatus
+    moderation_reason: str | None
+    moderated_at: datetime | None
+
+
+class AdminOfferModerationResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    merchant_id: int
+    merchant: MerchantSummary
+    title: str
+    sale_price: Decimal
+    quantity: int
+    available_quantity: int
+    pickup_start: datetime
+    pickup_end: datetime
+    image_url: str | None
+    is_active: bool
+    moderation_status: OfferModerationStatus
+    moderation_reason: str | None
+    moderated_at: datetime | None
+    created_at: datetime
+
+
+class OfferModerationUpdate(BaseModel):
+    status: OfferModerationStatus
+    reason: str | None = Field(default=None, max_length=500)

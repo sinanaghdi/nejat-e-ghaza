@@ -1,4 +1,9 @@
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, Field
+
+from app.models.enums import MerchantVerificationStatus
+
 
 class MerchantCreate(BaseModel):
     business_name: str = Field(min_length=2, max_length=150)
@@ -8,8 +13,10 @@ class MerchantCreate(BaseModel):
     latitude: float | None = Field(default=None, ge=-90, le=90)
     longitude: float | None = Field(default=None, ge=-180, le=180)
 
+
 class MerchantResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
+
     id: int
     user_id: int
     business_name: str
@@ -18,6 +25,8 @@ class MerchantResponse(BaseModel):
     city: str
     latitude: float | None
     longitude: float | None
+    verification_status: MerchantVerificationStatus
+    verification_reason: str | None
 
 
 class MerchantUpdate(BaseModel):
@@ -28,3 +37,20 @@ class MerchantUpdate(BaseModel):
     latitude: float | None = Field(default=None, ge=-90, le=90)
     longitude: float | None = Field(default=None, ge=-180, le=180)
 
+
+class MerchantAdminResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    user_id: int
+    business_name: str
+    address: str
+    city: str
+    verification_status: MerchantVerificationStatus
+    verification_reason: str | None
+    created_at: datetime
+
+
+class MerchantVerificationUpdate(BaseModel):
+    status: MerchantVerificationStatus
+    reason: str | None = Field(default=None, max_length=500)

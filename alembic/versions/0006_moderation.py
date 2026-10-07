@@ -23,8 +23,6 @@ def upgrade() -> None:
     op.add_column("food_offers", sa.Column("moderated_at", sa.DateTime(timezone=True), nullable=True))
     op.create_index("ix_food_offers_moderation_status", "food_offers", ["moderation_status"])
 
-    op.alter_column("merchants", "verification_status", server_default=None)
-    op.alter_column("food_offers", "moderation_status", server_default=None)
 
 
 def downgrade() -> None:

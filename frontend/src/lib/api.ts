@@ -666,6 +666,77 @@ export function getAdminUsers(token: string | null): Promise<User[]> {
   );
 }
 
+export function getAdminMerchants(token: string | null): Promise<AdminMerchant[]> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    if (role !== "ADMIN") return Promise.reject(new ApiError("Admin access required", 403));
+    return Promise.resolve(DEMO_ADMIN_MERCHANTS.map((item) => ({ ...item })));
+  }
+  return authRequest<AdminMerchant[]>("/api/admin/merchants", token);
+}
+
+export function updateMerchantVerification(
+  token: string | null,
+  merchantId: number,
+  status: MerchantVerificationStatus,
+  reason?: string,
+): Promise<AdminMerchant> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    if (role !== "ADMIN") return Promise.reject(new ApiError("Admin access required", 403));
+    const merchant = DEMO_ADMIN_MERCHANTS.find((item) => item.id === merchantId);
+    if (!merchant) return Promise.reject(new ApiError("فروشگاه پیدا نشد.", 404));
+    if (status === "SUSPENDED" && !reason?.trim()) return Promise.reject(new ApiError("علت تعلیق را وارد کن.", 422));
+    merchant.verification_status = status;
+    merchant.verification_reason = reason?.trim() || null;
+    if (merchant.id === DEMO_MERCHANT_PROFILE.id) {
+      DEMO_MERCHANT_PROFILE.verification_status = status;
+      DEMO_MERCHANT_PROFILE.verification_reason = merchant.verification_reason;
+    }
+    addDemoNotification("MERCHANT", "وضعیت فروشگاه تغییر کرد", merchant.verification_reason ? `وضعیت فروشگاه به ${status} تغییر کرد: ${merchant.verification_reason}` : `وضعیت فروشگاه به ${status} تغییر کرد.`, "MODERATION", "merchant", merchant.id);
+    return Promise.resolve({ ...merchant });
+  }
+  return authRequest<AdminMerchant>(`/api/admin/merchants/${merchantId}/verification`, token, {
+    method: "PATCH",
+    body: JSON.stringify({ status, reason: reason?.trim() || undefined }),
+  });
+}
+
+export function getAdminPendingOffers(token: string | null): Promise<AdminModerationOffer[]> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    if (role !== "ADMIN") return Promise.reject(new ApiError("Admin access required", 403));
+    return Promise.resolve(
+      DEMO_OFFERS.filter((item) => item.moderation_status === "PENDING").map((item) => ({ ...item })),
+    );
+  }
+  return authRequest<AdminModerationOffer[]>("/api/admin/offers/pending", token);
+}
+
+export function moderateAdminOffer(
+  token: string | null,
+  offerId: number,
+  status: Exclude<OfferModerationStatus, "PENDING">,
+  reason?: string,
+): Promise<AdminModerationOffer> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    if (role !== "ADMIN") return Promise.reject(new ApiError("Admin access required", 403));
+    const offer = DEMO_OFFERS.find((item) => item.id === offerId);
+    if (!offer) return Promise.reject(new ApiError("پیشنهاد پیدا نشد.", 404));
+    if (status === "REJECTED" && !reason?.trim()) return Promise.reject(new ApiError("علت رد پیشنهاد را وارد کن.", 422));
+    offer.moderation_status = status;
+    offer.moderation_reason = reason?.trim() || null;
+    offer.moderated_at = new Date().toISOString();
+    addDemoNotification("MERCHANT", status === "APPROVED" ? "پیشنهاد تأیید شد" : "پیشنهاد رد شد", `پیشنهاد «${offer.title}» ${status === "APPROVED" ? "تأیید شد." : "رد شد."}`, "MODERATION", "offer", offer.id);
+    return Promise.resolve({ ...offer });
+  }
+  return authRequest<AdminModerationOffer>(`/api/admin/offers/${offerId}/moderation`, token, {
+    method: "PATCH",
+    body: JSON.stringify({ status, reason: reason?.trim() || undefined }),
+  });
+}
+
 export function getAdminOrders(token: string | null): Promise<Order[]> {
   if (import.meta.env.VITE_DEMO_MODE === "true") {
     const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;

@@ -68,7 +68,7 @@ def list_my_offers(
 
 @router.get("/{offer_id}", response_model=OfferResponse)
 def get_offer(offer_id: int, db: Annotated[Session, Depends(get_db)]):
-    return offer_service.get_offer(db, offer_id)
+    return offer_service.get_public_offer(db, offer_id)
 
 
 @router.post("", response_model=OfferResponse, status_code=status.HTTP_201_CREATED)

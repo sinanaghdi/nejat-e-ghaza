@@ -53,11 +53,14 @@ function demoDistanceKm(latitude: number, longitude: number, offer: FoodOffer): 
 }
 
 function demoOffers(filters: OfferFilters = {}): FoodOffer[] {
-  let items = DEMO_OFFERS.filter((item) =>
-    item.is_active &&
-    item.available_quantity > 0 &&
-    new Date(item.pickup_end).getTime() > Date.now()
-  );
+  let items = DEMO_OFFERS.filter((item) => {
+    const merchant = DEMO_ADMIN_MERCHANTS.find((candidate) => candidate.id === item.merchant_id);
+    return item.is_active &&
+      item.available_quantity > 0 &&
+      new Date(item.pickup_end).getTime() > Date.now() &&
+      item.moderation_status === "APPROVED" &&
+      merchant?.verification_status === "VERIFIED";
+  });
 
   if (filters.query?.trim()) {
     const q = filters.query.trim().toLowerCase();
@@ -326,7 +329,12 @@ export function getOffers(filters: OfferFilters = {}): Promise<FoodOffer[]> {
 }
 
 export function getOffer(offerId: number): Promise<FoodOffer> {
-  if (import.meta.env.VITE_DEMO_MODE === "true") { const offer = DEMO_OFFERS.find((item) => item.id === offerId); return offer ? Promise.resolve(offer) : Promise.reject(new ApiError("پیشنهاد پیدا نشد.", 404)); }
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const offer = demoOffers().find((item) => item.id === offerId);
+    return offer
+      ? Promise.resolve(offer)
+      : Promise.reject(new ApiError("پیشنهاد پیدا نشد.", 404));
+  }
   return request<unknown>(`/api/offers/${offerId}`).then(normalizeFoodOffer);
 }
 
@@ -445,8 +453,14 @@ export function createOrder(
     for (let index = 0; index < items.length; index += 1) {
       const requested = items[index];
       const offer = resolved[index];
-      if (!offer.is_active || new Date(offer.pickup_end).getTime() <= Date.now()) {
-        return Promise.reject(new ApiError("یکی از پیشنهادها دیگر فعال نیست.", 409));
+      const merchant = DEMO_ADMIN_MERCHANTS.find((candidate) => candidate.id === offer.merchant_id);
+      if (
+        !offer.is_active ||
+        offer.moderation_status !== "APPROVED" ||
+        merchant?.verification_status !== "VERIFIED" ||
+        new Date(offer.pickup_end).getTime() <= Date.now()
+      ) {
+        return Promise.reject(new ApiError("یکی از پیشنهادها دیگر قابل خرید نیست.", 409));
       }
       if (offer.available_quantity < requested.quantity) {
         return Promise.reject(new ApiError("موجودی یکی از پیشنهادها کافی نیست.", 409));
@@ -692,8 +706,9 @@ export function updateMerchantVerification(
     if (merchant.id === DEMO_MERCHANT_PROFILE.id) {
       DEMO_MERCHANT_PROFILE.verification_status = status;
       DEMO_MERCHANT_PROFILE.verification_reason = merchant.verification_reason;
+      addDemoNotification("MERCHANT", "وضعیت فروشگاه تغییر کرد", merchant.verification_reason ? `وضعیت فروشگاه به ${status} تغییر کرد: ${merchant.verification_reason}` : `وضعیت فروشگاه به ${status} تغییر کرد.`, "MODERATION", "merchant", merchant.id);
+      return Promise.resolve({ ...merchant });
     }
-    addDemoNotification("MERCHANT", "وضعیت فروشگاه تغییر کرد", merchant.verification_reason ? `وضعیت فروشگاه به ${status} تغییر کرد: ${merchant.verification_reason}` : `وضعیت فروشگاه به ${status} تغییر کرد.`, "MODERATION", "merchant", merchant.id);
     return Promise.resolve({ ...merchant });
   }
   return authRequest<AdminMerchant>(`/api/admin/merchants/${merchantId}/verification`, token, {

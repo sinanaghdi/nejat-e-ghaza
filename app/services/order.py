@@ -80,6 +80,10 @@ def create_order(db: Session, user: User, payload: OrderCreate) -> Order:
             offer = by_id[requested.food_offer_id]
             if not offer.is_active:
                 raise HTTPException(status_code=409, detail=f"Food offer {offer.id} is inactive")
+            if offer.moderation_status != "APPROVED":
+                raise HTTPException(status_code=409, detail=f"Food offer {offer.id} is not approved")
+            if not offer.merchant or offer.merchant.verification_status != "VERIFIED":
+                raise HTTPException(status_code=409, detail=f"Merchant for food offer {offer.id} is not verified")
             if _as_utc(offer.pickup_end) <= datetime.now(timezone.utc):
                 raise HTTPException(status_code=409, detail=f"Food offer {offer.id} has expired")
             if offer.available_quantity < requested.quantity:

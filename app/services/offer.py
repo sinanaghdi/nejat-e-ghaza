@@ -16,6 +16,8 @@ def _get_merchant_or_403(db: Session, user: User):
     merchant = merchant_repository.get_by_user_id(db, user.id)
     if not merchant:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Merchant profile not found")
+    if merchant.verification_status == "SUSPENDED":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Merchant account is suspended")
     return merchant
 
 
@@ -32,12 +34,22 @@ def create_offer(db: Session, user: User, payload: OfferCreate) -> FoodOffer:
         pickup_start=payload.pickup_start,
         pickup_end=payload.pickup_end,
         image_url=payload.image_url,
+        moderation_status="PENDING",
+        moderation_reason=None,
+        moderated_at=None,
     )
     return offer_repository.create(db, offer)
 
 
 def get_offer(db: Session, offer_id: int) -> FoodOffer:
     offer = offer_repository.get_by_id(db, offer_id)
+    if not offer:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Offer not found")
+    return offer
+
+
+def get_public_offer(db: Session, offer_id: int) -> FoodOffer:
+    offer = offer_repository.get_public_by_id(db, offer_id)
     if not offer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Offer not found")
     return offer
@@ -109,6 +121,17 @@ def update_offer(db: Session, user: User, offer_id: int, payload: OfferUpdate) -
     offer.quantity = requested_quantity
     offer.available_quantity = new_available_quantity
 
+    material_fields = {
+        "title",
+        "description",
+        "original_price",
+        "sale_price",
+        "pickup_start",
+        "pickup_end",
+        "image_url",
+    }
+    material_change = any(field in values for field in material_fields)
+
     for field, value in values.items():
         setattr(offer, field, value)
 
@@ -118,6 +141,11 @@ def update_offer(db: Session, user: User, offer_id: int, payload: OfferUpdate) -
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="pickup_end must be after pickup_start")
     if offer.available_quantity > offer.quantity:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="available_quantity cannot exceed quantity")
+
+    if material_change:
+        offer.moderation_status = "PENDING"
+        offer.moderation_reason = None
+        offer.moderated_at = None
 
     db.commit()
     db.refresh(offer)

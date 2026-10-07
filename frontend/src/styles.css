@@ -1116,3 +1116,84 @@ select {
   .notifications-header { align-items: flex-start; }
   .notifications-header .secondary-button { width: auto; }
 }
+
+
+/* Moderation */
+.admin-moderation-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.danger-button {
+  border: 1px solid rgba(180, 45, 45, 0.22);
+  background: rgba(180, 45, 45, 0.08);
+  color: #a52323;
+  border-radius: 10px;
+  padding: 9px 14px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.moderation-status {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.moderation-pending {
+  background: #fff4d6;
+  color: #8b5e00;
+}
+
+.moderation-approved,
+.moderation-verified {
+  background: #e4f8ec;
+  color: #17723f;
+}
+
+.moderation-rejected,
+.moderation-suspended {
+  background: #fde8e8;
+  color: #a52323;
+}
+
+.merchant-verification-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 13px 16px;
+  border-radius: 14px;
+}
+
+.merchant-verification-banner span,
+.merchant-offer-statuses small {
+  color: var(--muted-text);
+  font-size: 13px;
+}
+
+.verification-pending {
+  background: #fff8e7;
+}
+
+.verification-verified {
+  background: #ebfaf1;
+}
+
+.verification-suspended {
+  background: #fff0f0;
+}
+
+.merchant-offer-statuses {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}

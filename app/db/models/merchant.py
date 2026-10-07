@@ -14,6 +14,8 @@ class Merchant(Base):
     city: Mapped[str] = mapped_column(String(100))
     latitude: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)
     longitude: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)
+    verification_status: Mapped[str] = mapped_column(String(20), default="VERIFIED", nullable=False, index=True)
+    verification_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 
     user = relationship("User", back_populates="merchant_profile")

@@ -91,6 +91,7 @@ def test_order_creation_creates_notifications_for_customer_and_merchant(client, 
         business_name="Notification Cafe",
         address="Main St",
         city="Babolsar",
+        verification_status="VERIFIED",
     )
     db.add(merchant)
     db.commit()
@@ -102,6 +103,7 @@ def test_order_creation_creates_notifications_for_customer_and_merchant(client, 
         sale_price=50,
         quantity=2,
         available_quantity=2,
+        moderation_status="APPROVED",
         pickup_start=datetime.now(timezone.utc),
         pickup_end=datetime.now(timezone.utc) + timedelta(hours=2),
     )

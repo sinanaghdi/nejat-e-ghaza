@@ -97,6 +97,11 @@ function App() {
   }
 
   useEffect(() => {
+    if (location.pathname === "/register") switchAuthMode("register");
+    else if (location.pathname === "/login") switchAuthMode("login");
+  }, [location.pathname]);
+
+  useEffect(() => {
     if (location.pathname.startsWith("/offers/") && offerId) {
       const id = Number(offerId);
       if (Number.isInteger(id) && id > 0) {
@@ -164,7 +169,7 @@ function App() {
   if (location.pathname === "/login" || location.pathname === "/register") {
     page = (
       <AuthPage
-        mode={location.pathname === "/register" ? "register" : "login"}
+        mode={authMode}
         user={user}
         loading={authLoading}
         error={authError}

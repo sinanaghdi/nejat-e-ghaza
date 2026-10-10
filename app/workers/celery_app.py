@@ -20,6 +20,10 @@ celery_app.conf.update(
             "task": "app.workers.tasks.expire_pending_orders_task",
             "schedule": 60.0,
         },
+        "expire-ready-pickup-orders": {
+            "task": "app.workers.tasks.expire_ready_pickup_orders_task",
+            "schedule": 60.0,
+        },
     },
 )
 

@@ -201,7 +201,7 @@ export interface FoodOffer {
 export interface User {
   id: number;
   name: string;
-  email: string;
+  email: string | null;
   role: "CUSTOMER" | "MERCHANT" | "ADMIN";
 }
 
@@ -701,7 +701,7 @@ export function getAdminUsers(token: string | null): Promise<User[]> {
       return {
         id: Number(item.id),
         name: String(item.name),
-        email: String(item.email),
+        email: item.email == null ? null : String(item.email),
         role: String(item.role) as User["role"],
       };
     }),

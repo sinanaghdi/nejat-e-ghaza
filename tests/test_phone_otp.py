@@ -59,6 +59,13 @@ def test_phone_otp_is_one_time_and_wrong_code_attempts_are_counted(client, db):
     assert reuse.status_code == 400
 
 
+def test_normalize_iran_mobile_supports_persian_digits():
+    from app.services.otp import normalize_iran_mobile
+
+    assert normalize_iran_mobile("۰۹۱۲۳۴۵۶۷۸۹") == "09123456789"
+    assert normalize_iran_mobile("+۹۸۹۱۲۳۴۵۶۷۸۹") == "09123456789"
+
+
 def test_phone_otp_rejects_invalid_iran_mobile(client):
     response = client.post(
         "/api/auth/otp/request",

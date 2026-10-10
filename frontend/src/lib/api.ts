@@ -766,9 +766,8 @@ export function updateMerchantVerification(
     if (merchant.id === DEMO_MERCHANT_PROFILE.id) {
       DEMO_MERCHANT_PROFILE.verification_status = status;
       DEMO_MERCHANT_PROFILE.verification_reason = merchant.verification_reason;
-      addDemoNotification("MERCHANT", "وضعیت فروشگاه تغییر کرد", merchant.verification_reason ? `وضعیت فروشگاه به ${status} تغییر کرد: ${merchant.verification_reason}` : `وضعیت فروشگاه به ${status} تغییر کرد.`, "MODERATION", "merchant", merchant.id);
-      return Promise.resolve({ ...merchant });
     }
+    addDemoNotification("MERCHANT", "وضعیت فروشگاه تغییر کرد", merchant.verification_reason ? `وضعیت فروشگاه به ${status} تغییر کرد: ${merchant.verification_reason}` : `وضعیت فروشگاه به ${status} تغییر کرد.`, "MODERATION", "merchant", merchant.id);
     return Promise.resolve({ ...merchant });
   }
   return authRequest<AdminMerchant>(`/api/admin/merchants/${merchantId}/verification`, token, {
@@ -890,7 +889,7 @@ export function updateUserRole(
     return {
       id: Number(item.id),
       name: String(item.name),
-      email: String(item.email),
+      email: item.email == null ? null : String(item.email),
       role: String(item.role) as User["role"],
     };
   });
@@ -1124,7 +1123,7 @@ function normalizeFoodOffer(value: unknown): FoodOffer {
         ? null
         : String(offer.image_url),
     is_active: Boolean(offer.is_active),
-    moderation_status: String(offer.moderation_status ?? "APPROVED") as OfferModerationStatus,
+    moderation_status: String(offer.moderation_status ?? "PENDING") as OfferModerationStatus,
     moderation_reason:
       offer.moderation_reason === null || offer.moderation_reason === undefined
         ? null

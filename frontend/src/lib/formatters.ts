@@ -11,6 +11,7 @@ export function formatToman(value: string | number): string {
 
 export function formatPickupTime(value: string): string {
   return new Intl.DateTimeFormat("fa-IR", {
+    timeZone: "Asia/Tehran",
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(value));
@@ -19,6 +20,7 @@ export function formatPickupTime(value: string): string {
 
 export function formatOrderDate(value: string): string {
   return new Intl.DateTimeFormat("fa-IR", {
+    timeZone: "Asia/Tehran",
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));

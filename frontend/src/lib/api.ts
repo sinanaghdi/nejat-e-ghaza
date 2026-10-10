@@ -784,7 +784,7 @@ export function getAdminPendingOffers(token: string | null): Promise<AdminModera
       DEMO_OFFERS.filter((item) => item.moderation_status === "PENDING").map((item) => ({ ...item })),
     );
   }
-  return authRequest<AdminModerationOffer[]>("/api/admin/offers/pending", token);
+  return authRequest<unknown[]>("/api/admin/offers/pending", token).then((items) => items.map(normalizeAdminModerationOffer));
 }
 
 export function moderateAdminOffer(
@@ -817,7 +817,7 @@ export function getAdminSettlements(token: string | null): Promise<MerchantSettl
     if (role !== "ADMIN") return Promise.reject(new ApiError("Admin access required", 403));
     return Promise.resolve(DEMO_SETTLEMENTS.map((item) => ({ ...item })));
   }
-  return authRequest<MerchantSettlement[]>("/api/admin/settlements", token);
+  return authRequest<unknown[]>("/api/admin/settlements", token).then((items) => items.map(normalizeSettlement));
 }
 
 export function getMerchantSettlements(token: string | null): Promise<MerchantSettlement[]> {
@@ -826,7 +826,7 @@ export function getMerchantSettlements(token: string | null): Promise<MerchantSe
     if (role !== "MERCHANT") return Promise.reject(new ApiError("Merchant access required", 403));
     return Promise.resolve(DEMO_SETTLEMENTS.filter((item) => item.merchant_id === 101).map((item) => ({ ...item })));
   }
-  return authRequest<MerchantSettlement[]>("/api/merchant/settlements", token);
+  return authRequest<unknown[]>("/api/merchant/settlements", token).then((items) => items.map(normalizeSettlement));
 }
 
 export function markSettlementPaid(
@@ -849,10 +849,10 @@ export function markSettlementPaid(
     addDemoNotification("MERCHANT", "تسویه فروش ثبت شد", `تسویه سفارش #${item.order_id} ثبت شد. مرجع: ${item.payout_reference}`, "SETTLEMENT", "settlement", item.id);
     return Promise.resolve({ ...item });
   }
-  return authRequest<MerchantSettlement>(`/api/admin/settlements/${settlementId}/paid`, token, {
+  return authRequest<unknown>(`/api/admin/settlements/${settlementId}/paid`, token, {
     method: "PATCH",
     body: JSON.stringify({ payout_reference: payoutReference.trim() }),
-  });
+  }).then(normalizeSettlement);
 }
 
 export function getAdminOrders(token: string | null): Promise<Order[]> {
@@ -1084,6 +1084,33 @@ export function verifyPickupCode(
     method: "POST",
     body: JSON.stringify({ pickup_code: pickupCode }),
   }).then(normalizeOrder);
+}
+
+function normalizeSettlement(value: unknown): MerchantSettlement {
+  const item = value as Record<string, unknown>;
+  return {
+    id: Number(item.id),
+    order_id: Number(item.order_id),
+    payment_id: Number(item.payment_id),
+    merchant_id: Number(item.merchant_id),
+    gross_amount: Number(item.gross_amount),
+    commission_rate_bps: Number(item.commission_rate_bps),
+    commission_amount: Number(item.commission_amount),
+    net_amount: Number(item.net_amount),
+    status: String(item.status) as MerchantSettlement["status"],
+    payout_reference: item.payout_reference == null ? null : String(item.payout_reference),
+    settled_at: item.settled_at == null ? null : String(item.settled_at),
+    created_at: String(item.created_at),
+  };
+}
+
+function normalizeAdminModerationOffer(value: unknown): AdminModerationOffer {
+  const item = value as Record<string, unknown>;
+  const offer = normalizeFoodOffer(item);
+  return {
+    ...offer,
+    sale_price: Number(item.sale_price),
+  };
 }
 
 function normalizeFoodOffer(value: unknown): FoodOffer {

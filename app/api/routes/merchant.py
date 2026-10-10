@@ -6,7 +6,9 @@ from app.db.database import get_db
 from app.db.models.user import User
 from app.models.enums import UserRole
 from app.schemas.merchant import MerchantCreate, MerchantResponse, MerchantUpdate
+from app.schemas.settlement import MerchantSettlementResponse
 from app.services import merchant as merchant_service
+from app.services import settlement as settlement_service
 
 router = APIRouter(prefix="/api/merchant", tags=["merchant"])
 
@@ -26,3 +28,11 @@ def update_profile(
 @router.get("/profile", response_model=MerchantResponse)
 def get_profile(current_user: Annotated[User, Depends(require_role(UserRole.MERCHANT))], db: Annotated[Session, Depends(get_db)]):
     return merchant_service.get_my_profile(db, current_user)
+
+
+@router.get("/settlements", response_model=list[MerchantSettlementResponse])
+def list_my_settlements(
+    current_user: Annotated[User, Depends(require_role(UserRole.MERCHANT))],
+    db: Annotated[Session, Depends(get_db)],
+):
+    return settlement_service.list_my_settlements(db, current_user)

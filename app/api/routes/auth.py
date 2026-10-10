@@ -8,11 +8,15 @@ from app.core.csrf import generate_csrf_token, set_csrf_cookie
 from app.core.dependencies import get_current_user
 from app.core.rate_limit import check_rate_limit
 from app.core.security import create_access_token
+from app.services.otp import normalize_iran_mobile, request_phone_otp, verify_phone_otp
 from app.db.database import get_db
 from app.db.models.user import User
 from app.schemas.auth import (
     CSRFResponse,
     LoginRequest,
+    OTPRequest,
+    OTPRequestResponse,
+    OTPVerifyRequest,
     RegisterRequest,
     TokenResponse,
     UserResponse,
@@ -63,6 +67,63 @@ def login(
     )
     set_csrf_cookie(response, csrf_token)
 
+    return {
+        "access_token": access_token if settings.expose_legacy_access_token else None,
+        "token_type": "bearer",
+        "csrf_token": csrf_token,
+    }
+
+
+
+
+@router.post("/otp/request", response_model=OTPRequestResponse)
+def request_otp(
+    request: Request,
+    payload: OTPRequest,
+    db: Annotated[Session, Depends(get_db)],
+):
+    phone_number = normalize_iran_mobile(payload.phone_number)
+    check_rate_limit(request, "otp-request-ip", limit=10, window_seconds=3600)
+    check_rate_limit(
+        request,
+        f"otp-request-phone:{phone_number}",
+        limit=settings.otp_rate_limit_per_phone,
+        window_seconds=settings.otp_rate_limit_window_seconds,
+    )
+    _, code = request_phone_otp(db, phone_number, payload.name)
+    debug_code = code if settings.environment.lower() != "production" and settings.sms_provider == "mock" else None
+    return {
+        "message": "اگر ارسال پیامک امکان‌پذیر باشد، کد ورود ارسال می‌شود.",
+        "expires_in_seconds": settings.otp_ttl_seconds,
+        "debug_code": debug_code,
+    }
+
+
+@router.post("/otp/verify", response_model=TokenResponse)
+def verify_otp(
+    request: Request,
+    response: Response,
+    payload: OTPVerifyRequest,
+    db: Annotated[Session, Depends(get_db)],
+):
+    phone_number = normalize_iran_mobile(payload.phone_number)
+    check_rate_limit(request, "otp-verify-ip", limit=30, window_seconds=3600)
+    check_rate_limit(request, f"otp-verify-phone:{phone_number}", limit=15, window_seconds=3600)
+
+    user = verify_phone_otp(db, phone_number, payload.code)
+    access_token = create_access_token(str(user.id))
+    csrf_token = generate_csrf_token()
+
+    response.set_cookie(
+        key=settings.auth_cookie_name,
+        value=access_token,
+        httponly=True,
+        secure=settings.auth_cookie_secure,
+        samesite=settings.auth_cookie_samesite,
+        path="/",
+        max_age=settings.access_token_expire_minutes * 60,
+    )
+    set_csrf_cookie(response, csrf_token)
     return {
         "access_token": access_token if settings.expose_legacy_access_token else None,
         "token_type": "bearer",

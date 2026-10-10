@@ -1,88 +1,51 @@
 # نجات غذا | Nejat-e-Ghaza
 
-A full-stack food-surplus marketplace inspired by the **Too Good To Go** model.
+**A Persian-first food-surplus marketplace for Iran.**
 
-نجات غذا به رستوران‌ها، کافه‌ها و فست‌فودها کمک می‌کند غذای مازاد پایان روز را با قیمت کمتر عرضه کنند و مشتری‌ها بتوانند غذای باکیفیت را با تخفیف خریداری و در زمان مشخص تحویل بگیرند.
+نجات غذا به کافه‌ها، رستوران‌ها و فست‌فودها کمک می‌کند غذای مازاد قابل‌مصرف را با تخفیف عرضه کنند؛ مشتری پیشنهادهای موجود را می‌بیند، سفارش را رزرو و پرداخت می‌کند و در پنجره زمانی مشخص حضوری تحویل می‌گیرد.
 
-## ✨ Features
+> This repository is an MVP/portfolio implementation. Production SMS delivery, live gateway transactions, automatic provider-side split payments, and food-safety/dispute operations must be verified before a public pilot.
 
-- 🛍️ Browse and search discounted food offers
-- 📍 Location-based discovery and nearby offers
-- 🏪 Merchant dashboard for managing offers and orders
-- 🛒 Cart and order management
-- 💳 Payment architecture with Iranian payment gateway support
-- 🔐 Authentication and role-based access
-- 👤 Customer, Merchant and Admin roles
-- ⏱️ Offer and order expiration handling
-- 🛡️ Production-oriented security and reliability
-- 📱 Persian RTL, responsive and mobile-first UI
-- 🧪 Automated backend, frontend and E2E tests
+## What is implemented
 
-## 🧑‍💻 How to use
+- Persian RTL, responsive React + TypeScript interface.
+- Search, city/price filters, nearby-offer discovery using merchant coordinates.
+- Customer, merchant and admin dashboards.
+- Orders, inventory reservation, pickup-code verification, and order expiry.
+- Mobile OTP flow with hashed, expiring, one-time codes and rate limiting.
+- Merchant verification and offer moderation with audit logs and notifications.
+- ZarinPal request/callback/server-side verification adapter plus a mock provider for development.
+- Decimal/Numeric commission ledger and manual merchant settlement tracking.
+- PostgreSQL, Alembic, Redis, Celery, Docker Compose and GitHub Actions tests.
 
-### Customer
-1. Register or log in.
-2. Browse available offers.
-3. Open an offer and add it to the cart.
-4. Create an order and complete payment.
-5. Track the order and pick it up from the merchant.
-
-### Merchant
-1. Log in with a merchant account.
-2. Create and manage food offers.
-3. Monitor available inventory and orders.
-4. Manage the order lifecycle until pickup.
-
-### Admin
-Manage users, merchants and platform-level operations.
-
-## 🚀 Quick Start
+## Quick start
 
 ### Requirements
 
-- Python 3.12+
-- Node.js 20+
-- PostgreSQL
-- Redis
-- Git
+Python 3.12+, Node.js 20+, PostgreSQL, Redis and Git.
 
-### Backend
+### 1. Configure the backend
 
 ```bash
 git clone https://github.com/sinanaghdi/nejat-e-ghaza.git
 cd nejat-e-ghaza
-
 python -m venv .venv
-# Windows
-.venv\Scripts\activate
-
+# Windows PowerShell
+.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-```
-
-Create your environment file:
-
-```bash
 copy .env.example .env
 ```
 
-Run database migrations:
+The checked-in `.env.example` is a **production-oriented template**, not ready-to-run credentials. For local development, set `ENVIRONMENT=development`, `PAYMENT_PROVIDER=mock`, `SMS_PROVIDER=mock`, `AUTH_COOKIE_SECURE=false`, and local PostgreSQL/Redis URLs. Never use mock providers in production.
 
 ```bash
 alembic upgrade head
-```
-
-Start the API:
-
-```bash
 uvicorn app.main:app --reload
 ```
 
-API documentation:
+API docs: http://localhost:8000/docs
 
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
-
-### Frontend
+### 2. Run the frontend
 
 ```bash
 cd frontend
@@ -90,89 +53,52 @@ npm install
 npm run dev
 ```
 
-The frontend will normally be available at:
+The Vite app is normally available at http://localhost:5173.
 
-```
-http://localhost:5173
-```
+### Docker Compose
 
-## 🐳 Docker
-
-For a containerized environment:
+For the production-style stack, configure all required secrets and provider values in `.env`, then run:
 
 ```bash
 docker compose up --build
 ```
 
-Stop services:
+The Compose file forces `ENVIRONMENT=production`; it will reject placeholder secrets and mock SMS/payment providers. Do not use this command with the example secrets unchanged.
+
+## Authentication and payments
+
+- Existing email/password auth is retained for compatibility; mobile OTP is available through `/api/auth/otp/request` and `/api/auth/otp/verify`.
+- In local development, `SMS_PROVIDER=mock` returns a test-only `debug_code`. Production rejects the mock provider.
+- The payment callback is not treated as proof of payment: the server verifies the authority and amount with the configured provider.
+- A settlement records gross amount, commission and net payable. The current implementation **does not automatically transfer money or split a ZarinPal transaction**; an admin records a payout reference after a real bank transfer.
+
+See [DEVELOPMENT.md](DEVELOPMENT.md) for current architecture, API routes and data model, and [SECURITY.md](SECURITY.md) for launch blockers.
+
+## Tests
 
 ```bash
-docker compose down
-```
-
-Configure the required values in `.env` before running the application.
-
-## 🧪 Testing
-
-Backend:
-
-```bash
-pytest
-```
-
-Frontend:
-
-```bash
+pytest -q
 cd frontend
+npm run typecheck
 npm run build
+npm run e2e
 ```
 
-E2E:
+## Architecture decisions
 
-```bash
-npx playwright test
-```
+- `SELECT ... FOR UPDATE` around inventory reservation to reduce overselling under concurrent orders.
+- HttpOnly session cookie plus a separate CSRF token for browser sessions.
+- OTP hashes and short expiry instead of storing raw verification codes.
+- Decimal/Numeric for payment and commission calculations.
+- Server-side gateway verification before marking payment paid.
+- A settlement ledger with explicit manual payout tracking rather than claiming unsupported automatic split settlement.
 
-## 🏗️ Tech Stack
+Details: [Architecture decisions](docs/architecture-decisions.md).
 
-**Backend:** Python · FastAPI · SQLAlchemy · PostgreSQL · Alembic · Redis · Celery
+## Repository topics
 
-**Frontend:** React · TypeScript · Vite · Responsive RTL UI
+Suggested GitHub About topics: `fastapi`, `react`, `typescript`, `food-waste`, `marketplace`, `persian`, `postgresql`, `celery`, `otp-authentication`.
 
-**Infrastructure:** Docker · Docker Compose · Nginx · GitHub Actions
+## License
 
-**Testing:** Pytest · Playwright
-
-## 📁 Project Structure
-
-```text
-app/            # FastAPI backend
-frontend/       # React frontend
-alembic/        # Database migrations
-tests/          # Backend tests
-scripts/        # Utility scripts
-Dockerfile*     # Container images
-docker-compose.yml
-```
-
-## 🔐 Production
-
-Before public deployment, configure production secrets, PostgreSQL/Redis, HTTPS/TLS, payment credentials and the production environment settings.
-
-See [SECURITY.md](SECURITY.md) for security-related deployment guidance.
-
-## 🗺️ Roadmap
-
-- Production launch
-- Improved merchant tooling
-- Better discovery and personalization
-- Operational analytics
-- Mobile application
-
-## 📄 License
-
-This project is currently maintained as a portfolio/startup project by **Sina Naghi**.
-
----
-
-**Nejat-e-Ghaza** — Reduce food waste. Save money. Create value.
+See [LICENSE](LICENSE). The code is publicly viewable for portfolio review; no open-source reuse permission is granted by default.

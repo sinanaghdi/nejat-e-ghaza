@@ -285,6 +285,23 @@ const DEMO_ADMIN_MERCHANTS: AdminMerchant[] = [
   { id: 104, user_id: 24, business_name: "کافه در انتظار تایید", address: "خیابان دانشگاه", city: "کرمانشاه", verification_status: "PENDING", verification_reason: null, created_at: demoDate(-4) },
 ];
 
+const DEMO_SETTLEMENTS: MerchantSettlement[] = [
+  {
+    id: 7001,
+    order_id: 1001,
+    payment_id: 8001,
+    merchant_id: 101,
+    gross_amount: 178000,
+    commission_rate_bps: 1000,
+    commission_amount: 17800,
+    net_amount: 160200,
+    status: "PENDING",
+    payout_reference: null,
+    settled_at: null,
+    created_at: demoDate(-6),
+  },
+];
+
 export interface TokenResponse {
   access_token: string | null;
   token_type: string;
@@ -659,6 +676,21 @@ export interface AdminMerchant {
   created_at: string;
 }
 
+export interface MerchantSettlement {
+  id: number;
+  order_id: number;
+  payment_id: number;
+  merchant_id: number;
+  gross_amount: number;
+  commission_rate_bps: number;
+  commission_amount: number;
+  net_amount: number;
+  status: "PENDING" | "PAID";
+  payout_reference: string | null;
+  settled_at: string | null;
+  created_at: string;
+}
+
 export interface AdminModerationOffer {
   id: number;
   merchant_id: number;
@@ -777,6 +809,50 @@ export function moderateAdminOffer(
   return authRequest<AdminModerationOffer>(`/api/admin/offers/${offerId}/moderation`, token, {
     method: "PATCH",
     body: JSON.stringify({ status, reason: reason?.trim() || undefined }),
+  });
+}
+
+export function getAdminSettlements(token: string | null): Promise<MerchantSettlement[]> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    if (role !== "ADMIN") return Promise.reject(new ApiError("Admin access required", 403));
+    return Promise.resolve(DEMO_SETTLEMENTS.map((item) => ({ ...item })));
+  }
+  return authRequest<MerchantSettlement[]>("/api/admin/settlements", token);
+}
+
+export function getMerchantSettlements(token: string | null): Promise<MerchantSettlement[]> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    if (role !== "MERCHANT") return Promise.reject(new ApiError("Merchant access required", 403));
+    return Promise.resolve(DEMO_SETTLEMENTS.filter((item) => item.merchant_id === 101).map((item) => ({ ...item })));
+  }
+  return authRequest<MerchantSettlement[]>("/api/merchant/settlements", token);
+}
+
+export function markSettlementPaid(
+  token: string | null,
+  settlementId: number,
+  payoutReference: string,
+): Promise<MerchantSettlement> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    if (role !== "ADMIN") return Promise.reject(new ApiError("Admin access required", 403));
+    const item = DEMO_SETTLEMENTS.find((candidate) => candidate.id === settlementId);
+    if (!item) return Promise.reject(new ApiError("تسویه پیدا نشد.", 404));
+    if (payoutReference.trim().length < 3) return Promise.reject(new ApiError("مرجع انتقال بانکی الزامی است.", 422));
+    if (item.status === "PAID" && item.payout_reference !== payoutReference.trim()) {
+      return Promise.reject(new ApiError("این تسویه قبلاً ثبت شده است.", 409));
+    }
+    item.status = "PAID";
+    item.payout_reference = payoutReference.trim();
+    item.settled_at = new Date().toISOString();
+    addDemoNotification("MERCHANT", "تسویه فروش ثبت شد", `تسویه سفارش #${item.order_id} ثبت شد. مرجع: ${item.payout_reference}`, "SETTLEMENT", "settlement", item.id);
+    return Promise.resolve({ ...item });
+  }
+  return authRequest<MerchantSettlement>(`/api/admin/settlements/${settlementId}/paid`, token, {
+    method: "PATCH",
+    body: JSON.stringify({ payout_reference: payoutReference.trim() }),
   });
 }
 

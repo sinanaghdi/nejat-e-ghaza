@@ -50,6 +50,8 @@ class Settings(BaseSettings):
         ]
 
     def validate_production(self) -> None:
+        if not 0 <= self.platform_commission_bps <= 10000:
+            raise RuntimeError("PLATFORM_COMMISSION_BPS must be between 0 and 10000.")
         if self.environment.lower() != "production":
             return
 

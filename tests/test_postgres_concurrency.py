@@ -74,6 +74,7 @@ def test_concurrent_orders_cannot_oversell(postgres_session_factory):
             business_name="Concurrency Cafe",
             address="Main St",
             city="Babolsar",
+            verification_status="VERIFIED",
         )
         setup_db.add(merchant)
         setup_db.commit()
@@ -85,6 +86,7 @@ def test_concurrent_orders_cannot_oversell(postgres_session_factory):
             sale_price=Decimal("50.00"),
             quantity=1,
             available_quantity=1,
+            moderation_status="APPROVED",
             pickup_start=datetime.now(timezone.utc),
             pickup_end=datetime.now(timezone.utc) + timedelta(hours=2),
         )

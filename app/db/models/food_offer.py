@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from sqlalchemy import Boolean, DateTime, ForeignKey, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -22,7 +22,7 @@ class FoodOffer(Base):
     moderation_status: Mapped[str] = mapped_column(String(20), default="APPROVED", nullable=False, index=True)
     moderation_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     moderated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     merchant = relationship("Merchant", back_populates="offers")
     order_items = relationship("OrderItem", back_populates="food_offer")

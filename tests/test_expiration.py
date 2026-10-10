@@ -5,6 +5,7 @@ from app.db.models.food_offer import FoodOffer
 from app.db.models.merchant import Merchant
 from app.db.models.order import Order
 from app.db.models.order_item import OrderItem
+from app.db.models.merchant_settlement import MerchantSettlement
 from app.db.models.user import User
 from app.models.enums import OrderStatus, UserRole
 from app.services.order import expire_pending_orders
@@ -137,3 +138,6 @@ def test_paid_payment_is_reconciled_during_expiration(db):
     db.refresh(offer)
     assert order.status == OrderStatus.PAID
     assert offer.available_quantity == 1
+    settlement = db.query(MerchantSettlement).one()
+    assert settlement.order_id == order.id
+    assert settlement.status == "PENDING"

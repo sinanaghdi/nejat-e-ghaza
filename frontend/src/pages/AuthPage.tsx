@@ -135,7 +135,12 @@ export function AuthPage({
                   minLength={4}
                   maxLength={8}
                   value={otpCode}
-                  onChange={(event) => onOtpCodeChange(event.target.value.replace(/\D/g, ""))}
+                  onChange={(event) => onOtpCodeChange(
+                    event.target.value
+                      .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+                      .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+                      .replace(/\D/g, "")
+                  )}
                   placeholder="کد ورود"
                   dir="ltr"
                 />

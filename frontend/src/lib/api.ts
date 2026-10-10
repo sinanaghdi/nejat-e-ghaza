@@ -361,6 +361,34 @@ export function registerUser(
   });
 }
 
+export interface OTPRequestResult {
+  message: string;
+  expires_in_seconds: number;
+  debug_code?: string | null;
+}
+
+export function requestPhoneOTP(payload: {
+  phone_number: string;
+  name?: string;
+}): Promise<OTPRequestResult> {
+  return request<OTPRequestResult>("/api/auth/otp/request", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function verifyPhoneOTP(payload: {
+  phone_number: string;
+  code: string;
+}): Promise<TokenResponse> {
+  const result = await request<TokenResponse>("/api/auth/otp/verify", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  setCsrfToken(result.csrf_token);
+  return result;
+}
+
 export async function loginUser(
   payload: { email: string; password: string },
 ): Promise<TokenResponse> {

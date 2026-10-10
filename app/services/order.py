@@ -290,6 +290,87 @@ def expire_pending_orders(db: Session) -> int:
         raise
 
 
+
+
+def expire_ready_pickup_orders(db: Session) -> int:
+    """Expire paid orders whose full pickup window has ended.
+
+    Inventory is intentionally not restored: after the pickup window, food
+    should not silently return to the public marketplace. Refund/merchant
+    liability remains an operational decision and is not automated here.
+    """
+    now = datetime.now(timezone.utc)
+    try:
+        orders = list(
+            db.scalars(
+                select(Order)
+                .where(Order.status == OrderStatus.READY_FOR_PICKUP)
+                .order_by(Order.id)
+                .with_for_update()
+            ).all()
+        )
+
+        expired_count = 0
+        for order in orders:
+            # A pickup confirmation may have won the lock race before this
+            # transaction; re-check the state while holding the row lock.
+            if order.status != OrderStatus.READY_FOR_PICKUP:
+                continue
+
+            pickup_ends: list[datetime] = []
+            for item in order.items:
+                offer = db.scalar(
+                    select(FoodOffer).where(FoodOffer.id == item.food_offer_id)
+                )
+                if offer:
+                    pickup_ends.append(_as_utc(offer.pickup_end))
+
+            # Do not close an order if its pickup window cannot be determined,
+            # or if any item is still within its advertised pickup window.
+            if not pickup_ends or any(pickup_end > now for pickup_end in pickup_ends):
+                continue
+
+            order.status = OrderStatus.EXPIRED
+            create_notification(
+                db,
+                user_id=order.customer_id,
+                title="مهلت دریافت سفارش تمام شد",
+                body=f"پنجره دریافت سفارش #{order.id} پایان یافت. برای بررسی بازپرداخت یا پشتیبانی با پلتفرم تماس بگیرید.",
+                notification_type="ORDER",
+                entity_type="order",
+                entity_id=order.id,
+            )
+            if order.merchant:
+                create_notification(
+                    db,
+                    user_id=order.merchant.user_id,
+                    title="سفارش دریافت نشد",
+                    body=f"پنجره دریافت سفارش #{order.id} پایان یافت. وضعیت مالی این سفارش نیازمند رسیدگی طبق سیاست تسویه است.",
+                    notification_type="ORDER",
+                    entity_type="order",
+                    entity_id=order.id,
+                )
+            record_event(
+                db,
+                action="order.pickup_window_expired",
+                entity_type="order",
+                entity_id=order.id,
+                request_id=get_request_id(),
+                details={
+                    "previous_status": OrderStatus.READY_FOR_PICKUP.value,
+                    "new_status": OrderStatus.EXPIRED.value,
+                    "reason": "pickup_window_ended",
+                    "inventory_restored": False,
+                },
+            )
+            expired_count += 1
+
+        db.commit()
+        return expired_count
+    except Exception:
+        db.rollback()
+        raise
+
 def verify_pickup_code(db: Session, user: User, order_id: int, pickup_code: str) -> Order:
     if user.role != UserRole.MERCHANT:
         raise HTTPException(status_code=403, detail="Merchant access required")

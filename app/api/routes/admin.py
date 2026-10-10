@@ -10,8 +10,10 @@ from app.models.enums import OfferModerationStatus, UserRole
 from app.schemas.merchant import MerchantAdminResponse, MerchantVerificationUpdate
 from app.schemas.offer import AdminOfferModerationResponse, OfferModerationUpdate
 from app.schemas.order import OrderResponse
+from app.schemas.settlement import MarkSettlementPaidRequest, MerchantSettlementResponse
 from app.schemas.user import RoleUpdate, UserAdminResponse
 from app.services import admin as admin_service
+from app.services import settlement as settlement_service
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -89,5 +91,29 @@ def moderate_offer(
         offer_id,
         payload.status,
         payload.reason,
+        current_user,
+    )
+
+
+
+@router.get("/settlements", response_model=list[MerchantSettlementResponse])
+def list_settlements(
+    current_user: Annotated[User, Depends(require_role(UserRole.ADMIN))],
+    db: Annotated[Session, Depends(get_db)],
+):
+    return settlement_service.list_all_settlements(db)
+
+
+@router.patch("/settlements/{settlement_id}/paid", response_model=MerchantSettlementResponse)
+def mark_settlement_paid(
+    settlement_id: int,
+    payload: MarkSettlementPaidRequest,
+    current_user: Annotated[User, Depends(require_role(UserRole.ADMIN))],
+    db: Annotated[Session, Depends(get_db)],
+):
+    return settlement_service.mark_settlement_paid(
+        db,
+        settlement_id,
+        payload.payout_reference,
         current_user,
     )

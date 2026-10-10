@@ -6,9 +6,10 @@ from app.db.models.merchant import Merchant
 from app.db.models.order import Order
 from app.db.models.order_item import OrderItem
 from app.db.models.merchant_settlement import MerchantSettlement
+from app.db.models.notification import Notification
 from app.db.models.user import User
 from app.models.enums import OrderStatus, UserRole
-from app.services.order import expire_pending_orders
+from app.services.order import expire_pending_orders, expire_ready_pickup_orders
 from app.core.config import settings
 from app.core.security import hash_password
 
@@ -141,3 +142,26 @@ def test_paid_payment_is_reconciled_during_expiration(db):
     settlement = db.query(MerchantSettlement).one()
     assert settlement.order_id == order.id
     assert settlement.status == "PENDING"
+
+
+
+def test_ready_order_expires_after_pickup_window_without_releasing_food(db):
+    order, offer = _setup_expiring_order(db)
+    merchant_user_id = order.merchant.user_id
+    offer.pickup_end = datetime.now(timezone.utc) - timedelta(minutes=1)
+    order.status = OrderStatus.READY_FOR_PICKUP
+    db.commit()
+
+    expired = expire_ready_pickup_orders(db)
+
+    assert expired == 1
+    db.refresh(order)
+    db.refresh(offer)
+    assert order.status == OrderStatus.EXPIRED
+    # The food's pickup window is over; it must not be relisted for sale.
+    assert offer.available_quantity == 1
+    assert db.query(Notification).filter(Notification.user_id == order.customer_id).count() == 1
+    assert db.query(Notification).filter(Notification.user_id == merchant_user_id).count() == 1
+
+    # A repeated Celery tick cannot expire the same order twice.
+    assert expire_ready_pickup_orders(db) == 0

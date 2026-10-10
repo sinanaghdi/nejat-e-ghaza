@@ -5,6 +5,7 @@ import type {
   AdminModerationOffer,
   MerchantVerificationStatus,
   OfferModerationStatus,
+  MerchantSettlement,
   Order,
   User,
 } from "../lib/api";
@@ -12,7 +13,9 @@ import {
   getAdminMerchants,
   getAdminOrders,
   getAdminPendingOffers,
+  getAdminSettlements,
   getAdminUsers,
+  markSettlementPaid,
   moderateAdminOffer,
   updateMerchantVerification,
   updateOrderStatus,
@@ -55,6 +58,7 @@ export function AdminPage(props: Props) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [merchants, setMerchants] = useState<AdminMerchant[]>([]);
   const [pendingOffers, setPendingOffers] = useState<AdminModerationOffer[]>([]);
+  const [settlements, setSettlements] = useState<MerchantSettlement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -69,13 +73,15 @@ export function AdminPage(props: Props) {
       getAdminOrders(getToken()),
       getAdminMerchants(getToken()),
       getAdminPendingOffers(getToken()),
+      getAdminSettlements(getToken()),
     ])
-      .then(([userItems, orderItems, merchantItems, offerItems]) => {
+      .then(([userItems, orderItems, merchantItems, offerItems, settlementItems]) => {
         if (!active) return;
         setUsers(userItems);
         setOrders(orderItems);
         setMerchants(merchantItems);
         setPendingOffers(offerItems);
+        setSettlements(settlementItems);
       })
       .catch((err) => {
         if (active) setError(err instanceof Error ? err.message : "اطلاعات مدیریت دریافت نشد.");
@@ -132,6 +138,20 @@ export function AdminPage(props: Props) {
     }
   }
 
+  async function recordSettlementPaid(settlement: MerchantSettlement) {
+    const payoutReference = window.prompt(
+      `مرجع انتقال بانکی برای تسویه سفارش #${settlement.order_id}:`,
+      settlement.payout_reference || "",
+    )?.trim();
+    if (!payoutReference) return;
+    try {
+      const updated = await markSettlementPaid(getToken(), settlement.id, payoutReference);
+      setSettlements((items) => items.map((item) => item.id === settlement.id ? updated : item));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "ثبت تسویه انجام نشد.");
+    }
+  }
+
   if (!props.user) {
     return (
       <>
@@ -181,6 +201,7 @@ export function AdminPage(props: Props) {
           <div><strong>{rescuedMeals}</strong><span>غذای نجات‌یافته</span></div>
           <div><strong>{cancellationRate}٪</strong><span>نرخ لغو</span></div>
           <div><strong>{grossSales.toLocaleString("fa-IR")}</strong><span>فروش ثبت‌شده (تومان)</span></div>
+          <div><strong>{settlements.filter((item) => item.status === "PENDING").reduce((sum, item) => sum + item.net_amount, 0).toLocaleString("fa-IR")}</strong><span>تسویه در انتظار (تومان)</span></div>
         </section>
 
         {loading && <div className="state-card"><div className="spinner" />در حال دریافت اطلاعات مدیریت...</div>}
@@ -232,6 +253,34 @@ export function AdminPage(props: Props) {
                       <button className="secondary-button" type="button" onClick={() => void moderateOffer(offer, "APPROVED")}>تأیید</button>
                       <button className="danger-button" type="button" onClick={() => void moderateOffer(offer, "REJECTED")}>رد</button>
                     </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="admin-users-card">
+              <div className="section-heading">
+                <div><p className="eyebrow">Payouts</p><h2>دفتر تسویه فروشندگان</h2></div>
+                <span className="offer-count">{settlements.filter((item) => item.status === "PENDING").length} تسویه باز</span>
+              </div>
+              <p className="muted">این بخش فقط ثبت و پیگیری تسویه دستی را مدیریت می‌کند؛ انتقال وجه خودکار از درگاه انجام نمی‌دهد.</p>
+              <div className="admin-user-list">
+                {settlements.length === 0 ? (
+                  <p className="muted">هنوز پرداخت تأییدشده‌ای برای تسویه ثبت نشده است.</p>
+                ) : settlements.map((item) => (
+                  <article className="admin-user-row" key={item.id}>
+                    <div className="admin-user-info">
+                      <strong>سفارش #{item.order_id} · فروشگاه #{item.merchant_id}</strong>
+                      <span>ناخالص: {item.gross_amount.toLocaleString("fa-IR")} تومان · کمیسیون {item.commission_rate_bps / 100}٪ ({item.commission_amount.toLocaleString("fa-IR")})</span>
+                      <span>خالص فروشنده: {item.net_amount.toLocaleString("fa-IR")} تومان</span>
+                      {item.payout_reference && <span>مرجع انتقال: {item.payout_reference}</span>}
+                    </div>
+                    <span className={`moderation-status ${item.status === "PAID" ? "moderation-approved" : "moderation-pending"}`}>
+                      {item.status === "PAID" ? "تسویه ثبت‌شده" : "در انتظار تسویه"}
+                    </span>
+                    {item.status === "PENDING" && (
+                      <button className="secondary-button" type="button" onClick={() => void recordSettlementPaid(item)}>ثبت انتقال بانکی</button>
+                    )}
                   </article>
                 ))}
               </div>

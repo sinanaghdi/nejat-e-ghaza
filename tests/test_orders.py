@@ -25,7 +25,7 @@ def test_order_rejects_insufficient_inventory(client, db):
     customer=User(name="Customer",email="customer@example.com",password_hash=hash_password("password123"),role=UserRole.CUSTOMER)
     merchant_user=User(name="Merchant",email="merchant@example.com",password_hash=hash_password("password123"),role=UserRole.MERCHANT)
     db.add_all([customer,merchant_user]); db.commit()
-    merchant=Merchant(user_id=merchant_user.id,business_name="Cafe",address="Main St",city="Babolsar")
+    merchant=Merchant(user_id=merchant_user.id,business_name="Cafe",address="Main St",city="Babolsar",verification_status="VERIFIED")
     db.add(merchant); db.commit()
     offer=FoodOffer(merchant_id=merchant.id,title="Food Box",original_price=Decimal("100.00"),sale_price=Decimal("50.00"),quantity=1,available_quantity=1,moderation_status="APPROVED",pickup_start=datetime.now(timezone.utc),pickup_end=datetime.now(timezone.utc)+timedelta(hours=2))
     db.add(offer); db.commit()
@@ -450,6 +450,7 @@ def test_order_rejects_expired_offer(client, db):
         available_quantity=2,
         moderation_status="APPROVED",
         pickup_start=datetime.now(timezone.utc) - timedelta(hours=2),
+        moderation_status="APPROVED",
         pickup_end=datetime.now(timezone.utc) - timedelta(minutes=1),
     )
     db.add(expired)

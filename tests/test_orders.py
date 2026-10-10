@@ -450,7 +450,6 @@ def test_order_rejects_expired_offer(client, db):
         available_quantity=2,
         moderation_status="APPROVED",
         pickup_start=datetime.now(timezone.utc) - timedelta(hours=2),
-        moderation_status="APPROVED",
         pickup_end=datetime.now(timezone.utc) - timedelta(minutes=1),
     )
     db.add(expired)

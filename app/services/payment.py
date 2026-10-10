@@ -11,6 +11,7 @@ from app.db.models.user import User
 from app.models.enums import OrderStatus, UserRole
 from app.services.audit import record_event
 from app.services.notification import create_notification
+from app.services.settlement import ensure_settlement_for_payment
 from app.services.payment_provider import PaymentRequest, get_payment_provider
 
 
@@ -106,6 +107,10 @@ def verify_payment(db: Session, authority: str, expected_order_id: int | None = 
         raise HTTPException(status_code=404, detail="Payment not found")
 
     if payment.status == "PAID":
+        # Reconcile legacy paid payments created before the settlement ledger existed.
+        ensure_settlement_for_payment(db, payment, order)
+        db.commit()
+        db.refresh(payment)
         return payment
 
     if order.status != OrderStatus.PENDING:
@@ -134,6 +139,7 @@ def verify_payment(db: Session, authority: str, expected_order_id: int | None = 
     payment.reference_id = result.reference_id
     payment.paid_at = datetime.now(timezone.utc)
     order.status = OrderStatus.PAID
+    ensure_settlement_for_payment(db, payment, order)
     create_notification(
         db,
         user_id=order.customer_id,

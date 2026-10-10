@@ -12,6 +12,9 @@ def make_settings(**overrides):
         "redis_url": "redis://redis:6379/0",
         "payment_webhook_secret": "y" * 40,
         "payment_provider": "zarinpal",
+        "sms_provider": "kavenegar",
+        "kavenegar_api_key": "test-kavenegar-key",
+        "kavenegar_otp_template": "otp-template",
         "payment_callback_url": "https://example.com/api/payments/zarinpal/callback",
         "frontend_payment_result_url": "https://example.com/payment/result",
         "zarinpal_merchant_id": "merchant",
@@ -37,6 +40,7 @@ def test_production_settings_accept_valid_configuration():
         ("database_url", "sqlite:///./test.db"),
         ("redis_url", "redis://localhost:6379/0"),
         ("payment_provider", "mock"),
+        ("sms_provider", "mock"),
         ("zarinpal_sandbox", True),
     ],
 )

@@ -30,7 +30,7 @@ def register_user(db: Session, name: str, email: str, password: str, role: UserR
 
 def authenticate_user(db: Session, email: str, password: str) -> User:
     user = user_repository.get_by_email(db, email)
-    if not user or not verify_password(password, user.password_hash):
+    if not user or not user.password_hash or not verify_password(password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",

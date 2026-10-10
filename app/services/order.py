@@ -11,6 +11,7 @@ from app.db.models.user import User
 from app.core.request_context import get_request_id
 from app.services.audit import record_event
 from app.services.notification import create_notification
+from app.services.settlement import ensure_settlement_for_payment
 from app.models.enums import OrderStatus, UserRole
 from app.repositories import order as order_repository
 from app.schemas.order import OrderCreate
@@ -251,6 +252,7 @@ def expire_pending_orders(db: Session) -> int:
                 # Defensive reconciliation for an interrupted transaction from
                 # an older deployment: a paid payment is authoritative.
                 order.status = OrderStatus.PAID
+                ensure_settlement_for_payment(db, payment, order)
                 continue
 
             for item in order.items:

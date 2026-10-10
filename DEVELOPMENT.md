@@ -93,7 +93,12 @@ The normal lifecycle is:
 - `PENDING -> CANCELLED` or `PENDING -> EXPIRED`
 - `READY_FOR_PICKUP -> EXPIRED` when the merchant misses the pickup deadline.
 
-Inventory is reserved under a transaction with `SELECT ... FOR UPDATE`. Cancellation and pending-order expiry restore reserved quantity. The Celery task `app.workers.tasks.expire_pending_orders_task` calls `expire_pending_orders`; the expiration process checks payment state while holding locks in the same Order -> Payment order used by verification. A payment already confirmed as paid takes precedence over expiration and its inventory is not released.
+Inventory is reserved under a transaction with `SELECT ... FOR UPDATE`. Cancellation and pending-order expiry restore reserved quantity. Celery Beat runs two expiry tasks each minute:
+
+- `app.workers.tasks.expire_pending_orders_task` returns inventory for unpaid `PENDING` orders once the payment timeout passes. It checks payment state while holding locks in the same Order -> Payment order used by verification. A payment already confirmed as paid takes precedence over expiration, remains paid, and keeps inventory reserved; a settlement ledger row is reconciled.
+- `app.workers.tasks.expire_ready_pickup_orders_task` marks `READY_FOR_PICKUP` orders as `EXPIRED` only after every item pickup window has ended. It does **not** re-list those food units, and does not automatically refund the customer or mark a merchant payout as paid. The customer and merchant are notified and an audit event is recorded.
+
+The second expiry flow is a safety rule, not a complete dispute/refund workflow. The pilot must specify who pays when a paid order is not collected, a merchant cannot fulfil the order, or a customer reports unsafe food.
 
 Persist timestamps as timezone-aware UTC. API pickup datetimes must include an explicit UTC offset; the web UI should display dates in `Asia/Tehran`. Do not interpret a naive timestamp as local time. Model defaults use aware UTC timestamps; SQLite tests may return naive datetime values, so service comparisons normalize them.
 

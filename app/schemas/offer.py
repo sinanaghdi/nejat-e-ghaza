@@ -18,6 +18,10 @@ class OfferCreate(BaseModel):
 
     @model_validator(mode="after")
     def validate_offer(self):
+        if self.pickup_start.tzinfo is None or self.pickup_start.utcoffset() is None:
+            raise ValueError("pickup_start must include a timezone offset")
+        if self.pickup_end.tzinfo is None or self.pickup_end.utcoffset() is None:
+            raise ValueError("pickup_end must include a timezone offset")
         if self.sale_price > self.original_price:
             raise ValueError("sale_price must be less than or equal to original_price")
         if self.pickup_end <= self.pickup_start:
@@ -39,6 +43,10 @@ class OfferUpdate(BaseModel):
 
     @model_validator(mode="after")
     def validate_offer(self):
+        for field_name in ("pickup_start", "pickup_end"):
+            value = getattr(self, field_name)
+            if value is not None and (value.tzinfo is None or value.utcoffset() is None):
+                raise ValueError(f"{field_name} must include a timezone offset")
         if self.original_price is not None and self.sale_price is not None:
             if self.sale_price > self.original_price:
                 raise ValueError("sale_price must be less than or equal to original_price")

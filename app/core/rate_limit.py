@@ -14,9 +14,15 @@ def check_rate_limit(
     *,
     limit: int | None = None,
     window_seconds: int | None = None,
+    scope: str = "ip",
 ) -> None:
     client_ip = request.client.host if request.client else "unknown"
-    key = f"rl:{bucket}:{client_ip}"
+    if scope == "global":
+        key = f"rl:{bucket}"
+    elif scope == "ip":
+        key = f"rl:{bucket}:{client_ip}"
+    else:
+        raise ValueError("Rate limit scope must be 'ip' or 'global'")
     effective_limit = limit if limit is not None else settings.rate_limit_requests
     effective_window = window_seconds if window_seconds is not None else settings.rate_limit_window_seconds
 

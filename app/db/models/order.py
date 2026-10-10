@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from sqlalchemy import DateTime, ForeignKey, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -14,7 +14,7 @@ class Order(Base):
     total_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2))
     status: Mapped[OrderStatus] = mapped_column(default=OrderStatus.PENDING)
     pickup_code: Mapped[str] = mapped_column(String(32), unique=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     customer = relationship("User", back_populates="orders")
     merchant = relationship("Merchant", back_populates="orders")

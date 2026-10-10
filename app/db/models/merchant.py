@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import DateTime, ForeignKey, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
@@ -16,7 +16,7 @@ class Merchant(Base):
     longitude: Mapped[float | None] = mapped_column(Numeric(9, 6), nullable=True)
     verification_status: Mapped[str] = mapped_column(String(20), default="VERIFIED", nullable=False, index=True)
     verification_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     user = relationship("User", back_populates="merchant_profile")
     offers = relationship("FoodOffer", back_populates="merchant")

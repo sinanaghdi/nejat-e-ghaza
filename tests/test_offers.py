@@ -27,6 +27,7 @@ def test_public_offer_search_and_city_filter(client, db):
         description="کافه محلی",
         address="خیابان اصلی",
         city="کرمانشاه",
+        verification_status="VERIFIED",
     )
     db.add(merchant)
     db.commit()
@@ -41,6 +42,7 @@ def test_public_offer_search_and_city_filter(client, db):
             sale_price=100000,
             quantity=5,
             available_quantity=5,
+            moderation_status="APPROVED",
             pickup_start=now + timedelta(hours=1),
             pickup_end=now + timedelta(hours=3),
             is_active=True,
@@ -53,6 +55,7 @@ def test_public_offer_search_and_city_filter(client, db):
             sale_price=120000,
             quantity=3,
             available_quantity=3,
+            moderation_status="APPROVED",
             pickup_start=now + timedelta(hours=1),
             pickup_end=now + timedelta(hours=3),
             is_active=True,
@@ -97,6 +100,7 @@ def test_expired_offer_is_not_publicly_listed(client, db):
         business_name="کافه قدیمی",
         address="خیابان اصلی",
         city="کرمانشاه",
+        verification_status="VERIFIED",
     )
     db.add(merchant)
     db.commit()
@@ -110,6 +114,7 @@ def test_expired_offer_is_not_publicly_listed(client, db):
             sale_price=50000,
             quantity=2,
             available_quantity=2,
+            moderation_status="APPROVED",
             pickup_start=now - timedelta(hours=2),
             pickup_end=now - timedelta(minutes=1),
             is_active=True,

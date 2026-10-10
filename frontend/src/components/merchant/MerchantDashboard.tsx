@@ -1,4 +1,7 @@
-import type { MerchantProfile, FoodOffer, Order } from "../../lib/api";
+import { useEffect, useState } from "react";
+import type { MerchantProfile, FoodOffer, MerchantSettlement, Order } from "../../lib/api";
+import { getMerchantSettlements } from "../../lib/api";
+import { getToken } from "../../lib/auth";
 import { formatToman } from "../../lib/formatters";
 
 function statusLabel(status: Order["status"]): string {
@@ -46,6 +49,20 @@ export function MerchantDashboard({
   onStatusChange,
   onVerifyPickup,
 }: Props) {
+  const [settlements, setSettlements] = useState<MerchantSettlement[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    if (!profile) {
+      setSettlements([]);
+      return () => { active = false; };
+    }
+    getMerchantSettlements(getToken())
+      .then((items) => { if (active) setSettlements(items); })
+      .catch(() => { if (active) setSettlements([]); });
+    return () => { active = false; };
+  }, [profile?.id]);
+
   if (open === false) return null;
 
   return (
@@ -137,6 +154,8 @@ export function MerchantDashboard({
                       <div><strong>{rescuedMeals}</strong><span>غذای نجات‌یافته</span></div>
                       <div><strong>{grossSales.toLocaleString("fa-IR")}</strong><span>فروش ثبت‌شده (تومان)</span></div>
                       <div><strong>{cancellationRate}٪</strong><span>نرخ لغو</span></div>
+                      <div><strong>{settlements.filter((item) => item.status === "PENDING").reduce((sum, item) => sum + item.net_amount, 0).toLocaleString("fa-IR")}</strong><span>در انتظار تسویه (تومان)</span></div>
+                      <div><strong>{settlements.filter((item) => item.status === "PAID").reduce((sum, item) => sum + item.net_amount, 0).toLocaleString("fa-IR")}</strong><span>تسویه‌شده (تومان)</span></div>
                     </div>
                   );
                 })()}

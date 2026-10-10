@@ -1,3 +1,4 @@
+import hashlib
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -84,11 +85,13 @@ def request_otp(
 ):
     phone_number = normalize_iran_mobile(payload.phone_number)
     check_rate_limit(request, "otp-request-ip", limit=10, window_seconds=3600)
+    phone_bucket = hashlib.sha256(phone_number.encode("utf-8")).hexdigest()[:24]
     check_rate_limit(
         request,
-        f"otp-request-phone:{phone_number}",
+        f"otp-request-phone:{phone_bucket}",
         limit=settings.otp_rate_limit_per_phone,
         window_seconds=settings.otp_rate_limit_window_seconds,
+        scope="global",
     )
     _, code = request_phone_otp(db, phone_number, payload.name)
     debug_code = code if settings.environment.lower() != "production" and settings.sms_provider == "mock" else None
@@ -108,7 +111,14 @@ def verify_otp(
 ):
     phone_number = normalize_iran_mobile(payload.phone_number)
     check_rate_limit(request, "otp-verify-ip", limit=30, window_seconds=3600)
-    check_rate_limit(request, f"otp-verify-phone:{phone_number}", limit=15, window_seconds=3600)
+    phone_bucket = hashlib.sha256(phone_number.encode("utf-8")).hexdigest()[:24]
+    check_rate_limit(
+        request,
+        f"otp-verify-phone:{phone_bucket}",
+        limit=15,
+        window_seconds=3600,
+        scope="global",
+    )
 
     user = verify_phone_otp(db, phone_number, payload.code)
     access_token = create_access_token(str(user.id))

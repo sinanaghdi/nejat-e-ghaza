@@ -33,7 +33,15 @@ def register(
     payload: RegisterRequest,
     db: Annotated[Session, Depends(get_db)],
 ):
-    check_rate_limit(request, "register")
+    check_rate_limit(request, "register-ip", limit=10, window_seconds=3600)
+    email_bucket = hashlib.sha256(str(payload.email).strip().lower().encode("utf-8")).hexdigest()[:24]
+    check_rate_limit(
+        request,
+        f"register-email:{email_bucket}",
+        limit=5,
+        window_seconds=86400,
+        scope="global",
+    )
     return register_user(db, payload.name, payload.email, payload.password)
 
 
@@ -51,7 +59,15 @@ def login(
     payload: LoginRequest,
     db: Annotated[Session, Depends(get_db)],
 ):
-    check_rate_limit(request, "login")
+    check_rate_limit(request, "login-ip", limit=20, window_seconds=900)
+    email_bucket = hashlib.sha256(str(payload.email).strip().lower().encode("utf-8")).hexdigest()[:24]
+    check_rate_limit(
+        request,
+        f"login-email:{email_bucket}",
+        limit=10,
+        window_seconds=900,
+        scope="global",
+    )
     user = authenticate_user(db, payload.email, payload.password)
 
     access_token = create_access_token(str(user.id))

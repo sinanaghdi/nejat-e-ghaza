@@ -21,6 +21,13 @@ class Settings(BaseSettings):
     order_payment_timeout_minutes: int = 15
     rate_limit_requests: int = 120
     rate_limit_window_seconds: int = 60
+    otp_ttl_seconds: int = 300
+    otp_rate_limit_per_phone: int = 3
+    otp_rate_limit_window_seconds: int = 3600
+    sms_provider: str = "mock"
+    kavenegar_api_key: str | None = None
+    kavenegar_otp_template: str | None = None
+    platform_commission_bps: int = 1000
     payment_webhook_secret: str = "change-me"
     payment_provider: str = "mock"
     payment_callback_url: str = "http://localhost:8000/api/payments/zarinpal/callback"
@@ -88,6 +95,17 @@ class Settings(BaseSettings):
 
         if "localhost" in self.redis_url or "127.0.0.1" in self.redis_url:
             errors.append("REDIS_URL must point to the production Redis service.")
+
+        if self.sms_provider == "mock":
+            errors.append("SMS_PROVIDER=mock is not allowed in production.")
+        if self.sms_provider == "kavenegar":
+            if not self.kavenegar_api_key:
+                errors.append("KAVENEGAR_API_KEY is required when SMS_PROVIDER=kavenegar.")
+            if not self.kavenegar_otp_template:
+                errors.append("KAVENEGAR_OTP_TEMPLATE is required when SMS_PROVIDER=kavenegar.")
+
+        if not 0 <= self.platform_commission_bps <= 10000:
+            errors.append("PLATFORM_COMMISSION_BPS must be between 0 and 10000.")
 
         if self.payment_provider == "mock":
             errors.append("PAYMENT_PROVIDER=mock is not allowed in production.")

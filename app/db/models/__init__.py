@@ -7,5 +7,6 @@ from app.db.models.payment import Payment
 from app.db.models.audit_log import AuditLog
 from app.db.models.notification import Notification
 from app.db.models.phone_otp import PhoneOTP
+from app.db.models.merchant_settlement import MerchantSettlement
 
-__all__ = ["User", "Merchant", "FoodOffer", "Order", "OrderItem", "Payment", "AuditLog", "Notification", "PhoneOTP"]
+__all__ = ["User", "Merchant", "FoodOffer", "Order", "OrderItem", "Payment", "AuditLog", "Notification", "PhoneOTP", "MerchantSettlement"]

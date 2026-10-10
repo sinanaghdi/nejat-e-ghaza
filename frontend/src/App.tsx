@@ -59,6 +59,13 @@ function App() {
     name,
     email,
     password,
+    phoneNumber,
+    otpCode,
+    otpRequested,
+    setPhoneNumber,
+    setOtpCode,
+    requestLoginOtp,
+    verifyLoginOtp,
     setName,
     setEmail,
     setPassword,
@@ -165,10 +172,17 @@ function App() {
         name={name}
         email={email}
         password={password}
+        phoneNumber={phoneNumber}
+        otpCode={otpCode}
+        otpRequested={otpRequested}
         onModeChange={switchAuthMode}
         onNameChange={setName}
         onEmailChange={setEmail}
         onPasswordChange={setPassword}
+        onPhoneChange={setPhoneNumber}
+        onOtpCodeChange={setOtpCode}
+        onRequestOtp={requestLoginOtp}
+        onVerifyOtp={verifyLoginOtp}
         onSubmit={handleAuthSubmit}
         onDemoLogin={loginDemo}
       />

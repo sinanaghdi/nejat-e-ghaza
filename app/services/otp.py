@@ -19,7 +19,11 @@ from app.services.sms_provider import get_sms_provider
 
 
 def normalize_iran_mobile(value: str) -> str:
-    digits = re.sub(r"[\s\-()]", "", value)
+    numeral_map = str.maketrans(
+        "۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩",
+        "01234567890123456789",
+    )
+    digits = re.sub(r"[\s\-()]", "", value.translate(numeral_map))
     if digits.startswith("+98"):
         digits = "0" + digits[3:]
     elif digits.startswith("0098"):

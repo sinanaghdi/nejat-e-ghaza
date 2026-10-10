@@ -44,7 +44,7 @@ New merchant profiles and offers enter PENDING; an admin verifies merchants and 
 
 ## Remaining pilot risks
 
-- Define no-show, merchant cancellation after payment, refunds, food safety complaints and dispute ownership.
+- Define legal/accounting treatment and refund rules for pickup no-shows, merchant cancellation after payment, refunds, food safety complaints and disputes. The implemented pickup-window expiry deliberately does not relist food or initiate refunds/payouts.
 - Run real SMS delivery tests and a ZarinPal sandbox transaction on a public HTTPS domain.
 - Confirm whether payout/splitting is available for the exact merchant/platform arrangement; the manual settlement ledger is not an automated payout.
 - Add actual customer/merchant/admin screenshots from a tested deployment; repository images must reflect the current product, not mocked screenshots.

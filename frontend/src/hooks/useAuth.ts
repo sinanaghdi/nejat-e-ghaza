@@ -7,6 +7,8 @@ import {
   loginUser,
   logoutUser,
   registerUser,
+  requestPhoneOTP,
+  verifyPhoneOTP,
 } from "../lib/api";
 import { clearToken, getToken, setToken } from "../lib/auth";
 
@@ -22,6 +24,9 @@ export function useAuth() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [otpRequested, setOtpRequested] = useState(false);
 
   useEffect(() => {
     getCurrentUser(getToken())
@@ -97,6 +102,51 @@ export function useAuth() {
     }
   }
 
+  async function requestLoginOtp() {
+    setAuthLoading(true);
+    setAuthError("");
+    setAuthSuccess("");
+    try {
+      const result = await requestPhoneOTP({
+        phone_number: phoneNumber,
+        name: name.trim() || undefined,
+      });
+      setOtpRequested(true);
+      setOtpCode("");
+      setAuthSuccess(
+        result.debug_code
+          ? `کد آزمایشی ورود: ${result.debug_code} (فقط محیط توسعه)`
+          : "اگر ارسال پیامک امکان‌پذیر باشد، کد ورود ارسال می‌شود.",
+      );
+    } catch (err) {
+      setAuthError(err instanceof ApiError ? err.message : "ارسال کد ورود انجام نشد.");
+    } finally {
+      setAuthLoading(false);
+    }
+  }
+
+  async function verifyLoginOtp() {
+    setAuthLoading(true);
+    setAuthError("");
+    setAuthSuccess("");
+    try {
+      const token = await verifyPhoneOTP({ phone_number: phoneNumber, code: otpCode });
+      setToken(token.access_token);
+      const currentUser = await getCurrentUser(token.access_token);
+      setUser(currentUser);
+      setAuthOpen(false);
+      setName("");
+      setEmail("");
+      setPassword("");
+      setOtpCode("");
+      setOtpRequested(false);
+    } catch (err) {
+      setAuthError(err instanceof ApiError ? err.message : "کد ورود تأیید نشد.");
+    } finally {
+      setAuthLoading(false);
+    }
+  }
+
   async function handleLogout() {
     try {
       await logoutUser();
@@ -111,6 +161,8 @@ export function useAuth() {
     setAuthMode(mode);
     setAuthError("");
     setAuthSuccess("");
+    setOtpRequested(false);
+    setOtpCode("");
   }
 
   return {
@@ -123,6 +175,13 @@ export function useAuth() {
     name,
     email,
     password,
+    phoneNumber,
+    otpCode,
+    otpRequested,
+    setPhoneNumber,
+    setOtpCode,
+    requestLoginOtp,
+    verifyLoginOtp,
     setName,
     setEmail,
     setPassword,

@@ -71,9 +71,8 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Build demo bundle for browser tests
+      - name: Build frontend bundle for API-mocked browser tests
         env:
-          VITE_DEMO_MODE: "true"
           VITE_BASE_PATH: "/"
         run: npm run build
 

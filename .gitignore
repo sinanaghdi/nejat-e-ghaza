@@ -12,3 +12,26 @@ htmlcov/
 .idea/
 .vscode/
 .DS_Store
+
+# Local credentials and private key material
+.secrets/
+secrets/
+**/secrets/**
+.npmrc
+!.npmrc.example
+*.pem
+*.p12
+*.pfx
+*.key
+credentials*.json
+service-account*.json
+.env.local
+.env.*.local
+
+# Build output and local test artifacts
+node_modules/
+frontend/dist/
+dist/
+coverage/
+playwright-report/
+test-results/

@@ -89,7 +89,7 @@ export function MerchantProfileForm({ value, onChange, onSubmit, onClose, editin
               inputMode="decimal"
               value={value.latitude}
               onChange={(event) => set("latitude", event.target.value)}
-              placeholder="۳۴٫۳۱۴۲"
+              placeholder="34.3142"
               dir="ltr"
             />
           </label>
@@ -101,7 +101,7 @@ export function MerchantProfileForm({ value, onChange, onSubmit, onClose, editin
               inputMode="decimal"
               value={value.longitude}
               onChange={(event) => set("longitude", event.target.value)}
-              placeholder="۴۷٫۰۶۵۰"
+              placeholder="47.0650"
               dir="ltr"
             />
           </label>

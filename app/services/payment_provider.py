@@ -134,4 +134,8 @@ class ZarinpalPaymentProvider(PaymentProvider):
 def get_payment_provider() -> PaymentProvider:
     if settings.payment_provider == "zarinpal":
         return ZarinpalPaymentProvider()
-    return MockPaymentProvider()
+    if settings.payment_provider == "mock":
+        if settings.environment.lower() == "production":
+            raise RuntimeError("Mock payment provider is disabled in production")
+        return MockPaymentProvider()
+    raise RuntimeError(f"Unsupported PAYMENT_PROVIDER: {settings.payment_provider}")

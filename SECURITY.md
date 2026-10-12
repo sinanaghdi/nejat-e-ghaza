@@ -22,6 +22,8 @@
 
 Payment verification is idempotent for already-paid payments. A failed payment can be retried safely; the retry receives a new payment authority while the previous failed authority becomes stale.
 
+If the gateway confirms a charge after the matching order has already been cancelled or expired, the order is not reopened and no merchant settlement is created. The payment is saved as `REFUND_REQUIRED`, an audit event is written, and the customer/admin notification queue is populated. Admins can inspect `GET /api/admin/payments/refund-required` and record a refund already performed through the provider/bank using `PATCH /api/admin/payments/{payment_id}/refund-completed`. That endpoint records the reference; it does not initiate the refund itself. Reconcile the gateway and payment reference before marking a refund complete.
+
 The browser return from `/api/payments/zarinpal/callback` is not proof of payment. The server must verify the saved Authority and expected amount with ZarinPal before marking the order as paid. The separate `/api/payments/webhook` endpoint is a custom secret-protected integration endpoint; `X-Webhook-Secret` is not claimed to be a ZarinPal signature.
 
 The settlement ledger currently records gross, commission, net payable, and manual bank-transfer references. It does not perform automatic split settlement. Verify the exact provider contract/product, fees, merchant eligibility and legal/accounting flow before promising automatic payouts.

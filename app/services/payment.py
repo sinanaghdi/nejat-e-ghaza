@@ -30,6 +30,14 @@ def create_payment(db: Session, user: User, order_id: int) -> Payment:
     existing_payment = order.payment
 
     if existing_payment and existing_payment.status != "FAILED":
+        # A deployment may change provider configuration while unpaid orders
+        # still have an active payment attempt. Never return an old authority
+        # for a checkout URL generated from a different provider configuration.
+        if existing_payment.provider != provider.name:
+            raise HTTPException(
+                status_code=409,
+                detail="Payment provider changed; reconcile the existing payment before retrying",
+            )
         return existing_payment
 
     try:
@@ -117,6 +125,15 @@ def verify_payment(db: Session, authority: str, expected_order_id: int | None = 
         raise HTTPException(status_code=409, detail="Order is no longer payable")
 
     provider = get_payment_provider()
+    # Verify through the same provider that issued the persisted authority.
+    # Configuration changes must not validate an old authority through another
+    # gateway (for example, a mock provider or a different payment account).
+    if payment.provider != provider.name:
+        raise HTTPException(
+            status_code=409,
+            detail="Payment provider configuration does not match this payment",
+        )
+
     try:
         result = provider.verify(authority, payment.amount)
     except Exception as exc:

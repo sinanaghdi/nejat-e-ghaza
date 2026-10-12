@@ -302,6 +302,21 @@ const DEMO_SETTLEMENTS: MerchantSettlement[] = [
   },
 ];
 
+
+const DEMO_REFUND_PAYMENTS: PaymentResponse[] = [
+  {
+    id: 8101,
+    order_id: 1002,
+    provider: "mock",
+    authority: "DEMO-REFUND-1002",
+    reference_id: "DEMO-GATEWAY-REF-1002",
+    amount: 89000,
+    status: "REFUND_REQUIRED",
+    created_at: demoDate(-2),
+    paid_at: demoDate(-2),
+  },
+];
+
 export interface TokenResponse {
   access_token: string | null;
   token_type: string;
@@ -809,6 +824,43 @@ export function moderateAdminOffer(
     method: "PATCH",
     body: JSON.stringify({ status, reason: reason?.trim() || undefined }),
   });
+}
+
+export function getAdminRefundRequiredPayments(token: string | null): Promise<PaymentResponse[]> {
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    if (role !== "ADMIN") return Promise.reject(new ApiError("Admin access required", 403));
+    return Promise.resolve(DEMO_REFUND_PAYMENTS.filter((item) => item.status === "REFUND_REQUIRED").map((item) => ({ ...item })));
+  }
+  return authRequest<unknown[]>("/api/admin/payments/refund-required", token).then((items) => items.map(normalizePayment));
+}
+
+export function markRefundCompleted(
+  token: string | null,
+  paymentId: number,
+  refundReference: string,
+): Promise<PaymentResponse> {
+  const normalizedReference = refundReference.trim();
+  if (normalizedReference.length < 3) {
+    return Promise.reject(new ApiError("مرجع بازپرداخت الزامی است.", 422));
+  }
+  if (import.meta.env.VITE_DEMO_MODE === "true") {
+    const role = token?.startsWith("demo:") ? token.slice(5) as User["role"] : null;
+    if (role !== "ADMIN") return Promise.reject(new ApiError("Admin access required", 403));
+    const item = DEMO_REFUND_PAYMENTS.find((candidate) => candidate.id === paymentId);
+    if (!item) return Promise.reject(new ApiError("پرداخت در صف بازپرداخت پیدا نشد.", 404));
+    if (item.status === "REFUNDED") return Promise.resolve({ ...item });
+    if (item.status !== "REFUND_REQUIRED") {
+      return Promise.reject(new ApiError("این پرداخت در انتظار بازپرداخت نیست.", 409));
+    }
+    item.status = "REFUNDED";
+    addDemoNotification("CUSTOMER", "بازپرداخت ثبت شد", `بازپرداخت نمایشی سفارش #${item.order_id} ثبت شد. مرجع: ${normalizedReference}`, "PAYMENT", "order", item.order_id);
+    return Promise.resolve({ ...item });
+  }
+  return authRequest<unknown>(`/api/admin/payments/${paymentId}/refund-completed`, token, {
+    method: "PATCH",
+    body: JSON.stringify({ refund_reference: normalizedReference }),
+  }).then(normalizePayment);
 }
 
 export function getAdminSettlements(token: string | null): Promise<MerchantSettlement[]> {

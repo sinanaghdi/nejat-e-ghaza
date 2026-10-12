@@ -1507,6 +1507,25 @@ label {
   overscroll-behavior: contain;
 }
 
+.form-intro {
+  margin: -2px 0 4px;
+  color: var(--muted-text);
+  line-height: 1.8;
+}
+
+.field-optional {
+  color: var(--muted-text);
+  font-size: .85em;
+  font-weight: 400;
+}
+
+.field-hint {
+  margin: -8px 0 2px;
+  color: var(--muted-text);
+  font-size: .82rem;
+  line-height: 1.8;
+}
+
 .form-modal {
   width: min(620px, 100%);
   padding: clamp(20px, 4vw, 32px);

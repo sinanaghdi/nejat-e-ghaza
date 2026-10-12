@@ -16,14 +16,38 @@ export function PaymentResultPage({ user, cartCount, onCart }: Props) {
 
   const success = status === "success";
   const cancelled = status === "cancelled";
+  const refundReview = status === "refund_review";
+  const resultClass = success
+    ? "success"
+    : cancelled
+      ? "cancelled"
+      : refundReview
+        ? "refund-review"
+        : "failed";
 
   return (
     <>
       <main className="page-shell">
-        <section className={`payment-result-card ${success ? "success" : cancelled ? "cancelled" : "failed"}`}>
-          <div className="state-icon" aria-hidden="true">{success ? "✓" : cancelled ? "↩" : "!"}</div>
+        <section className={`payment-result-card ${resultClass}`}>
+          <div className="state-icon" aria-hidden="true">
+            {success ? "✓" : cancelled ? "↩" : refundReview ? "…" : "!"}
+          </div>
           <p className="eyebrow">نتیجه پرداخت</p>
-          <h1>{success ? "پرداخت با موفقیت انجام شد" : cancelled ? "پرداخت لغو شد" : "پرداخت ناموفق بود"}</h1>
+          <h1>
+            {success
+              ? "پرداخت با موفقیت انجام شد"
+              : cancelled
+                ? "پرداخت لغو شد"
+                : refundReview
+                  ? "پرداخت ثبت شد و نیازمند پیگیری است"
+                  : "پرداخت ناموفق بود"}
+          </h1>
+          {refundReview && (
+            <p role="status">
+              درگاه پرداخت را تأیید کرده، اما سفارش منقضی یا لغو شده است. سفارش دوباره فعال نمی‌شود؛
+              تیم پشتیبانی باید تراکنش را بررسی و بازپرداخت را پیگیری کند.
+            </p>
+          )}
           {orderId && <p>شماره سفارش: <strong>#{orderId}</strong></p>}
           {refId && <p>کد رهگیری: <strong dir="ltr">{refId}</strong></p>}
           <div className="payment-result-actions">

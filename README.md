@@ -70,6 +70,9 @@ The Compose file forces `ENVIRONMENT=production`; it will reject placeholder sec
 - Existing email/password auth is retained for compatibility; mobile OTP is available through `/api/auth/otp/request` and `/api/auth/otp/verify`.
 - In local development, `SMS_PROVIDER=mock` returns a test-only `debug_code`. Production rejects the mock provider.
 - The payment callback is not treated as proof of payment: the server verifies the authority and amount with the configured provider.
+- Active payment attempts stay bound to the provider that issued their authority; unknown provider names never fall back to a mock gateway.
+- If a verified charge arrives after an order was cancelled or expired, the order stays closed and the payment is marked `REFUND_REQUIRED`. The customer and admins are notified; admins can review `GET /api/admin/payments/refund-required` and record an already-completed manual refund through `PATCH /api/admin/payments/{payment_id}/refund-completed`.
+- Refunds are **not automated**. An admin must complete the refund through the agreed provider/bank process before recording its reference in the system.
 - A settlement records gross amount, commission and net payable. The current implementation **does not automatically transfer money or split a ZarinPal transaction**; an admin records a payout reference after a real bank transfer.
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for current architecture, API routes and data model, and [SECURITY.md](SECURITY.md) for launch blockers.

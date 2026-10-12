@@ -24,8 +24,10 @@ def _as_utc(value: datetime) -> datetime:
         return value.replace(tzinfo=timezone.utc)
     return value.astimezone(timezone.utc)
 
+# Payment verification owns the PENDING -> PAID transition.
+# No role may mark an order paid through the generic status endpoint.
 ALLOWED_STATUS_TRANSITIONS = {
-    OrderStatus.PENDING: {OrderStatus.PAID, OrderStatus.CANCELLED, OrderStatus.EXPIRED},
+    OrderStatus.PENDING: {OrderStatus.CANCELLED, OrderStatus.EXPIRED},
     OrderStatus.PAID: {OrderStatus.READY_FOR_PICKUP},
     OrderStatus.READY_FOR_PICKUP: {OrderStatus.COMPLETED, OrderStatus.EXPIRED},
     OrderStatus.COMPLETED: set(),

@@ -28,6 +28,16 @@ import { AuthPage } from "./pages/AuthPage";
 import { AdminPage } from "./pages/AdminPage";
 import { CustomerDashboardPage } from "./pages/CustomerDashboardPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
+import { LegalPage, type LegalPageKind } from "./pages/LegalPage";
+import { SiteFooter } from "./components/SiteFooter";
+
+const legalRoutes: Record<string, LegalPageKind> = {
+  "/privacy": "privacy",
+  "/terms": "terms",
+  "/safety": "safety",
+  "/security": "security",
+  "/license": "license",
+};
 
 function App() {
   const location = useLocation();
@@ -166,7 +176,16 @@ function App() {
 
   let page: ReactElement;
 
-  if (location.pathname === "/login" || location.pathname === "/register") {
+  const legalPageKind = legalRoutes[location.pathname];
+
+  if (legalPageKind) {
+    page = (
+      <>
+        {header}
+        <LegalPage kind={legalPageKind} />
+      </>
+    );
+  } else if (location.pathname === "/login" || location.pathname === "/register") {
     page = (
       <AuthPage
         mode={authMode}
@@ -405,6 +424,7 @@ function App() {
   return (
     <>
       {page}
+      <SiteFooter />
 
       {location.pathname === "/" && (
         <>

@@ -65,7 +65,7 @@ export function CustomerDashboardPage(props: Props) {
 
         <section className="dashboard-recent">
           <div className="section-heading">
-            <div><p className="eyebrow">Recent</p><h2>آخرین سفارش‌ها</h2></div>
+            <div><p className="eyebrow">تازه‌ترین فعالیت‌ها</p><h2>آخرین سفارش‌ها</h2></div>
             <Link className="secondary-button compact" to="/orders">همه سفارش‌ها</Link>
           </div>
 

@@ -10,6 +10,7 @@ from app.db.models.order import Order
 from app.db.models.payment import Payment
 from app.db.models.user import User
 from app.models.enums import OrderStatus, UserRole
+from app.core.security import hash_password
 from app.services import payment as payment_service
 from app.services.payment_provider import PaymentVerifyResult
 
@@ -148,3 +149,51 @@ def test_successful_callback_after_order_expiry_is_queued_for_refund(db, monkeyp
     assert db.scalar(
         select(MerchantSettlement).where(MerchantSettlement.payment_id == payment.id)
     ) is None
+
+
+
+def test_admin_can_reconcile_refund_required_payment(client, db, monkeypatch):
+    _, order, payment = create_pending_order_with_payment(db)
+    order.status = OrderStatus.CANCELLED
+    db.commit()
+
+    provider = SuccessfulMockProvider()
+    monkeypatch.setattr(payment_service, "get_payment_provider", lambda: provider)
+    payment_service.verify_payment(db, payment.authority)
+
+    admin = User(
+        name="Refund Queue Admin",
+        email="refund-queue-admin@example.com",
+        password_hash=hash_password("secure-test-password-123"),
+        role=UserRole.ADMIN,
+    )
+    db.add(admin)
+    db.commit()
+
+    token_response = client.post(
+        "/api/auth/login",
+        json={"email": admin.email, "password": "secure-test-password-123"},
+    )
+    assert token_response.status_code == 200
+    headers = {"Authorization": f"Bearer {token_response.json()['access_token']}"}
+
+    queue = client.get("/api/admin/payments/refund-required", headers=headers)
+    assert queue.status_code == 200
+    assert [item["id"] for item in queue.json()] == [payment.id]
+
+    marked = client.patch(
+        f"/api/admin/payments/{payment.id}/refund-completed",
+        json={"refund_reference": "BANK-REFUND-123"},
+        headers=headers,
+    )
+    assert marked.status_code == 200
+    assert marked.json()["status"] == "REFUNDED"
+
+    empty_queue = client.get("/api/admin/payments/refund-required", headers=headers)
+    assert empty_queue.status_code == 200
+    assert empty_queue.json() == []
+
+    # A repeated provider callback after manual reconciliation remains idempotent.
+    repeated = payment_service.verify_payment(db, payment.authority)
+    assert repeated.status == "REFUNDED"
+    assert provider.verify_calls == 1

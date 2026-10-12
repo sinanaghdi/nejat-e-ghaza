@@ -132,7 +132,7 @@ The merchant settlement ledger is created only after server-side payment verific
 - Orders and pickup verification: `/api/orders`
 - Payments/callback: `/api/payments`
 - Merchant profile and settlements: `/api/merchant`
-- Admin users, orders, moderation, settlements: `/api/admin`
+- Admin users, orders, moderation, settlements, and refund reconciliation: `/api/admin`
 - Notifications: `/api/notifications`
 - Health: `/api/health` (see OpenAPI for the exact health response).
 

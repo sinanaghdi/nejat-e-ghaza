@@ -57,6 +57,8 @@ def test_verified_payment_creates_commission_ledger_once(db, monkeypatch):
     db.commit()
 
     class Provider:
+        name = "mock"
+
         def verify(self, authority, amount):
             return type("Result", (), {"success": True, "reference_id": "REF-SETTLE"})()
 

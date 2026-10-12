@@ -21,6 +21,11 @@ export function AppRouter() {
         <Route path="/login" element={<App />} />
         <Route path="/register" element={<App />} />
         <Route path="/payment/result" element={<App />} />
+        <Route path="/privacy" element={<App />} />
+        <Route path="/terms" element={<App />} />
+        <Route path="/safety" element={<App />} />
+        <Route path="/security" element={<App />} />
+        <Route path="/license" element={<App />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </HashRouter>

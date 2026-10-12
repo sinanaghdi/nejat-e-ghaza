@@ -543,3 +543,41 @@ def test_merchant_rejects_wrong_pickup_code(client, db):
         headers={"Authorization": f"Bearer {merchant_token}"},
     )
     assert response.status_code == 403
+
+
+
+def test_admin_cannot_mark_order_as_paid_without_payment_verification(client, db):
+    customer, _, _, offer = _setup_order(db)
+    customer_token = _login(client, customer.email)
+
+    order_response = client.post(
+        "/api/orders",
+        json={"items": [{"food_offer_id": offer.id, "quantity": 1}]},
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    assert order_response.status_code == 201
+    order_id = order_response.json()["id"]
+
+    admin = User(
+        name="Order Status Admin",
+        email="admin-order-status@example.com",
+        password_hash=hash_password("password123"),
+        role=UserRole.ADMIN,
+    )
+    db.add(admin)
+    db.commit()
+    admin_token = _login(client, admin.email)
+
+    response = client.patch(
+        f"/api/orders/{order_id}/status",
+        json={"status": "PAID"},
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+
+    assert response.status_code == 403
+
+    from app.db.models.order import Order
+    from app.models.enums import OrderStatus
+
+    order = db.get(Order, order_id)
+    assert order.status == OrderStatus.PENDING

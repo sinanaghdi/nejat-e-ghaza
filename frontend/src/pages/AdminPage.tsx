@@ -7,6 +7,7 @@ import type {
   OfferModerationStatus,
   MerchantSettlement,
   Order,
+  PaymentResponse,
   User,
 } from "../lib/api";
 import {
@@ -14,7 +15,9 @@ import {
   getAdminOrders,
   getAdminPendingOffers,
   getAdminSettlements,
+  getAdminRefundRequiredPayments,
   getAdminUsers,
+  markRefundCompleted,
   markSettlementPaid,
   moderateAdminOffer,
   updateMerchantVerification,
@@ -59,6 +62,7 @@ export function AdminPage(props: Props) {
   const [merchants, setMerchants] = useState<AdminMerchant[]>([]);
   const [pendingOffers, setPendingOffers] = useState<AdminModerationOffer[]>([]);
   const [settlements, setSettlements] = useState<MerchantSettlement[]>([]);
+  const [refundPayments, setRefundPayments] = useState<PaymentResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -74,14 +78,16 @@ export function AdminPage(props: Props) {
       getAdminMerchants(getToken()),
       getAdminPendingOffers(getToken()),
       getAdminSettlements(getToken()),
+      getAdminRefundRequiredPayments(getToken()),
     ])
-      .then(([userItems, orderItems, merchantItems, offerItems, settlementItems]) => {
+      .then(([userItems, orderItems, merchantItems, offerItems, settlementItems, refundItems]) => {
         if (!active) return;
         setUsers(userItems);
         setOrders(orderItems);
         setMerchants(merchantItems);
         setPendingOffers(offerItems);
         setSettlements(settlementItems);
+        setRefundPayments(refundItems);
       })
       .catch((err) => {
         if (active) setError(err instanceof Error ? err.message : "اطلاعات مدیریت دریافت نشد.");
@@ -149,6 +155,25 @@ export function AdminPage(props: Props) {
       setSettlements((items) => items.map((item) => item.id === settlement.id ? updated : item));
     } catch (err) {
       setError(err instanceof Error ? err.message : "ثبت تسویه انجام نشد.");
+    }
+  }
+
+
+  async function recordRefundCompleted(payment: PaymentResponse) {
+    const confirmed = window.confirm(
+      `پیش از ثبت، مطمئن شوید بازپرداخت سفارش #${payment.order_id} واقعاً از طریق درگاه یا بانک انجام شده است. این دکمه پولی انتقال نمی‌دهد. ادامه می‌دهید؟`,
+    );
+    if (!confirmed) return;
+    const refundReference = window.prompt(
+      `مرجع بازپرداخت واقعی برای سفارش #${payment.order_id}:`,
+      "",
+    )?.trim();
+    if (!refundReference) return;
+    try {
+      const updated = await markRefundCompleted(getToken(), payment.id, refundReference);
+      setRefundPayments((items) => items.filter((item) => item.id !== updated.id || updated.status === "REFUND_REQUIRED"));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "ثبت بازپرداخت انجام نشد.");
     }
   }
 
@@ -281,6 +306,38 @@ export function AdminPage(props: Props) {
                     {item.status === "PENDING" && (
                       <button className="secondary-button" type="button" onClick={() => void recordSettlementPaid(item)}>ثبت انتقال بانکی</button>
                     )}
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="admin-users-card">
+              <div className="section-heading">
+                <div><p className="eyebrow">Refund review</p><h2>پیگیری بازپرداخت‌ها</h2></div>
+                <span className="offer-count">{refundPayments.length} مورد در انتظار</span>
+              </div>
+              <p className="muted">
+                این بخش انتقال یا بازپرداخت پول انجام نمی‌دهد؛ فقط بعد از انجام واقعی بازپرداخت، مرجع آن را ثبت کنید.
+              </p>
+              <div className="admin-user-list">
+                {refundPayments.length === 0 ? (
+                  <p className="muted">در حال حاضر بازپرداختی در صف بررسی نیست.</p>
+                ) : refundPayments.map((payment) => (
+                  <article className="admin-user-row" key={payment.id}>
+                    <div className="admin-user-avatar">↩</div>
+                    <div className="admin-user-info">
+                      <strong>سفارش #{payment.order_id} · پرداخت #{payment.id}</strong>
+                      <span>مبلغ: {payment.amount.toLocaleString("fa-IR")} تومان · درگاه: {payment.provider}</span>
+                      <span>مرجع پرداخت: <bdi dir="ltr">{payment.reference_id || "ثبت نشده"}</bdi></span>
+                    </div>
+                    <span className="moderation-status moderation-pending">نیازمند بازپرداخت</span>
+                    <button
+                      className="secondary-button"
+                      type="button"
+                      onClick={() => void recordRefundCompleted(payment)}
+                    >
+                      ثبت بازپرداخت انجام‌شده
+                    </button>
                   </article>
                 ))}
               </div>

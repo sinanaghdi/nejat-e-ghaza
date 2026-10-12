@@ -76,7 +76,7 @@ The Compose file forces `ENVIRONMENT=production`; it will reject placeholder sec
 - Refunds are **not automated**. An admin must complete the refund through the agreed provider/bank process before recording its reference in the system.
 - A settlement records gross amount, commission and net payable. The current implementation **does not automatically transfer money or split a ZarinPal transaction**; an admin records a payout reference after a real bank transfer.
 
-See [DEVELOPMENT.md](DEVELOPMENT.md) for current architecture, API routes and data model, and [SECURITY.md](SECURITY.md) for launch blockers.
+See [DEVELOPMENT.md](DEVELOPMENT.md) for current architecture, API routes and data model, [SECURITY.md](SECURITY.md) for launch blockers, [the pilot-readiness plan](docs/pilot-readiness.md) for go/no-go gates, and [the release verification runbook](docs/release-verification-runbook.md) for repeatable test commands and evidence requirements.
 
 ## Tests
 

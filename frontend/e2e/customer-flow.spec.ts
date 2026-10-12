@@ -200,6 +200,10 @@ test("customer can discover, authenticate, order, and review order status", asyn
   await page.getByRole("button", { name: "ورود به حساب" }).click();
   await expect(page.getByRole("button", { name: "خروج" })).toBeVisible();
 
+  // Authentication redirects to the customer dashboard, so return to the
+  // marketplace before interacting with the offer card.
+  await page.goto("/#/offers");
+  await expect(page.getByRole("heading", { name: "باکس شام نجات" })).toBeVisible();
   await page.getByRole("button", { name: "مشاهده و رزرو" }).click();
   await page.getByRole("button", { name: "افزودن به سبد خرید" }).click();
   await expect(page.getByRole("dialog", { name: "سبد خرید" })).toBeVisible();

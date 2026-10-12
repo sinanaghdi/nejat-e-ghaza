@@ -15,6 +15,9 @@ from app.services.settlement import ensure_settlement_for_payment
 from app.services.payment_provider import PaymentRequest, get_payment_provider
 
 
+CLOSED_ORDER_STATUSES = {OrderStatus.CANCELLED, OrderStatus.EXPIRED}
+
+
 def create_payment(db: Session, user: User, order_id: int) -> Payment:
     if user.role != UserRole.CUSTOMER:
         raise HTTPException(status_code=403, detail="Customer access required")
@@ -115,13 +118,26 @@ def verify_payment(db: Session, authority: str, expected_order_id: int | None = 
         raise HTTPException(status_code=404, detail="Payment not found")
 
     if payment.status == "PAID":
-        # Reconcile legacy paid payments created before the settlement ledger existed.
-        ensure_settlement_for_payment(db, payment, order)
+        # Reconcile legacy paid payments without creating new merchant
+        # liabilities for orders which have since been cancelled or expired.
+        if order.status not in CLOSED_ORDER_STATUSES:
+            ensure_settlement_for_payment(db, payment, order)
         db.commit()
         db.refresh(payment)
         return payment
 
-    if order.status != OrderStatus.PENDING:
+    if payment.status == "REFUND_REQUIRED":
+        # Idempotent callback: the captured payment is already queued for
+        # manual refund review. Do not create a merchant settlement.
+        db.commit()
+        db.refresh(payment)
+        return payment
+
+    if order.status not in {
+        OrderStatus.PENDING,
+        OrderStatus.CANCELLED,
+        OrderStatus.EXPIRED,
+    }:
         raise HTTPException(status_code=409, detail="Order is no longer payable")
 
     provider = get_payment_provider()
@@ -148,13 +164,60 @@ def verify_payment(db: Session, authority: str, expected_order_id: int | None = 
             entity_id=payment.id,
             request_id=get_request_id(),
             success=False,
+            details={"order_id": order.id, "order_status": order.status.value},
         )
         db.commit()
         raise HTTPException(status_code=400, detail="Payment verification failed")
 
-    payment.status = "PAID"
     payment.reference_id = result.reference_id
     payment.paid_at = datetime.now(timezone.utc)
+
+    if order.status in CLOSED_ORDER_STATUSES:
+        # The customer may have paid at the gateway just before cancellation
+        # or expiry won the database lock. Do not reopen the order or release
+        # it to fulfillment: record the confirmed charge and queue a manual
+        # refund review instead.
+        payment.status = "REFUND_REQUIRED"
+        create_notification(
+            db,
+            user_id=order.customer_id,
+            title="پرداخت نیازمند پیگیری",
+            body=f"پرداخت سفارش #{order.id} تأیید شده، اما سفارش بسته شده است. بازپرداخت نیازمند بررسی پشتیبانی است.",
+            notification_type="PAYMENT",
+            entity_type="order",
+            entity_id=order.id,
+        )
+        admins = list(
+            db.scalars(select(User).where(User.role == UserRole.ADMIN)).all()
+        )
+        for admin in admins:
+            create_notification(
+                db,
+                user_id=admin.id,
+                title="پرداخت نیازمند بررسی بازپرداخت",
+                body=f"پرداخت سفارش بسته‌شده #{order.id} تأیید شده است؛ مرجع تراکنش را بررسی و بازپرداخت را پیگیری کنید.",
+                notification_type="PAYMENT",
+                entity_type="payment",
+                entity_id=payment.id,
+            )
+        record_event(
+            db,
+            action="payment.verified_after_order_closed",
+            entity_type="payment",
+            entity_id=payment.id,
+            request_id=get_request_id(),
+            details={
+                "order_id": order.id,
+                "order_status": order.status.value,
+                "reference_id": result.reference_id,
+                "next_action": "manual_refund_review",
+            },
+        )
+        db.commit()
+        db.refresh(payment)
+        return payment
+
+    payment.status = "PAID"
     order.status = OrderStatus.PAID
     ensure_settlement_for_payment(db, payment, order)
     create_notification(

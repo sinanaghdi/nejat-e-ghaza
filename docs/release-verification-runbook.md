@@ -44,6 +44,10 @@ The `Tests` GitHub Actions workflow should report success for all three jobs:
 
 The browser-test build should leave `VITE_DEMO_MODE` unset or false so Playwright's mocked API routes exercise the real API client path. GitHub Pages uses its own demo-enabled workflow. Demo credentials and seeded data are UI fixtures only and are not live accounts, orders, or payments.
 
+E2E-specific expectations:
+- Customer login redirects to a role dashboard. Customer journey tests must navigate back to `/#/offers` before selecting an offer card.
+- Refund-review browser tests should mock the API endpoint responses and native confirm/prompt dialogs, then assert the refund request reached the mocked endpoint and the review queue became empty.
+
 ## Payment and order regression checklist
 
 - [ ] Unknown SMS/payment provider names cause configuration failure; payment provider selection never silently falls back to mock.

@@ -93,6 +93,8 @@ The normal lifecycle is:
 - `PENDING -> CANCELLED` or `PENDING -> EXPIRED`
 - `READY_FOR_PICKUP -> EXPIRED` when the merchant misses the pickup deadline.
 
+Only the server-side payment verification service may transition an order from `PENDING` to `PAID`. The generic order-status endpoint rejects manual `PAID` transitions for customers, merchants, and admins; do not use an admin status edit to bypass the payment provider.
+
 Inventory is reserved under a transaction with `SELECT ... FOR UPDATE`. Cancellation and pending-order expiry restore reserved quantity. Celery Beat runs two expiry tasks each minute:
 
 - `app.workers.tasks.expire_pending_orders_task` returns inventory for unpaid `PENDING` orders once the payment timeout passes. It checks payment state while holding locks in the same Order -> Payment order used by verification. A payment already confirmed as paid takes precedence over expiration, remains paid, and keeps inventory reserved; a settlement ledger row is reconciled.

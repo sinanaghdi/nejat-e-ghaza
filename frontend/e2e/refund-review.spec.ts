@@ -105,6 +105,13 @@ test("admin can review and record a refund reconciliation through mocked API", a
     });
   });
 
+  // Replace native dialogs with deterministic test responses so the test
+  // verifies the API flow rather than browser dialog timing.
+  await page.addInitScript(() => {
+    window.confirm = () => true;
+    window.prompt = () => "E2E-REFUND-8101";
+  });
+
   await page.goto("/#/login");
   await page.getByRole("button", { name: "ایمیل و رمز عبور" }).click();
   await page.getByLabel("ایمیل").fill("admin@example.com");
@@ -126,5 +133,6 @@ test("admin can review and record a refund reconciliation through mocked API", a
   });
 
   await page.getByRole("button", { name: "ثبت بازپرداخت انجام‌شده" }).click();
+  await expect.poll(() => refundMarked, { message: "Refund reconciliation request did not reach the mocked API" }).toBe(true);
   await expect(page.getByText("در حال حاضر بازپرداختی در صف بررسی نیست.")).toBeVisible();
 });

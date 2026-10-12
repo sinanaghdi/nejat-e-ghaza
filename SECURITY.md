@@ -1,5 +1,21 @@
 # Production Security Checklist
 
+## Responsible disclosure
+
+Please do not disclose a live vulnerability, credential, exploit steps, or personal data in a public issue. Use GitHub's private vulnerability reporting for this repository if it is enabled. If the private reporting option is unavailable, contact the maintainer through the [GitHub profile](https://github.com/sinanaghdi) and ask for a private disclosure channel before sharing technical details.
+
+When reporting, include the affected area, impact, reproducible steps with test-only data, and any suggested mitigation. Never include active API keys, passwords, payment details, or real customer data in the report.
+
+## Secret handling and repository hygiene
+
+- Real `.env` files, API keys, database passwords, signing secrets, payment credentials, and service-account files must never be committed.
+- Store production values in the deployment platform's encrypted secrets or a dedicated secret manager. Limit each credential to the permissions and environments it needs.
+- Variables prefixed with `VITE_` are embedded in the browser bundle and are public by design. Use them only for non-sensitive client configuration such as a public API base URL.
+- The checked-in `.env.example` files must contain placeholders only. Never copy a production secret into an example file, test snapshot, issue, build artifact, or log.
+- Secret scanning is run in CI to inspect Git history. A clean scan reduces risk but is not proof that no secret was ever exposed.
+- If a real secret is exposed, revoke or rotate it immediately with the provider, investigate access/logs, and assess whether Git history must be rewritten. Deleting the latest copy alone does not invalidate an exposed credential.
+
+## Production security checklist
 ## Mandatory before public launch
 
 - Set `ENVIRONMENT=production`.

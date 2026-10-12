@@ -13,20 +13,20 @@ type Props = {
 
 export function Header({ user, cartCount, onOrders, onMerchant, onLogin, onLogout }: Props) {
   return (
-    <nav className="nav">
+    <nav className="nav" aria-label="ناوبری اصلی">
       <Link className="brand" to="/" aria-label="صفحه اصلی نجات غذا">نجات غذا</Link>
       <div className="nav-links">
         <NavLink to="/offers">پیشنهادها</NavLink>
         <NavLink to="/#how-it-works">چطور کار می‌کند؟</NavLink>
-        <Link className="cart-button" to="/cart">
-          سبد خرید{cartCount > 0 && <span>{cartCount}</span>}
+        <Link className="cart-button" to="/cart" aria-label={cartCount > 0 ? `سبد خرید، ${cartCount} قلم` : "سبد خرید"}>
+          سبد خرید{cartCount > 0 && <span aria-hidden="true">{cartCount}</span>}
         </Link>
         {user ? (
           <>
             {user.role === "CUSTOMER" && (
               <Link className="orders-button" to="/orders" onClick={onOrders}>سفارش‌های من</Link>
             )}
-            <Link className="orders-button" to="/notifications">🔔 اعلان‌ها</Link>
+            <Link className="orders-button" to="/notifications">اعلان‌ها</Link>
             <Link className="orders-button" to="/profile">پروفایل</Link>
             {user.role === "MERCHANT" && (
               <Link className="orders-button" to="/merchant" onClick={onMerchant}>پنل فروشنده</Link>

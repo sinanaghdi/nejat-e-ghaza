@@ -16,6 +16,7 @@
 - Merchant verification and offer moderation with audit logs and notifications.
 - ZarinPal request/callback/server-side verification adapter plus a mock provider for development.
 - Decimal/Numeric commission ledger and manual merchant settlement tracking.
+- Admin refund-review queue for verified late charges, with manual refund-reference reconciliation after the actual refund is processed.
 - PostgreSQL, Alembic, Redis, Celery, Docker Compose and GitHub Actions tests.
 
 ## Quick start

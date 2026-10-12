@@ -28,6 +28,8 @@ When reporting, include the affected area, impact, reproducible steps with test-
 - Set `PLATFORM_COMMISSION_BPS` to an explicitly approved rate and define a documented merchant payout/refund policy.
 - Never expose PostgreSQL, Redis, or FastAPI ports directly to the public internet.
 - Terminate TLS at Nginx or the external load balancer and redirect HTTP to HTTPS.
+- Verify response security headers in the deployed environment. The Docker Nginx config sets a Content Security Policy, clickjacking/content-type/referrer protections and a same-origin-only geolocation policy. These headers do not configure GitHub Pages responses.
+- Configure HSTS at the public HTTPS edge only after confirming HTTPS coverage for the relevant host and subdomains.
 - Store production secrets in a secret manager when available.
 - Configure automated PostgreSQL backups and test restoration regularly.
 - Configure centralized application logs, alerts, and infrastructure monitoring.

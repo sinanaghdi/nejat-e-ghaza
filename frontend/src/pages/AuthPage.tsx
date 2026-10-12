@@ -75,7 +75,7 @@ export function AuthPage({
         <Link className="brand auth-brand" to="/">نجات غذا</Link>
         <span className="eyebrow">{mode === "login" ? "ورود به بازار" : "شروع با نجات غذا"}</span>
         <h1>{mode === "login" ? "خوش آمدی" : "حساب کاربری بساز"}</h1>
-        <p>{mode === "login" ? (demoMode ? "برای ورود به محیط نمایشی از ایمیل و رمز عبور استفاده کن." : "شماره موبایلت را وارد کن تا کد یک‌بارمصرف ورود را دریافت کنی.") : "حساب بساز تا سفارش‌ها و فعالیت‌هایت را مدیریت کنی."}</p>
+        <p>{mode === "login" ? (demoMode ? "برای ورود به محیط نمایشی از ایمیل و رمز عبور استفاده کن." : loginMethod === "phone" ? "شماره موبایلت را وارد کن تا کد یک‌بارمصرف ورود را دریافت کنی." : "با ایمیل و رمز عبورت وارد حساب کاربری شو.") : "حساب بساز تا سفارش‌ها و فعالیت‌هایت را مدیریت کنی."}</p>
 
         <div className="auth-tabs">
           <button type="button" className={mode === "login" ? "active" : ""} onClick={() => handleModeChange("login")}>ورود</button>
@@ -187,9 +187,9 @@ export function AuthPage({
         {demoMode && (
           <section className="demo-login-panel" aria-label="ورود سریع دمو">
             <div>
-              <p className="eyebrow">حالت Demo</p>
+              <p className="eyebrow">حالت نمایشی</p>
               <h2>برای دیدن پنل‌ها ورود سریع کن</h2>
-              <p>این حساب‌ها فقط برای مشاهده UI و workflow پروژه در GitHub Pages هستند.</p>
+              <p>این حساب‌ها فقط برای مشاهده رابط کاربری و مسیرهای اصلی سامانه در نسخه نمایشی هستند.</p>
             </div>
             <div className="demo-role-grid">
               <button type="button" className="demo-role-card" onClick={() => onDemoLogin("CUSTOMER")}>

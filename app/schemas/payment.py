@@ -1,6 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
-from pydantic import BaseModel, ConfigDict
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PaymentResponse(BaseModel):
@@ -24,3 +25,7 @@ class PaymentStartResponse(BaseModel):
 
 class PaymentWebhook(BaseModel):
     authority: str
+
+
+class MarkRefundCompletedRequest(BaseModel):
+    refund_reference: str = Field(min_length=3, max_length=255)

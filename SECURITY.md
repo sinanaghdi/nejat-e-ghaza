@@ -15,7 +15,6 @@ When reporting, include the affected area, impact, reproducible steps with test-
 - Secret scanning is run in CI to inspect Git history. A clean scan reduces risk but is not proof that no secret was ever exposed.
 - If a real secret is exposed, revoke or rotate it immediately with the provider, investigate access/logs, and assess whether Git history must be rewritten. Deleting the latest copy alone does not invalidate an exposed credential.
 
-## Production security checklist
 ## Mandatory before public launch
 
 - Set `ENVIRONMENT=production`.

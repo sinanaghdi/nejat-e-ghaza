@@ -28,16 +28,15 @@ The frontend is Persian-first and RTL-first. Offers are loaded from the FastAPI 
 - Empty and error states
 - Active offer discovery from FastAPI
 
-## Planned structure
+## Public policy pages
 
-- Authentication
-- Offer details
-- Cart and checkout
-- Customer orders
-- Merchant dashboard
-- Admin dashboard
+The app includes Persian pages for privacy, terms of use, food safety/refunds, security reporting, and software license rights. They are available from the site footer and as HashRouter routes: `/privacy`, `/terms`, `/safety`, `/security`, and `/license`.
 
+The GitHub Pages demo uses seeded data and client-side simulated roles only. Do not treat demo role markers as authorization or enter real sensitive data.
 
+## Configuration and secrets
+
+Only public configuration belongs in variables prefixed with `VITE_`; Vite embeds these values in the browser bundle. Never put an API key, password, JWT secret, SMS provider key, or payment credential in a frontend environment variable.
 ## Production
 
 The production Docker stack builds the frontend into `Dockerfile.web.production` and serves the React SPA from Nginx. API requests use the same-origin `/api` path, so no browser-side API host is required in production.

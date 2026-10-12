@@ -23,7 +23,7 @@ test("all public policy pages are reachable and include shared navigation", asyn
   for (const policy of policyPages) {
     await page.goto(`/#/${policy.path}`);
     await expect(page.getByRole("heading", { level: 1, name: policy.title })).toBeVisible();
-    await expect(page.getByRole("navigation", { name: "صفحات اطلاعاتی" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "صفحات حقوقی" })).toBeVisible();
     await expect(page.getByRole("contentinfo")).toContainText("نسخهٔ آزمایشی");
   }
 

@@ -2,13 +2,16 @@ from decimal import Decimal
 
 import pytest
 from fastapi import HTTPException
+from sqlalchemy import select
 
 from app.db.models.merchant import Merchant
+from app.db.models.merchant_settlement import MerchantSettlement
 from app.db.models.order import Order
 from app.db.models.payment import Payment
 from app.db.models.user import User
 from app.models.enums import OrderStatus, UserRole
 from app.services import payment as payment_service
+from app.services.payment_provider import PaymentVerifyResult
 
 
 class DifferentPaymentProvider:
@@ -106,3 +109,42 @@ def test_verify_payment_rejects_authority_from_different_provider(db, monkeypatc
     db.refresh(payment)
     assert order.status == OrderStatus.PENDING
     assert payment.status == "PENDING"
+
+
+
+class SuccessfulMockProvider:
+    name = "mock"
+
+    def __init__(self):
+        self.verify_calls = 0
+
+    def verify(self, authority, amount):
+        self.verify_calls += 1
+        return PaymentVerifyResult(success=True, reference_id="MOCK-REFUND-REF")
+
+
+def test_successful_callback_after_order_expiry_is_queued_for_refund(db, monkeypatch):
+    _, order, payment = create_pending_order_with_payment(db)
+    order.status = OrderStatus.EXPIRED
+    db.commit()
+
+    provider = SuccessfulMockProvider()
+    monkeypatch.setattr(payment_service, "get_payment_provider", lambda: provider)
+
+    verified = payment_service.verify_payment(db, payment.authority)
+
+    assert verified.status == "REFUND_REQUIRED"
+    assert verified.reference_id == "MOCK-REFUND-REF"
+    db.refresh(order)
+    assert order.status == OrderStatus.EXPIRED
+    assert db.scalar(
+        select(MerchantSettlement).where(MerchantSettlement.payment_id == payment.id)
+    ) is None
+
+    # Repeated gateway callbacks must not re-verify or create duplicate liabilities.
+    repeated = payment_service.verify_payment(db, payment.authority)
+    assert repeated.status == "REFUND_REQUIRED"
+    assert provider.verify_calls == 1
+    assert db.scalar(
+        select(MerchantSettlement).where(MerchantSettlement.payment_id == payment.id)
+    ) is None

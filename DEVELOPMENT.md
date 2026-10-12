@@ -114,7 +114,9 @@ Payment flow:
 
 `POST /api/payments/webhook` is a separate internal/partner endpoint guarded by `X-Webhook-Secret`; that custom header is not presented as a ZarinPal-signed callback mechanism.
 
-The merchant settlement ledger is created only after server-side payment verification:
+If a gateway confirms payment after its order has been cancelled or expired, the service preserves the closed order and marks the payment `REFUND_REQUIRED` instead of creating a merchant settlement. It notifies the customer and admins; the payment is visible through `GET /api/admin/payments/refund-required`. After the refund is actually processed outside this application, an admin records the reference through `PATCH /api/admin/payments/{payment_id}/refund-completed`. This is a manual reconciliation flow, not an automatic refund integration.
+
+The merchant settlement ledger is created only after server-side payment verification for an active order:
 - `PLATFORM_COMMISSION_BPS` defaults to `1000` (10%).
 - Gross, commission, and net amounts are stored as Decimal/Numeric values.
 - `GET /api/admin/settlements` reports settlement records.

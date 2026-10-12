@@ -19,6 +19,13 @@
 - Admin refund-review queue for verified late charges, with manual refund-reference reconciliation after the actual refund is processed.
 - PostgreSQL, Alembic, Redis, Celery, Docker Compose and GitHub Actions tests.
 
+## Policies and public demo
+
+The public [GitHub Pages demo](https://sinanaghdi.github.io/nejat-e-ghaza/) uses seeded interface data and simulated roles; it does not make real purchases or payments. Do not enter real passwords, phone numbers, payment details, or other sensitive data into the demo.
+
+The UI includes [Privacy](https://sinanaghdi.github.io/nejat-e-ghaza/#/privacy), [Terms](https://sinanaghdi.github.io/nejat-e-ghaza/#/terms), [Food safety and refunds](https://sinanaghdi.github.io/nejat-e-ghaza/#/safety), [Security](https://sinanaghdi.github.io/nejat-e-ghaza/#/security), and [License](https://sinanaghdi.github.io/nejat-e-ghaza/#/license) pages. These policy texts are MVP drafts, not final legal advice. The production owner/contact details, data-retention schedule, operational refund terms and applicable legal terms must be completed before a real public pilot.
+
+See [SECURITY.md](SECURITY.md) for secret handling, secure configuration, and vulnerability disclosure. No production API key or password should be placed in source code. Frontend `VITE_*` values are public after build; keep secrets in backend environment variables or encrypted deployment secrets.
 ## Quick start
 
 ### Requirements

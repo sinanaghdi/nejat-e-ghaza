@@ -59,6 +59,13 @@ def zarinpal_callback(
     try:
         payment = payment_service.verify_payment(db, authority, expected_order_id=order_id)
         ref_id = payment.reference_id or ""
+        if payment.status == "REFUND_REQUIRED":
+            return RedirectResponse(
+                url=(
+                    f"{settings.frontend_payment_result_url}?status=refund_review"
+                    f"&order_id={payment.order_id}&ref_id={ref_id}"
+                )
+            )
         return RedirectResponse(
             url=f"{settings.frontend_payment_result_url}?status=success&order_id={payment.order_id}&ref_id={ref_id}"
         )

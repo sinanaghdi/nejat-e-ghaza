@@ -461,6 +461,7 @@ select {
 .payment-result-card.success { border-color: #cfe5d6; }
 .payment-result-card.cancelled { border-color: #eadfca; }
 .payment-result-card.failed { border-color: #efd5d1; }
+.payment-result-card.refund-review { border-color: #e6d6ac; }
 
 .payment-result-card h1 {
   margin: 8px 0 14px;

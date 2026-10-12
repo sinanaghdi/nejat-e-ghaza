@@ -75,7 +75,7 @@ export function AuthPage({
         <Link className="brand auth-brand" to="/">نجات غذا</Link>
         <span className="eyebrow">{mode === "login" ? "ورود به بازار" : "شروع با نجات غذا"}</span>
         <h1>{mode === "login" ? "خوش آمدی" : "حساب کاربری بساز"}</h1>
-        <p>{mode === "login" ? "با شماره موبایل و یک کد پیامکی وارد شو." : "حساب بساز تا سفارش‌ها و فعالیت‌هایت را مدیریت کنی."}</p>
+        <p>{mode === "login" ? (demoMode ? "برای ورود به محیط نمایشی از ایمیل و رمز عبور استفاده کن." : "شماره موبایلت را وارد کن تا کد یک‌بارمصرف ورود را دریافت کنی.") : "حساب بساز تا سفارش‌ها و فعالیت‌هایت را مدیریت کنی."}</p>
 
         <div className="auth-tabs">
           <button type="button" className={mode === "login" ? "active" : ""} onClick={() => handleModeChange("login")}>ورود</button>
@@ -131,9 +131,9 @@ export function AuthPage({
                   type="text"
                   inputMode="numeric"
                   autoComplete="one-time-code"
-                  pattern="[0-9]{4,8}"
-                  minLength={4}
-                  maxLength={8}
+                  pattern="[0-9]{6}"
+                  minLength={6}
+                  maxLength={6}
                   value={otpCode}
                   onChange={(event) => onOtpCodeChange(
                     event.target.value
@@ -141,7 +141,7 @@ export function AuthPage({
                       .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
                       .replace(/\D/g, "")
                   )}
-                  placeholder="کد ورود"
+                  placeholder="کد شش‌رقمی"
                   dir="ltr"
                 />
               </label>
@@ -153,7 +153,7 @@ export function AuthPage({
                 {loading ? "در حال پردازش..." : otpRequested ? "ارسال دوباره کد" : "دریافت کد پیامکی"}
               </button>
               {otpRequested && (
-                <button className="secondary-button auth-submit" type="submit" disabled={loading || otpCode.trim().length < 4}>
+                <button className="secondary-button auth-submit" type="submit" disabled={loading || otpCode.trim().length !== 6}>
                   {loading ? "در حال بررسی..." : "تأیید و ورود"}
                 </button>
               )}

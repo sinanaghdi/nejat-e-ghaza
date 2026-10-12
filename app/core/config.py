@@ -52,6 +52,14 @@ class Settings(BaseSettings):
     def validate_production(self) -> None:
         if not 0 <= self.platform_commission_bps <= 10000:
             raise RuntimeError("PLATFORM_COMMISSION_BPS must be between 0 and 10000.")
+
+        # Validate provider names in every environment. A typo must never silently
+        # select a fallback implementation (especially a mock payment provider).
+        if self.sms_provider not in {"mock", "kavenegar"}:
+            raise RuntimeError(f"Unsupported SMS_PROVIDER: {self.sms_provider}")
+        if self.payment_provider not in {"mock", "zarinpal"}:
+            raise RuntimeError(f"Unsupported PAYMENT_PROVIDER: {self.payment_provider}")
+
         if self.environment.lower() != "production":
             return
 
@@ -105,9 +113,6 @@ class Settings(BaseSettings):
                 errors.append("KAVENEGAR_API_KEY is required when SMS_PROVIDER=kavenegar.")
             if not self.kavenegar_otp_template:
                 errors.append("KAVENEGAR_OTP_TEMPLATE is required when SMS_PROVIDER=kavenegar.")
-
-        if not 0 <= self.platform_commission_bps <= 10000:
-            errors.append("PLATFORM_COMMISSION_BPS must be between 0 and 10000.")
 
         if self.payment_provider == "mock":
             errors.append("PAYMENT_PROVIDER=mock is not allowed in production.")

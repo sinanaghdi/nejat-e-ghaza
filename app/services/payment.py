@@ -126,9 +126,9 @@ def verify_payment(db: Session, authority: str, expected_order_id: int | None = 
         db.refresh(payment)
         return payment
 
-    if payment.status == "REFUND_REQUIRED":
-        # Idempotent callback: the captured payment is already queued for
-        # manual refund review. Do not create a merchant settlement.
+    if payment.status in {"REFUND_REQUIRED", "REFUNDED"}:
+        # Idempotent callback: the captured payment is queued for review or the
+        # refund was already recorded. Never create a merchant settlement.
         db.commit()
         db.refresh(payment)
         return payment

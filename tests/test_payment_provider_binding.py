@@ -197,3 +197,32 @@ def test_admin_can_reconcile_refund_required_payment(client, db, monkeypatch):
     repeated = payment_service.verify_payment(db, payment.authority)
     assert repeated.status == "REFUNDED"
     assert provider.verify_calls == 1
+
+
+
+def test_non_admin_cannot_access_refund_queue_or_mark_refund(client, db):
+    customer = User(
+        name="Refund Queue Customer",
+        email="refund-queue-customer@example.com",
+        password_hash=hash_password("secure-test-password-456"),
+        role=UserRole.CUSTOMER,
+    )
+    db.add(customer)
+    db.commit()
+
+    token_response = client.post(
+        "/api/auth/login",
+        json={"email": customer.email, "password": "secure-test-password-456"},
+    )
+    assert token_response.status_code == 200
+    headers = {"Authorization": f"Bearer {token_response.json()['access_token']}"}
+
+    queue = client.get("/api/admin/payments/refund-required", headers=headers)
+    assert queue.status_code == 403
+
+    marked = client.patch(
+        "/api/admin/payments/8101/refund-completed",
+        json={"refund_reference": "BANK-REFUND-456"},
+        headers=headers,
+    )
+    assert marked.status_code == 403

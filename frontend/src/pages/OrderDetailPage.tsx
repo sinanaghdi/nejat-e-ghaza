@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import type { Order, User } from "../lib/api";
 import { cancelOrder, createPayment, getOrder } from "../lib/api";
 import { getToken } from "../lib/auth";
@@ -37,7 +37,6 @@ export function OrderDetailPage({
   onLogin,
   onLogout,
 }: Props) {
-  const navigate = useNavigate();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -117,7 +116,7 @@ export function OrderDetailPage({
         onLogout={onLogout}
       />
       <section className="page-shell">
-        <button className="back-button" type="button" onClick={() => navigate(-1)}>→ بازگشت به سفارش‌ها</button>
+        <button className="back-button" type="button" onClick={onOrders}>→ بازگشت به سفارش‌ها</button>
 
         {!user && !loading && (
           <section className="state-card">

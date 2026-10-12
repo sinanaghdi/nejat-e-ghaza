@@ -9,7 +9,7 @@ type Props = {
 export function MobileBottomNav({ cartCount, userRole, onCart }: Props) {
   return (
     <nav className="mobile-bottom-nav" aria-label="ناوبری اصلی">
-      <NavLink to="/" className={({isActive}) => isActive ? "active" : ""}>⌂<span>خانه</span></NavLink>
+      <NavLink to="/" end className={({isActive}) => isActive ? "active" : ""}>⌂<span>خانه</span></NavLink>
       <NavLink to="/offers" className={({isActive}) => isActive ? "active" : ""}>🍽<span>پیشنهادها</span></NavLink>
       <button type="button" onClick={onCart} aria-label="سبد خرید">🛒{cartCount > 0 && <b>{cartCount}</b>}<span>سبد</span></button>
       {userRole === "MERCHANT"

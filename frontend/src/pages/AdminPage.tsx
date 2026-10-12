@@ -190,7 +190,7 @@ export function AdminPage(props: Props) {
     return (
       <>
         <Header user={props.user} cartCount={props.cartCount} onCart={props.onCart} onOrders={props.onOrders} onMerchant={props.onMerchant} onLogin={props.onLogin} onLogout={props.onLogout} />
-        <main className="page-shell"><div className="state-card error-state"><div className="state-icon">403</div><h3>دسترسی مدیر لازم است</h3><p>با حساب مدیر دمو یا نقش ADMIN وارد شوید.</p><Link className="primary-button" to="/profile">بازگشت به پروفایل</Link></div></main>
+        <main className="page-shell"><div className="state-card error-state"><div className="state-icon">403</div><h3>دسترسی مدیر لازم است</h3><p>برای ادامه با حساب مدیر وارد شوید.</p><Link className="primary-button" to="/profile">بازگشت به پروفایل</Link></div></main>
       </>
     );
   }

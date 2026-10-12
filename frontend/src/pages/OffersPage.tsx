@@ -129,7 +129,7 @@ export function OffersPage({
 
         <div className="section-heading">
           <div>
-            <p className="eyebrow">Marketplace</p>
+            <p className="eyebrow">بازار غذا</p>
             <h2>همه پیشنهادهای فعال</h2>
           </div>
           <span className="offer-count">

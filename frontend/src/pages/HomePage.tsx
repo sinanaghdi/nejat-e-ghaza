@@ -43,7 +43,7 @@ export function HomePage({
       <section id="offers" className="section">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">Marketplace</p>
+            <p className="eyebrow">بازار غذا</p>
             <h2>پیشنهادهای امروز</h2>
           </div>
           <Link className="secondary-button compact" to="/offers">مشاهده همه پیشنهادها</Link>

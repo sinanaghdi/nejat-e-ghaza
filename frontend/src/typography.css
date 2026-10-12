@@ -76,8 +76,23 @@ p,
 label,
 button,
 a {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: manual;
 }
+
+input,
+textarea,
+select,
+button {
+  line-height: var(--leading-normal-fa);
+}
+
+::selection {
+  background: #d7e8d4;
+  color: #173c2b;
+}
+
 
 h1,
 h2,

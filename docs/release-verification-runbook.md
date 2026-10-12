@@ -42,7 +42,7 @@ The `Tests` GitHub Actions workflow should report success for all three jobs:
 2. `frontend-build`: dependency audit, TypeScript typecheck, production build, and Playwright E2E.
 3. `production-docker-build`: build both production container images without deploying them.
 
-The browser-test build must set `VITE_DEMO_MODE=true`; GitHub Pages uses its own demo-enabled workflow. Demo credentials and seeded data are UI fixtures only and are not live accounts, orders, or payments.
+The browser-test build should leave `VITE_DEMO_MODE` unset or false so Playwright's mocked API routes exercise the real API client path. GitHub Pages uses its own demo-enabled workflow. Demo credentials and seeded data are UI fixtures only and are not live accounts, orders, or payments.
 
 ## Payment and order regression checklist
 

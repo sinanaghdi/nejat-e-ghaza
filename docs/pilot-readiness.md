@@ -30,6 +30,8 @@ Run from a clean checkout using Python 3.12, Node.js 20, PostgreSQL, and Redis.
 - [ ] Two concurrent checkouts competing for the final unit cannot both reserve it.
 - [ ] Failed or abandoned payment does not mark an order as paid.
 - [ ] A successful provider verification marks payment/order once; repeated callbacks remain idempotent.
+- [ ] A verified gateway callback after an order was cancelled/expired leaves the order closed, records `REFUND_REQUIRED`, notifies customer/admin, and creates no merchant settlement.
+- [ ] Only admins can view the refund-review queue and record refund completion; repeat callbacks do not reopen a completed `REFUNDED` record.
 - [ ] Expired unpaid reservations release stock according to the documented implementation.
 - [ ] Pickup code works only for the correct eligible order and cannot be reused to complete it twice.
 - [ ] Merchant and admin routes reject unauthorized roles; customer data is scoped to its owner.

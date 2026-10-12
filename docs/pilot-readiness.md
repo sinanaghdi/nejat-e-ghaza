@@ -29,6 +29,7 @@ Run from a clean checkout using Python 3.12, Node.js 20, PostgreSQL, and Redis.
 - [ ] An expired, unapproved, inactive, or out-of-stock offer is rejected at checkout.
 - [ ] Two concurrent checkouts competing for the final unit cannot both reserve it.
 - [ ] Failed or abandoned payment does not mark an order as paid.
+- [ ] The generic order-status endpoint cannot transition an unpaid order to `PAID`, including for admins.
 - [ ] A successful provider verification marks payment/order once; repeated callbacks remain idempotent.
 - [ ] A verified gateway callback after an order was cancelled/expired leaves the order closed, records `REFUND_REQUIRED`, notifies customer/admin, and creates no merchant settlement.
 - [ ] Only admins can view the refund-review queue and record refund completion; repeat callbacks do not reopen a completed `REFUNDED` record.

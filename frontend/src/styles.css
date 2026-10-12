@@ -2012,6 +2012,10 @@ label {
   }
 }
 
+@media (max-width: 800px) {
+  .site-footer { padding-bottom: 74px; }
+}
+
 @media (max-width: 540px) {
   .site-footer-inner {
     width: calc(100% - 28px);

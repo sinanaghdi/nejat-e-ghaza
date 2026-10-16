@@ -2,14 +2,15 @@
 from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 revision: str = "0001_initial_schema"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels = None
 depends_on = None
 
-user_role = sa.Enum("CUSTOMER", "MERCHANT", "ADMIN", name="userrole")
-order_status = sa.Enum("PENDING", "PAID", "READY_FOR_PICKUP", "COMPLETED", "CANCELLED", "EXPIRED", name="orderstatus")
+user_role = postgresql.ENUM("CUSTOMER", "MERCHANT", "ADMIN", name="userrole", create_type=False)
+order_status = postgresql.ENUM("PENDING", "PAID", "READY_FOR_PICKUP", "COMPLETED", "CANCELLED", "EXPIRED", name="orderstatus", create_type=False)
 
 def upgrade() -> None:
     user_role.create(op.get_bind(), checkfirst=True)

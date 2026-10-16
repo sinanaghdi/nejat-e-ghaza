@@ -44,6 +44,11 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Validate Alembic migrations on PostgreSQL
+        env:
+          DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/nejat_e_ghaza_test
+        run: alembic upgrade head
+
       - name: Run tests
         run: pytest -q
 

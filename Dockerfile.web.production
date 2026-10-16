@@ -1,6 +1,6 @@
 # Build the Persian RTL React frontend and serve it alongside the API through the production Nginx.
 
-FROM node:20-alpine AS build
+FROM node:24-alpine AS build
 
 WORKDIR /app/frontend
 

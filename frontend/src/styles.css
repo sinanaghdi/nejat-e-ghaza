@@ -2434,3 +2434,115 @@ img {
     transition-duration: .01ms !important;
   }
 }
+
+
+/* Contrast hotfix: keep button text readable even inside navigation and modals.
+   These selectors intentionally outrank generic navigation/link color rules. */
+button.primary-button,
+a.primary-button,
+button.auth-submit,
+button.login-button,
+a.login-button,
+.nav-links a.login-button,
+button.signup-button,
+a.signup-button,
+.nav-links a.signup-button {
+  background-color: #17432f !important;
+  border-color: #17432f !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff;
+}
+
+button.primary-button:hover,
+a.primary-button:hover,
+button.auth-submit:hover,
+button.login-button:hover,
+a.login-button:hover,
+.nav-links a.login-button:hover {
+  background-color: #103523 !important;
+  border-color: #103523 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff;
+}
+
+button.secondary-button,
+a.secondary-button,
+button.orders-button,
+a.orders-button,
+.nav-links a.orders-button,
+button.cart-button,
+a.cart-button,
+.nav-links a.cart-button,
+button.discovery-button,
+button.nearby-button {
+  background-color: #eef4ec !important;
+  border: 1px solid #b8cbb8 !important;
+  color: #173c2b !important;
+  -webkit-text-fill-color: #173c2b;
+}
+
+button.secondary-button:hover,
+a.secondary-button:hover,
+button.orders-button:hover,
+a.orders-button:hover,
+.nav-links a.orders-button:hover,
+button.cart-button:hover,
+a.cart-button:hover,
+.nav-links a.cart-button:hover,
+button.discovery-button:hover,
+button.nearby-button:hover {
+  background-color: #dfeadd !important;
+  border-color: #8eae94 !important;
+  color: #123522 !important;
+  -webkit-text-fill-color: #123522;
+}
+
+button.danger-button,
+a.danger-button {
+  background-color: #fff0ee !important;
+  border: 1px solid #e7b9b3 !important;
+  color: #8e2118 !important;
+  -webkit-text-fill-color: #8e2118;
+}
+
+button.text-button,
+a.text-button {
+  background: transparent !important;
+  color: #17432f !important;
+  -webkit-text-fill-color: #17432f;
+}
+
+button:disabled,
+button:disabled:hover,
+button[aria-disabled="true"] {
+  color: #46534a !important;
+  -webkit-text-fill-color: #46534a;
+  background-color: #e7eae5 !important;
+  border-color: #d1d7cf !important;
+  opacity: 1;
+}
+
+.mobile-bottom-nav a,
+.mobile-bottom-nav button {
+  color: #46534a;
+  -webkit-text-fill-color: #46534a;
+}
+
+.mobile-bottom-nav a.active,
+.mobile-bottom-nav button:active {
+  color: #17432f;
+  -webkit-text-fill-color: #17432f;
+}
+
+@media (forced-colors: active) {
+  button,
+  a[role="button"],
+  .primary-button,
+  .secondary-button,
+  .login-button,
+  .signup-button,
+  .orders-button,
+  .cart-button {
+    border: 1px solid ButtonText !important;
+  }
+}

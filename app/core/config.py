@@ -122,10 +122,27 @@ class Settings(BaseSettings):
                 errors.append("ZARINPAL_MERCHANT_ID is required when PAYMENT_PROVIDER=zarinpal.")
             if self.zarinpal_sandbox:
                 errors.append("ZARINPAL_SANDBOX must be false in production.")
-            if urlparse(self.payment_callback_url).scheme != "https":
-                errors.append("PAYMENT_CALLBACK_URL must use HTTPS in production.")
-            if urlparse(self.frontend_payment_result_url).scheme != "https":
-                errors.append("FRONTEND_PAYMENT_RESULT_URL must use HTTPS in production.")
+            callback_url = urlparse(self.payment_callback_url)
+            if (
+                callback_url.scheme != "https"
+                or not callback_url.hostname
+                or callback_url.username is not None
+                or callback_url.password is not None
+            ):
+                errors.append(
+                    "PAYMENT_CALLBACK_URL must be a valid HTTPS URL without embedded credentials."
+                )
+
+            result_url = urlparse(self.frontend_payment_result_url)
+            if (
+                result_url.scheme != "https"
+                or not result_url.hostname
+                or result_url.username is not None
+                or result_url.password is not None
+            ):
+                errors.append(
+                    "FRONTEND_PAYMENT_RESULT_URL must be a valid HTTPS URL without embedded credentials."
+                )
 
         if self.bootstrap_admin_password and (
             len(self.bootstrap_admin_password) < 12

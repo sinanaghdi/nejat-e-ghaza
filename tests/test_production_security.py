@@ -42,6 +42,12 @@ def test_production_settings_accept_valid_configuration():
         ("payment_provider", "mock"),
         ("sms_provider", "mock"),
         ("zarinpal_sandbox", True),
+        ("payment_callback_url", "https:"),
+        ("payment_callback_url", "https:///api/callback"),
+        ("payment_callback_url", "https://user:secret@example.com/callback"),
+        ("frontend_payment_result_url", "https:"),
+        ("frontend_payment_result_url", "https:///payment/result"),
+        ("frontend_payment_result_url", "https://user:secret@example.com/result"),
     ],
 )
 def test_production_settings_reject_insecure_values(field, value):

@@ -795,3 +795,13 @@ label { color: var(--text-secondary); font-size: .84rem; font-weight: 700; }
 @media (max-width: 700px) {
   .header-logout { min-height: 36px; padding: 5px 8px; font-size: .69rem; }
 }
+
+.header-orders-link {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 40px;
+  padding: 7px 10px; border: 1px solid var(--border); border-radius: 9px;
+  color: var(--primary); background: #fff; font-size: .75rem; font-weight: 800; white-space: nowrap;
+}
+.header-orders-link:hover { background: var(--primary-soft); border-color: #cde3d3; }
+@media (max-width: 700px) {
+  .header-orders-link { min-height: 36px; padding: 5px 8px; font-size: .67rem; }
+}

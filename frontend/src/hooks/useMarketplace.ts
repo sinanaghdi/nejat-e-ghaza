@@ -17,15 +17,24 @@ export function useMarketplace() {
     longitude: number;
   } | null>(null);
 
-  async function loadOffers() {
+  async function loadOffers(
+    overrides: {
+      query?: string;
+      city?: string;
+      sort?: Exclude<OfferSort, "distance">;
+    } = {},
+  ) {
+    const activeQuery = overrides.query ?? search;
+    const activeCity = overrides.city ?? city;
+    const activeSort = overrides.sort ?? sort;
     setLoading(true);
     setError("");
 
     try {
       const items = await getOffers({
-        query: search,
-        city,
-        sort: nearby && userCoordinates ? "distance" : sort,
+        query: activeQuery,
+        city: activeCity,
+        sort: nearby && userCoordinates ? "distance" : activeSort,
         latitude:
           nearby && userCoordinates ? userCoordinates.latitude : undefined,
         longitude:

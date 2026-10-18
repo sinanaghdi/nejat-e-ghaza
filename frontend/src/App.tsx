@@ -415,6 +415,7 @@ function App() {
         onDeactivate={(id) => void merchantState.removeMerchantOffer(id)}
         onStatusChange={(id, status) => void merchantState.changeMerchantOrderStatus(id, status)}
         onVerifyPickup={(id) => void merchantState.verifyMerchantPickup(id)}
+        onLogout={() => void handleLogout()}
       />
     );
   } else {

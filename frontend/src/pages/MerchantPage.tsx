@@ -15,6 +15,7 @@ type Props = {
   onDeactivate: (id: number) => void;
   onStatusChange: (id: number, status: Order["status"]) => void;
   onVerifyPickup: (id: number) => void;
+  onLogout: () => void;
 };
 
 export function MerchantPage(props: Props) {
@@ -41,6 +42,7 @@ export function MerchantPage(props: Props) {
         <header className="console-topbar">
           <div><span className="console-overline">میزکار فروشنده</span><strong>{props.profile?.business_name || "فروشگاه شما"}</strong></div>
           <div className="console-topbar-actions">
+            <button type="button" className="console-logout" onClick={props.onLogout}>خروج</button>
             <span className={props.profile?.verification_status === "VERIFIED" ? "console-status verified" : "console-status"}>
               <span aria-hidden="true">●</span>
               {props.profile?.verification_status === "VERIFIED" ? "فروشگاه تأیید شده" : props.profile?.verification_status === "SUSPENDED" ? "فروشگاه تعلیق شده" : props.profile ? "در انتظار تأیید فروشگاه" : "پروفایل ساخته نشده"}

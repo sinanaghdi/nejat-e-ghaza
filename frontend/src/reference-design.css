@@ -750,3 +750,39 @@ label { color: var(--text-secondary); font-size: .84rem; font-weight: 700; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+
+/* Additional operational components */
+.console-logout {
+  min-height: 36px; padding: 6px 12px; border-radius: 9px; border: 1px solid #e5d2cf;
+  background: #fff7f6; color: #a02d23; font-size: .74rem; font-weight: 800; cursor: pointer;
+}
+.console-logout:hover { background: #ffefec; border-color: #e8bfb8; }
+.merchant-finance-card {
+  margin-top: 16px; padding: 20px; border-radius: 16px; border: 1px solid var(--border);
+  background: #fff; box-shadow: var(--shadow-card); scroll-margin-top: 94px;
+}
+.merchant-finance-heading { margin-bottom: 12px; }
+.merchant-finance-heading h3 { color: var(--primary); font-size: 1.02rem; font-weight: 900; margin: 0; }
+.merchant-finance-notice {
+  margin: 0 0 12px; padding: 10px 12px; border: 1px solid #dce9df; border-radius: 9px;
+  background: #f1f8f2; color: #526b59; font-size: .74rem; line-height: 1.9;
+}
+.merchant-finance-list { display: flex; flex-direction: column; }
+.merchant-finance-row {
+  display: grid; grid-template-columns: minmax(110px, .7fr) minmax(0, 1.3fr) minmax(130px, .7fr);
+  gap: 15px; align-items: center; padding: 14px 0; border-bottom: 1px solid #eef1ee;
+}
+.merchant-finance-row:last-child { border-bottom: 0; }
+.merchant-finance-order, .merchant-finance-amounts, .merchant-finance-status { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.merchant-finance-order strong { color: var(--text); font-size: .8rem; }
+.merchant-finance-order small, .merchant-finance-amounts span, .merchant-finance-status small { color: var(--muted); font-size: .69rem; line-height: 1.8; overflow-wrap: anywhere; }
+.merchant-finance-amounts strong { color: var(--primary); font-size: .8rem; font-weight: 900; }
+.merchant-finance-status { align-items: flex-start; gap: 7px; }
+.merchant-finance-empty { padding: 12px 0; }
+@media (max-width: 700px) {
+  .console-logout { min-height: 32px; padding: 4px 9px; font-size: .67rem; }
+  .merchant-finance-card { padding: 14px; margin-top: 12px; }
+  .merchant-finance-row { grid-template-columns: 1fr; gap: 7px; }
+  .merchant-finance-status { flex-direction: row; align-items: center; flex-wrap: wrap; }
+}

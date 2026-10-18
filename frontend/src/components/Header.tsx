@@ -59,11 +59,10 @@ export function Header({ user, cartCount, onOrders, onMerchant, onLogin, onLogou
 
         <div className="nav-links">
           <NavLink to="/offers">کاوش پیشنهادها</NavLink>
-          <a href="/#how-it-works" onClick={(event) => {
-            if (window.location.hash.startsWith("#/") && window.location.hash !== "#/") return;
+          <a href="#how-it-works" onClick={(event) => {
             event.preventDefault();
             navigate("/");
-            window.setTimeout(() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+            window.setTimeout(() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
           }}>چطور کار می‌کند؟</a>
           <Link to="/merchant">همکاری فروشندگان</Link>
         </div>

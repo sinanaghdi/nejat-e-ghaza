@@ -74,6 +74,7 @@ export function Header({ user, cartCount, onOrders, onMerchant, onLogin, onLogou
             {cartCount > 0 && <b>{cartCount.toLocaleString("fa-IR")}</b>}
           </Link>
           {user ? (
+            <>
             <div className="header-account" tabIndex={0} aria-label="منوی حساب کاربری">
               <span className="header-avatar" aria-hidden="true">{(user.name || "کاربر").trim().slice(0, 1)}</span>
               <span className="header-account-name">{user.name || "حساب کاربری"}</span>
@@ -86,6 +87,7 @@ export function Header({ user, cartCount, onOrders, onMerchant, onLogin, onLogou
               </div>
             </div>
             <button type="button" className="header-logout" onClick={onLogout}>خروج</button>
+            </>
           ) : (
             <div className="header-auth">
               <Link className="login-button" to="/login" onClick={onLogin}>ورود</Link>

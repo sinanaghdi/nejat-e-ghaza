@@ -123,6 +123,20 @@ function App() {
   }, [location.pathname, offerId]);
 
   useEffect(() => {
+    if (location.pathname !== "/offers" || !location.search) return;
+    const params = new URLSearchParams(location.search);
+    const query = params.get("query");
+    const city = params.get("city");
+    if (query === null && city === null) return;
+    if (query !== null) marketplace.setSearch(query);
+    if (city !== null) marketplace.setCity(city);
+    void marketplace.loadOffers({
+      query: query ?? undefined,
+      city: city ?? undefined,
+    });
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
     if ((location.pathname === "/merchant" || location.pathname === "/admin") && !getToken()) {
       navigate("/login", { replace: true });
     }
@@ -271,6 +285,16 @@ function App() {
         onCityChange={marketplace.setCity}
         onSortChange={marketplace.setSort}
         onSearch={() => void marketplace.loadOffers()}
+        onQuickSearch={(query) => {
+          marketplace.setSearch(query);
+          void marketplace.loadOffers({ query });
+        }}
+        onResetFilters={() => {
+          marketplace.setSearch("");
+          marketplace.setCity("");
+          marketplace.setSort("newest");
+          void marketplace.loadOffers({ query: "", city: "", sort: "newest" });
+        }}
         onNearby={marketplace.enableNearby}
         onRetry={() => void marketplace.loadOffers()}
         onOffer={(offer) => navigate(`/offers/${offer.id}`)}
@@ -384,23 +408,21 @@ function App() {
     );
   } else if (location.pathname === "/merchant") {
     page = (
-      <>
-        {header}
-        <MerchantPage
-          loading={merchantState.merchantLoading}
-          error={merchantState.merchantError}
-          profile={merchantState.merchantProfile}
-          offers={merchantState.merchantOffers}
-          orders={merchantState.merchantOrders}
-          onCreateProfile={() => merchantState.setMerchantFormOpen(true)}
-          onEditProfile={() => merchantState.openMerchantProfileEditor()}
-          onCreateOffer={() => merchantState.startCreateOffer()}
-          onEditOffer={(id) => { const offer = merchantState.merchantOffers.find((item) => item.id === id); if (offer) merchantState.openOfferEditor(offer); }}
-          onDeactivate={(id) => void merchantState.removeMerchantOffer(id)}
-          onStatusChange={(id, status) => void merchantState.changeMerchantOrderStatus(id, status)}
-          onVerifyPickup={(id) => void merchantState.verifyMerchantPickup(id)}
-        />
-      </>
+      <MerchantPage
+        loading={merchantState.merchantLoading}
+        error={merchantState.merchantError}
+        profile={merchantState.merchantProfile}
+        offers={merchantState.merchantOffers}
+        orders={merchantState.merchantOrders}
+        onCreateProfile={() => merchantState.setMerchantFormOpen(true)}
+        onEditProfile={() => merchantState.openMerchantProfileEditor()}
+        onCreateOffer={() => merchantState.startCreateOffer()}
+        onEditOffer={(id) => { const offer = merchantState.merchantOffers.find((item) => item.id === id); if (offer) merchantState.openOfferEditor(offer); }}
+        onDeactivate={(id) => void merchantState.removeMerchantOffer(id)}
+        onStatusChange={(id, status) => void merchantState.changeMerchantOrderStatus(id, status)}
+        onVerifyPickup={(id) => void merchantState.verifyMerchantPickup(id)}
+        onLogout={() => void handleLogout()}
+      />
     );
   } else {
     page = (
@@ -417,6 +439,16 @@ function App() {
         onLogout={() => void handleLogout()}
         onRetry={() => void marketplace.loadOffers()}
         onOffer={(offer) => navigate(`/offers/${offer.id}`)}
+        onExploreCity={(city) => {
+          marketplace.setCity(city);
+          void marketplace.loadOffers({ city });
+          navigate("/offers");
+        }}
+        onQuickSearch={(query) => {
+          marketplace.setSearch(query);
+          void marketplace.loadOffers({ query });
+          navigate("/offers");
+        }}
       />
     );
   }
@@ -424,9 +456,9 @@ function App() {
   return (
     <>
       {page}
-      <SiteFooter />
+      {location.pathname !== "/merchant" && location.pathname !== "/admin" && <SiteFooter />}
 
-      {location.pathname === "/" && (
+      {(location.pathname === "/" || location.pathname === "/merchant") && (
         <>
           <MerchantDashboard
             open={merchantState.merchantOpen}

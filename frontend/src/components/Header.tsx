@@ -19,7 +19,7 @@ export function Header({ user, cartCount, onOrders, onMerchant, onLogin, onLogou
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const value = query.trim();
-    navigate(value ? \`/offers?query=\${encodeURIComponent(value)}\` : "/offers");
+    navigate(value ? `/offers?query=${encodeURIComponent(value)}` : "/offers");
   }
 
   return (
@@ -68,7 +68,7 @@ export function Header({ user, cartCount, onOrders, onMerchant, onLogin, onLogou
         </div>
 
         <div className="header-actions">
-          <Link className="header-cart" to="/cart" aria-label={cartCount > 0 ? \`سبد خرید، \${cartCount} قلم\` : "سبد خرید"}>
+          <Link className="header-cart" to="/cart" aria-label={cartCount > 0 ? `سبد خرید، ${cartCount} قلم` : "سبد خرید"}>
             <span aria-hidden="true">▱</span>
             <span className="header-cart-label">سبد خرید</span>
             {cartCount > 0 && <b>{cartCount.toLocaleString("fa-IR")}</b>}

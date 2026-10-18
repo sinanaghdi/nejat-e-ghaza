@@ -147,7 +147,7 @@ export function MerchantDashboard({
                     : 0;
 
                   return (
-                    <div className="merchant-stats">
+                    <div className="merchant-stats" id="merchant-settlements">
                       <div><strong>{offers.filter((offer) => offer.is_active).length}</strong><span>پیشنهاد فعال</span></div>
                       <div><strong>{orders.length}</strong><span>کل سفارش</span></div>
                       <div><strong>{completedOrders.length}</strong><span>تحویل‌شده</span></div>
@@ -166,7 +166,7 @@ export function MerchantDashboard({
                       <h3>پیشنهادهای من</h3>
                     </div>
 
-                    <div className="merchant-offers">
+                    <div className="merchant-offers" id="merchant-offers">
                       {offers.length === 0 ? (
                         <p className="muted">هنوز پیشنهادی ثبت نکرده‌اید.</p>
                       ) : (
@@ -210,7 +210,7 @@ export function MerchantDashboard({
                       <h3>سفارش‌های اخیر</h3>
                     </div>
 
-                    <div className="merchant-orders">
+                    <div className="merchant-orders" id="merchant-orders">
                       {orders.length === 0 ? (
                         <p className="muted">هنوز سفارشی ندارید.</p>
                       ) : (

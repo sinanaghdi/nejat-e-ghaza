@@ -449,7 +449,7 @@ function App() {
   return (
     <>
       {page}
-      <SiteFooter />
+      {location.pathname !== "/merchant" && location.pathname !== "/admin" && <SiteFooter />}
 
       {(location.pathname === "/" || location.pathname === "/merchant") && (
         <>

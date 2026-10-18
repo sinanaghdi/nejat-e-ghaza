@@ -13,7 +13,7 @@ This document turns the current MVP into a controlled, measurable pilot. Keep th
 
 ## Phase A — Repeatable verification
 
-Run from a clean checkout using Python 3.12, Node.js 20, PostgreSQL, and Redis.
+Run from a clean checkout using Python 3.12, Node.js 24, PostgreSQL, and Redis.
 
 - [ ] Apply all migrations to a newly created PostgreSQL database.
 - [ ] Run `pytest -q`; save the command output and CI run URL.

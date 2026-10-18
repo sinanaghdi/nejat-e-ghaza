@@ -65,6 +65,7 @@ export function AdminPage(props: Props) {
   const [refundPayments, setRefundPayments] = useState<PaymentResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [region, setRegion] = useState<"all" | "بابلسر" | "آمل">("all");
 
   useEffect(() => {
     if (!props.user || props.user.role !== "ADMIN") {
@@ -206,27 +207,95 @@ export function AdminPage(props: Props) {
     ? Math.round((orders.filter((order) => order.status === "CANCELLED").length / orders.length) * 100)
     : 0;
 
-  return (
-    <main className="app">
-      <Header user={props.user} cartCount={props.cartCount} onCart={props.onCart} onOrders={props.onOrders} onMerchant={props.onMerchant} onLogin={props.onLogin} onLogout={props.onLogout} />
-      <section className="page-shell admin-page">
-        <header className="page-header">
-          <p className="eyebrow">مدیریت سیستم</p>
-          <h1>داشبورد مدیر</h1>
-          <p>کاربران، فروشندگان، پیشنهادها و سفارش‌ها را از یک نقطه کنترل کن.</p>
-        </header>
+  const matchesRegion = (city?: string | null) => region === "all" || city === region;
+  const visibleMerchants = merchants.filter((item) => matchesRegion(item.city));
+  const visibleOffers = pendingOffers.filter((item) => matchesRegion(item.merchant.city));
+  const visibleOrders = orders.filter((order) => region === "all" || matchesRegion(merchants.find((item) => item.id === order.merchant_id)?.city));
+  const visibleSettlements = settlements.filter((item) => region === "all" || matchesRegion(merchants.find((merchant) => merchant.id === item.merchant_id)?.city));
+  const visibleRefundPayments = refundPayments.filter((payment) => {
+    if (region === "all") return true;
+    const order = orders.find((item) => item.id === payment.order_id);
+    return matchesRegion(merchants.find((merchant) => merchant.id === order?.merchant_id)?.city);
+  });
+  const visibleCompletedOrders = visibleOrders.filter((order) => order.status === "COMPLETED");
+  const visibleRescuedMeals = visibleCompletedOrders.reduce(
+    (sum, order) => sum + order.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0,
+  );
+  const visibleGrossSales = visibleOrders.filter((order) => ["PAID", "READY_FOR_PICKUP", "COMPLETED"].includes(order.status)).reduce((sum, order) => sum + order.total_amount, 0);
+  const visibleCancellationRate = visibleOrders.length
+    ? Math.round((visibleOrders.filter((order) => order.status === "CANCELLED").length / visibleOrders.length) * 100)
+    : 0;
 
-        <section className="admin-summary-grid">
+  function exportSettlementCsv() {
+    const rows = [
+      ["شناسه سفارش", "شناسه فروشگاه", "مبلغ ناخالص (تومان)", "کمیسیون (تومان)", "مبلغ خالص (تومان)", "وضعیت", "مرجع انتقال"],
+      ...visibleSettlements.map((item) => [
+        item.order_id, item.merchant_id, item.gross_amount, item.commission_amount, item.net_amount,
+        item.status === "PAID" ? "ثبت تسویه" : "در انتظار", item.payout_reference || "",
+      ]),
+    ];
+    const csv = "\uFEFF" + rows.map((row) => row.map((cell) => '"' + String(cell ?? "").replace(/"/g, '""') + '"').join(",")).join("\r\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "nejat-e-ghaza-settlements.csv";
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <main className="app admin-console">
+      <aside className="dashboard-sidebar admin-sidebar">
+        <Link className="dashboard-brand" to="/">
+          <span className="dashboard-brand-mark" aria-hidden="true">ن</span>
+          <span><strong>مرکز مدیریت</strong><small>پلتفرم نجات غذا</small></span>
+        </Link>
+        <div className="sidebar-caption">پایش و عملیات</div>
+        <nav className="dashboard-side-nav" aria-label="ناوبری پنل مدیریت">
+          <a className="active" href="#admin-overview"><span aria-hidden="true">▦</span> نمای کلی شبکه</a>
+          <a href="#admin-merchants"><span aria-hidden="true">♙</span> بررسی فروشندگان</a>
+          <a href="#admin-offers"><span aria-hidden="true">◈</span> تأیید بسته‌ها</a>
+          <a href="#admin-orders"><span aria-hidden="true">▤</span> پایش سفارش‌ها</a>
+          <a href="#admin-settlements"><span aria-hidden="true">◇</span> تسویه‌حساب‌ها</a>
+          <a href="#admin-refunds"><span aria-hidden="true">↩</span> پیگیری بازپرداخت‌ها</a>
+          <a href="#admin-users"><span aria-hidden="true">◎</span> مدیریت کاربران</a>
+        </nav>
+        <div className="sidebar-help-card"><span aria-hidden="true">ⓘ</span><strong>پایش دقیق، تصمیم مستند</strong><p>تغییر وضعیت‌ها و عملیات مالی باید بر اساس دادهٔ واقعی و قابل پیگیری باشد.</p><Link to="/security">چک‌لیست امنیت ←</Link></div>
+        <Link className="sidebar-market-link" to="/"><span aria-hidden="true">←</span> بازگشت به بازار</Link>
+      </aside>
+
+      <div className="admin-console-main">
+        <header className="console-topbar">
+          <div><span className="console-overline">مرکز کنترل منطقه‌ای</span><strong>مدیریت نجات غذا · مازندران</strong></div>
+          <div className="console-topbar-actions"><span className="console-status"><span aria-hidden="true">●</span> داده‌ها از API سامانه</span><Link className="console-market-link" to="/">بازگشت به سایت <span aria-hidden="true">↗</span></Link></div>
+        </header>
+      <section className="page-shell admin-page">
+        <header className="page-header admin-page-heading" id="admin-overview">
+          <div><p className="eyebrow">نظارت عملیاتی و مالی</p>
+          <h1>داشبورد مدیر</h1>
+          <p>فروشندگان، بسته‌های منتظر بررسی، سفارش‌ها، بازپرداخت و ثبت تسویه را از یک نقطه پیگیری کن.</p></div>
+          <div className="admin-heading-status"><span aria-hidden="true">●</span><span><strong>نمای زندهٔ سرویس</strong><small>مقادیر بر اساس پاسخ فعلی API</small></span></div>
+        </header>
+        <div className="admin-region-toolbar">
+          <div className="admin-region-controls" role="group" aria-label="فیلتر منطقه">
+            <button type="button" className={region === "all" ? "city-chip is-selected" : "city-chip"} onClick={() => setRegion("all")}>همه مناطق</button>
+            <button type="button" className={region === "بابلسر" ? "city-chip is-selected" : "city-chip"} onClick={() => setRegion("بابلسر")}>بابلسر</button>
+            <button type="button" className={region === "آمل" ? "city-chip is-selected" : "city-chip"} onClick={() => setRegion("آمل")}>آمل</button>
+          </div>
+          <button className="secondary-button compact admin-export-button" type="button" onClick={exportSettlementCsv}><span aria-hidden="true">⇩</span> خروجی CSV تسویه‌ها</button>
+        </div>
+        <section className="admin-summary-grid" id="admin-overview-summary">
           <div><strong>{users.length}</strong><span>کاربر</span></div>
-          <div><strong>{merchants.filter((item) => item.verification_status === "VERIFIED").length}</strong><span>فروشنده تأییدشده</span></div>
-          <div><strong>{merchants.filter((item) => item.verification_status === "PENDING").length}</strong><span>فروشنده در انتظار</span></div>
-          <div><strong>{pendingOffers.length}</strong><span>پیشنهاد در انتظار</span></div>
-          <div><strong>{orders.length}</strong><span>سفارش</span></div>
-          <div><strong>{completedOrders.length}</strong><span>تکمیل‌شده</span></div>
-          <div><strong>{rescuedMeals}</strong><span>غذای نجات‌یافته</span></div>
-          <div><strong>{cancellationRate}٪</strong><span>نرخ لغو</span></div>
-          <div><strong>{grossSales.toLocaleString("fa-IR")}</strong><span>فروش ثبت‌شده (تومان)</span></div>
-          <div><strong>{settlements.filter((item) => item.status === "PENDING").reduce((sum, item) => sum + item.net_amount, 0).toLocaleString("fa-IR")}</strong><span>تسویه در انتظار (تومان)</span></div>
+          <div><strong>{visibleMerchants.filter((item) => item.verification_status === "VERIFIED").length.toLocaleString("fa-IR")}</strong><span>فروشنده تأییدشده</span></div>
+          <div><strong>{visibleMerchants.filter((item) => item.verification_status === "PENDING").length.toLocaleString("fa-IR")}</strong><span>فروشنده در انتظار</span></div>
+          <div><strong>{visibleOffers.length.toLocaleString("fa-IR")}</strong><span>پیشنهاد در انتظار</span></div>
+          <div><strong>{visibleOrders.length.toLocaleString("fa-IR")}</strong><span>سفارش</span></div>
+          <div><strong>{visibleCompletedOrders.length.toLocaleString("fa-IR")}</strong><span>تکمیل‌شده</span></div>
+          <div><strong>{visibleRescuedMeals.toLocaleString("fa-IR")}</strong><span>غذای نجات‌یافته</span></div>
+          <div><strong>{visibleCancellationRate.toLocaleString("fa-IR")}٪</strong><span>نرخ لغو</span></div>
+          <div><strong>{visibleGrossSales.toLocaleString("fa-IR")}</strong><span>فروش ثبت‌شده (تومان)</span></div>
+          <div><strong>{visibleSettlements.filter((item) => item.status === "PENDING").reduce((sum, item) => sum + item.net_amount, 0).toLocaleString("fa-IR")}</strong><span>تسویه در انتظار (تومان)</span></div>
         </section>
 
         {loading && <div className="state-card"><div className="spinner" />در حال دریافت اطلاعات مدیریت...</div>}
@@ -234,13 +303,13 @@ export function AdminPage(props: Props) {
 
         {!loading && !error && (
           <>
-            <section className="admin-users-card">
+            <section className="admin-users-card" id="admin-merchants">
               <div className="section-heading">
                 <div><p className="eyebrow">Moderation</p><h2>فروشندگان</h2></div>
-                <span className="offer-count">{merchants.length} فروشگاه</span>
+                <span className="offer-count">{visibleMerchants.length.toLocaleString("fa-IR")} فروشگاه</span>
               </div>
               <div className="admin-user-list">
-                {merchants.map((item) => (
+                {visibleMerchants.map((item) => (
                   <article className="admin-user-row" key={item.id}>
                     <div className="admin-user-avatar">🏪</div>
                     <div className="admin-user-info">
@@ -258,15 +327,15 @@ export function AdminPage(props: Props) {
               </div>
             </section>
 
-            <section className="admin-users-card">
+            <section className="admin-users-card" id="admin-offers">
               <div className="section-heading">
                 <div><p className="eyebrow">Queue</p><h2>پیشنهادهای در انتظار بررسی</h2></div>
-                <span className="offer-count">{pendingOffers.length} مورد</span>
+                <span className="offer-count">{visibleOffers.length.toLocaleString("fa-IR")} مورد</span>
               </div>
               <div className="admin-user-list">
-                {pendingOffers.length === 0 ? (
+                {visibleOffers.length === 0 ? (
                   <p className="muted">صف بررسی خالی است.</p>
-                ) : pendingOffers.map((offer) => (
+                ) : visibleOffers.map((offer) => (
                   <article className="admin-user-row" key={offer.id}>
                     <div className="admin-user-avatar">🍱</div>
                     <div className="admin-user-info">
@@ -283,16 +352,16 @@ export function AdminPage(props: Props) {
               </div>
             </section>
 
-            <section className="admin-users-card">
+            <section className="admin-users-card" id="admin-settlements">
               <div className="section-heading">
                 <div><p className="eyebrow">Payouts</p><h2>دفتر تسویه فروشندگان</h2></div>
-                <span className="offer-count">{settlements.filter((item) => item.status === "PENDING").length} تسویه باز</span>
+                <span className="offer-count">{visibleSettlements.filter((item) => item.status === "PENDING").length.toLocaleString("fa-IR")} تسویه باز</span>
               </div>
               <p className="muted">این بخش فقط ثبت و پیگیری تسویه دستی را مدیریت می‌کند؛ انتقال وجه خودکار از درگاه انجام نمی‌دهد.</p>
               <div className="admin-user-list">
-                {settlements.length === 0 ? (
+                {visibleSettlements.length === 0 ? (
                   <p className="muted">هنوز پرداخت تأییدشده‌ای برای تسویه ثبت نشده است.</p>
-                ) : settlements.map((item) => (
+                ) : visibleSettlements.map((item) => (
                   <article className="admin-user-row" key={item.id}>
                     <div className="admin-user-info">
                       <strong>سفارش #{item.order_id} · فروشگاه #{item.merchant_id}</strong>
@@ -311,18 +380,18 @@ export function AdminPage(props: Props) {
               </div>
             </section>
 
-            <section className="admin-users-card">
+            <section className="admin-users-card" id="admin-refunds">
               <div className="section-heading">
                 <div><p className="eyebrow">Refund review</p><h2>پیگیری بازپرداخت‌ها</h2></div>
-                <span className="offer-count">{refundPayments.length} مورد در انتظار</span>
+                <span className="offer-count">{visibleRefundPayments.length.toLocaleString("fa-IR")} مورد در انتظار</span>
               </div>
               <p className="muted">
                 این بخش انتقال یا بازپرداخت پول انجام نمی‌دهد؛ فقط بعد از انجام واقعی بازپرداخت، مرجع آن را ثبت کنید.
               </p>
               <div className="admin-user-list">
-                {refundPayments.length === 0 ? (
+                {visibleRefundPayments.length === 0 ? (
                   <p className="muted">در حال حاضر بازپرداختی در صف بررسی نیست.</p>
-                ) : refundPayments.map((payment) => (
+                ) : visibleRefundPayments.map((payment) => (
                   <article className="admin-user-row" key={payment.id}>
                     <div className="admin-user-avatar">↩</div>
                     <div className="admin-user-info">
@@ -343,7 +412,7 @@ export function AdminPage(props: Props) {
               </div>
             </section>
 
-            <section className="admin-users-card">
+            <section className="admin-users-card" id="admin-users">
               <div className="section-heading">
                 <div><p className="eyebrow">Users</p><h2>کاربران</h2></div>
                 <span className="offer-count">{users.length} حساب</span>
@@ -364,13 +433,13 @@ export function AdminPage(props: Props) {
               </div>
             </section>
 
-            <section className="admin-users-card admin-orders-card">
+            <section className="admin-users-card admin-orders-card" id="admin-orders">
               <div className="section-heading">
                 <div><p className="eyebrow">Orders</p><h2>سفارش‌ها</h2></div>
-                <span className="offer-count">{orders.length} سفارش</span>
+                <span className="offer-count">{visibleOrders.length.toLocaleString("fa-IR")} سفارش</span>
               </div>
               <div className="admin-order-list">
-                {orders.length === 0 ? <p className="muted">هنوز سفارشی ثبت نشده است.</p> : orders.slice(0, 50).map((order) => (
+                {visibleOrders.length === 0 ? <p className="muted">هنوز سفارشی ثبت نشده است.</p> : visibleOrders.slice(0, 50).map((order) => (
                   <article className="admin-user-row" key={order.id}>
                     <div className="admin-user-info">
                       <strong>سفارش #{order.id}</strong>
@@ -389,6 +458,7 @@ export function AdminPage(props: Props) {
           </>
         )}
       </section>
+      </div>
       <MobileBottomNav cartCount={props.cartCount} userRole={props.user?.role || null} onCart={props.onCart} />
     </main>
   );

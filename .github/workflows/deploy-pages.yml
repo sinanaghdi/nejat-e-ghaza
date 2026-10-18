@@ -25,20 +25,13 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-
-      - name: Clean npm cache
-        run: npm cache clean --force
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package.json
 
       - name: Install dependencies
         working-directory: frontend
-        env:
-          npm_config_audit: "false"
-          npm_config_fund: "false"
-          npm_config_fetch_retries: "5"
-          npm_config_fetch_retry_mintimeout: "20000"
-          npm_config_fetch_retry_maxtimeout: "120000"
-        run: npm install --no-audit --no-fund --prefer-online
+        run: npm install --no-audit --no-fund
 
       - name: Build demo
         working-directory: frontend

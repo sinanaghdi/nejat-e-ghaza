@@ -68,6 +68,7 @@ export function Header({ user, cartCount, onOrders, onMerchant, onLogin, onLogou
         </div>
 
         <div className="header-actions">
+          {user?.role === "CUSTOMER" && <Link className="header-orders-link" to="/orders" onClick={onOrders}>سفارش‌های من</Link>}
           <Link className="header-cart" to="/cart" aria-label={cartCount > 0 ? `سبد خرید، ${cartCount} قلم` : "سبد خرید"}>
             <span aria-hidden="true">▱</span>
             <span className="header-cart-label">سبد خرید</span>

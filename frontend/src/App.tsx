@@ -451,7 +451,7 @@ function App() {
       {page}
       <SiteFooter />
 
-      {location.pathname === "/" && (
+      {(location.pathname === "/" || location.pathname === "/merchant") && (
         <>
           <MerchantDashboard
             open={merchantState.merchantOpen}

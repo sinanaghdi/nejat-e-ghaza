@@ -19,6 +19,7 @@ type Props = {
   onSortChange: (value: Props["sort"]) => void;
   onSearch: () => void;
   onQuickSearch: (query: string) => void;
+  onResetFilters: () => void;
   onNearby: () => void;
   onRetry: () => void;
   onOffer: (offer: FoodOffer) => void;
@@ -54,6 +55,7 @@ export function OffersPage({
   onSortChange,
   onSearch,
   onQuickSearch,
+  onResetFilters,
   onNearby,
   onRetry,
   onOffer,
@@ -83,7 +85,7 @@ export function OffersPage({
         </div>
 
         <div className="marketplace-filter-panel">
-          <div className="filter-panel-heading"><div><p className="eyebrow">فیلترهای جست‌وجو</p><h2>بستهٔ مناسب خودت را پیدا کن</h2></div><button className="filter-reset" type="button" onClick={() => { onSearchChange(""); onCityChange(""); onSortChange("newest"); onQuickSearch(""); }}>پاک‌کردن فیلترها</button></div>
+          <div className="filter-panel-heading"><div><p className="eyebrow">فیلترهای جست‌وجو</p><h2>بستهٔ مناسب خودت را پیدا کن</h2></div><button className="filter-reset" type="button" onClick={onResetFilters}>پاک‌کردن فیلترها</button></div>
           <div className="discovery-toolbar" role="search">
             <div className="search-field">
               <label htmlFor="marketplace-search">جست‌وجوی غذا یا فروشگاه</label>
@@ -129,7 +131,7 @@ export function OffersPage({
 
           {loading && <div className="offer-grid" aria-label="در حال بارگذاری">{[1, 2, 3, 4].map((item) => <div className="offer-card skeleton-card" key={item}><div className="skeleton skeleton-image" /><div className="offer-content"><div className="skeleton skeleton-line short" /><div className="skeleton skeleton-line" /><div className="skeleton skeleton-line price" /><div className="skeleton skeleton-button" /></div></div>)}</div>}
           {!loading && error && <div className="state-card error-state"><div className="state-icon">!</div><h3>پیشنهادها بارگذاری نشدند</h3><p>{error}</p><button className="secondary-button compact" type="button" onClick={onRetry}>تلاش دوباره</button></div>}
-          {!loading && !error && offers.length === 0 && <div className="state-card"><div className="state-icon" aria-hidden="true">🍽️</div><h3>فعلاً پیشنهادی پیدا نشد</h3><p>عبارت جست‌وجو یا شهر را تغییر بده. نمایش این صفحه به موجودی و پاسخ سرویس بستگی دارد.</p><button className="secondary-button compact" type="button" onClick={() => { onSearchChange(""); onCityChange(""); onQuickSearch(""); }}>نمایش همه پیشنهادها</button></div>}
+          {!loading && !error && offers.length === 0 && <div className="state-card"><div className="state-icon" aria-hidden="true">🍽️</div><h3>فعلاً پیشنهادی پیدا نشد</h3><p>عبارت جست‌وجو یا شهر را تغییر بده. نمایش این صفحه به موجودی و پاسخ سرویس بستگی دارد.</p><button className="secondary-button compact" type="button" onClick={onResetFilters}>نمایش همه پیشنهادها</button></div>}
           {!loading && !error && offers.length > 0 && <div className="offer-grid">{offers.map((offer) => <OfferCard key={offer.id} offer={offer} onSelect={onOffer} />)}</div>}
         </section>
       </section>

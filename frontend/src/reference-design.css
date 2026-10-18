@@ -786,3 +786,12 @@ label { color: var(--text-secondary); font-size: .84rem; font-weight: 700; }
   .merchant-finance-row { grid-template-columns: 1fr; gap: 7px; }
   .merchant-finance-status { flex-direction: row; align-items: center; flex-wrap: wrap; }
 }
+
+.header-logout {
+  min-height: 40px; padding: 7px 11px; border: 1px solid #e5d2cf; border-radius: 9px;
+  color: #a02d23; background: #fff7f6; font-size: .76rem; font-weight: 800; cursor: pointer;
+}
+.header-logout:hover { background: #ffefec; border-color: #e8bfb8; }
+@media (max-width: 700px) {
+  .header-logout { min-height: 36px; padding: 5px 8px; font-size: .69rem; }
+}

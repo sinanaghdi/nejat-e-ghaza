@@ -51,7 +51,7 @@ export function OfferDetailPage({ offer, loading, error, user, cartCount, quanti
             <section className="detail-info-card">
               <div className="detail-label-row"><span className="offer-detail-kicker">بستهٔ نجات روزانه</span><span className="detail-status-chip"><span aria-hidden="true">●</span> {offer.available_quantity > 0 && offer.is_active ? "قابل‌بررسی برای رزرو" : "در دسترس نیست"}</span></div>
               <h1>{offer.title}</h1>
-              <Link className="detail-merchant-link" to={\`/merchants/\${offer.merchant_id}\`}>
+              <Link className="detail-merchant-link" to={`/merchants/${offer.merchant_id}`}>
                 <span className="offer-merchant-avatar" aria-hidden="true">{offer.merchant.business_name.trim().slice(0, 1) || "ن"}</span>
                 <span><strong>{offer.merchant.business_name}</strong><small><span aria-hidden="true">⌖</span> {offer.merchant.city} · {offer.merchant.address}</small></span>
                 <span className="detail-link-chevron" aria-hidden="true">←</span>

@@ -123,6 +123,20 @@ function App() {
   }, [location.pathname, offerId]);
 
   useEffect(() => {
+    if (location.pathname !== "/offers" || !location.search) return;
+    const params = new URLSearchParams(location.search);
+    const query = params.get("query");
+    const city = params.get("city");
+    if (query === null && city === null) return;
+    if (query !== null) marketplace.setSearch(query);
+    if (city !== null) marketplace.setCity(city);
+    void marketplace.loadOffers({
+      query: query ?? undefined,
+      city: city ?? undefined,
+    });
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
     if ((location.pathname === "/merchant" || location.pathname === "/admin") && !getToken()) {
       navigate("/login", { replace: true });
     }
@@ -271,6 +285,10 @@ function App() {
         onCityChange={marketplace.setCity}
         onSortChange={marketplace.setSort}
         onSearch={() => void marketplace.loadOffers()}
+        onQuickSearch={(query) => {
+          marketplace.setSearch(query);
+          void marketplace.loadOffers({ query });
+        }}
         onNearby={marketplace.enableNearby}
         onRetry={() => void marketplace.loadOffers()}
         onOffer={(offer) => navigate(`/offers/${offer.id}`)}
@@ -417,6 +435,16 @@ function App() {
         onLogout={() => void handleLogout()}
         onRetry={() => void marketplace.loadOffers()}
         onOffer={(offer) => navigate(`/offers/${offer.id}`)}
+        onExploreCity={(city) => {
+          marketplace.setCity(city);
+          void marketplace.loadOffers({ city });
+          navigate("/offers");
+        }}
+        onQuickSearch={(query) => {
+          marketplace.setSearch(query);
+          void marketplace.loadOffers({ query });
+          navigate("/offers");
+        }}
       />
     );
   }

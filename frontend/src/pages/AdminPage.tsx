@@ -268,7 +268,7 @@ export function AdminPage(props: Props) {
       <div className="admin-console-main">
         <header className="console-topbar">
           <div><span className="console-overline">مرکز کنترل منطقه‌ای</span><strong>مدیریت نجات غذا · مازندران</strong></div>
-          <div className="console-topbar-actions"><span className="console-status"><span aria-hidden="true">●</span> داده‌ها از API سامانه</span><Link className="console-market-link" to="/">بازگشت به سایت <span aria-hidden="true">↗</span></Link></div>
+          <div className="console-topbar-actions"><button type="button" className="console-logout" onClick={props.onLogout}>خروج</button><span className="console-status"><span aria-hidden="true">●</span> داده‌ها از API سامانه</span><Link className="console-market-link" to="/">بازگشت به سایت <span aria-hidden="true">↗</span></Link></div>
         </header>
       <section className="page-shell admin-page">
         <header className="page-header admin-page-heading" id="admin-overview">

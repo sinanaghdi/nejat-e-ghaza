@@ -4,7 +4,7 @@ Use this runbook before calling a release candidate test-verified. A successful 
 
 ## Clean checkout
 
-From the repository root, use Python 3.12 and Node.js 20. In PowerShell:
+From the repository root, use Python 3.12 and Node.js 24. In PowerShell:
 
 ```powershell
 git clone https://github.com/sinanaghdi/nejat-e-ghaza.git

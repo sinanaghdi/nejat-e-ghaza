@@ -30,7 +30,7 @@ See [SECURITY.md](SECURITY.md) for secret handling, secure configuration, and vu
 
 ### Requirements
 
-Python 3.12+, Node.js 20+, PostgreSQL, Redis and Git.
+Python 3.12+, Node.js 24+, PostgreSQL, Redis and Git.
 
 ### 1. Configure the backend
 

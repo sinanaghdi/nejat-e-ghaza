@@ -402,23 +402,20 @@ function App() {
     );
   } else if (location.pathname === "/merchant") {
     page = (
-      <>
-        {header}
-        <MerchantPage
-          loading={merchantState.merchantLoading}
-          error={merchantState.merchantError}
-          profile={merchantState.merchantProfile}
-          offers={merchantState.merchantOffers}
-          orders={merchantState.merchantOrders}
-          onCreateProfile={() => merchantState.setMerchantFormOpen(true)}
-          onEditProfile={() => merchantState.openMerchantProfileEditor()}
-          onCreateOffer={() => merchantState.startCreateOffer()}
-          onEditOffer={(id) => { const offer = merchantState.merchantOffers.find((item) => item.id === id); if (offer) merchantState.openOfferEditor(offer); }}
-          onDeactivate={(id) => void merchantState.removeMerchantOffer(id)}
-          onStatusChange={(id, status) => void merchantState.changeMerchantOrderStatus(id, status)}
-          onVerifyPickup={(id) => void merchantState.verifyMerchantPickup(id)}
-        />
-      </>
+      <MerchantPage
+        loading={merchantState.merchantLoading}
+        error={merchantState.merchantError}
+        profile={merchantState.merchantProfile}
+        offers={merchantState.merchantOffers}
+        orders={merchantState.merchantOrders}
+        onCreateProfile={() => merchantState.setMerchantFormOpen(true)}
+        onEditProfile={() => merchantState.openMerchantProfileEditor()}
+        onCreateOffer={() => merchantState.startCreateOffer()}
+        onEditOffer={(id) => { const offer = merchantState.merchantOffers.find((item) => item.id === id); if (offer) merchantState.openOfferEditor(offer); }}
+        onDeactivate={(id) => void merchantState.removeMerchantOffer(id)}
+        onStatusChange={(id, status) => void merchantState.changeMerchantOrderStatus(id, status)}
+        onVerifyPickup={(id) => void merchantState.verifyMerchantPickup(id)}
+      />
     );
   } else {
     page = (

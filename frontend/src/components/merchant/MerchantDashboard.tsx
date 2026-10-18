@@ -147,7 +147,7 @@ export function MerchantDashboard({
                     : 0;
 
                   return (
-                    <div className="merchant-stats" id="merchant-settlements">
+                    <div className="merchant-stats" id="merchant-performance">
                       <div><strong>{offers.filter((offer) => offer.is_active).length}</strong><span>پیشنهاد فعال</span></div>
                       <div><strong>{orders.length}</strong><span>کل سفارش</span></div>
                       <div><strong>{completedOrders.length}</strong><span>تحویل‌شده</span></div>
@@ -258,6 +258,25 @@ export function MerchantDashboard({
                     </div>
                   </div>
                 </div>
+
+                <section className="merchant-finance-card" id="merchant-settlements">
+                  <div className="section-heading merchant-finance-heading">
+                    <div><p className="eyebrow">گزارش مالی</p><h3>وضعیت تسویه‌های فروشگاه</h3></div>
+                    <span className="offer-count">{settlements.length.toLocaleString("fa-IR")} رکورد</span>
+                  </div>
+                  <p className="merchant-finance-notice">این دفتر، وضعیت ثبت‌شدهٔ تسویه را نمایش می‌دهد. انتقال بانکی به‌صورت خودکار از این پنل انجام نمی‌شود؛ مرجع رسمی تسویه را از مدیریت پیگیری کن.</p>
+                  <div className="merchant-finance-list">
+                    {settlements.length === 0 ? (
+                      <p className="muted merchant-finance-empty">در حال حاضر رکوردی برای تسویهٔ فروشگاه ثبت نشده است.</p>
+                    ) : settlements.slice(0, 10).map((item) => (
+                      <article className="merchant-finance-row" key={item.id}>
+                        <div className="merchant-finance-order"><strong>سفارش #{item.order_id}</strong><small>تاریخ ثبت: {new Date(item.created_at).toLocaleDateString("fa-IR")}</small></div>
+                        <div className="merchant-finance-amounts"><span>ناخالص: {formatToman(item.gross_amount)}</span><span>کارمزد: {formatToman(item.commission_amount)}</span><strong>خالص: {formatToman(item.net_amount)}</strong></div>
+                        <div className="merchant-finance-status"><span className={item.status === "PAID" ? "moderation-status moderation-approved" : "moderation-status moderation-pending"}>{item.status === "PAID" ? "تسویه ثبت‌شده" : "در انتظار تسویه"}</span>{item.payout_reference && <small>مرجع: <bdi dir="ltr">{item.payout_reference}</bdi></small>}</div>
+                      </article>
+                    ))}
+                  </div>
+                </section>
               </>
             )}
           </>

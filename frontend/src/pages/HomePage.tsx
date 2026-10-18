@@ -98,7 +98,7 @@ export function HomePage({
               </div>
             </div>
             {spotlight ? (
-              <Link to={\`/offers/\${spotlight.id}\`} className="hero-offer-preview" aria-label={\`مشاهده بسته \${spotlight.title}\`}>
+              <Link to={`/offers/${spotlight.id}`} className="hero-offer-preview" aria-label={`مشاهده بسته ${spotlight.title}`}>
                 <span className="hero-preview-top"><small>پیشنهاد برجسته</small>{spotlightDiscount > 0 && <b>{spotlightDiscount.toLocaleString("fa-IR")}٪ تخفیف</b>}</span>
                 <strong>{spotlight.title}</strong>
                 <span className="hero-preview-merchant">{spotlight.merchant.business_name} · {spotlight.merchant.city}</span>

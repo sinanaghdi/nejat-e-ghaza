@@ -83,9 +83,9 @@ export function Header({ user, cartCount, onOrders, onMerchant, onLogin, onLogou
                 <Link to="/profile">پروفایل</Link>
                 {user.role === "MERCHANT" && <Link to="/merchant" onClick={onMerchant}>پنل فروشنده</Link>}
                 {user.role === "ADMIN" && <Link to="/admin">پنل مدیریت</Link>}
-                <button type="button" onClick={onLogout}>خروج</button>
               </div>
             </div>
+            <button type="button" className="header-logout" onClick={onLogout}>خروج</button>
           ) : (
             <div className="header-auth">
               <Link className="login-button" to="/login" onClick={onLogin}>ورود</Link>

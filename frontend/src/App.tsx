@@ -289,6 +289,12 @@ function App() {
           marketplace.setSearch(query);
           void marketplace.loadOffers({ query });
         }}
+        onResetFilters={() => {
+          marketplace.setSearch("");
+          marketplace.setCity("");
+          marketplace.setSort("newest");
+          void marketplace.loadOffers({ query: "", city: "", sort: "newest" });
+        }}
         onNearby={marketplace.enableNearby}
         onRetry={() => void marketplace.loadOffers()}
         onOffer={(offer) => navigate(`/offers/${offer.id}`)}

@@ -17,7 +17,9 @@ export function MobileBottomNav({ cartCount, userRole, onCart }: Props) {
         ? <NavLink to="/merchant" className={({isActive}) => isActive ? "active" : ""}><UiIcon name="store" size={21} /><span>فروشگاه</span></NavLink>
         : userRole === "ADMIN"
           ? <NavLink to="/admin" className={({isActive}) => isActive ? "active" : ""}><UiIcon name="shield-check" size={21} /><span>مدیریت</span></NavLink>
-          : <NavLink to="/orders" className={({isActive}) => isActive ? "active" : ""}><UiIcon name="package" size={21} /><span>سفارش‌ها</span></NavLink>}
+          : userRole === "CUSTOMER"
+            ? <NavLink to="/orders" className={({isActive}) => isActive ? "active" : ""}><UiIcon name="package" size={21} /><span>سفارش‌ها</span></NavLink>
+            : <NavLink to="/login" className={({isActive}) => isActive ? "active" : ""}><UiIcon name="user" size={21} /><span>ورود</span></NavLink>}
     </nav>
   );
 }

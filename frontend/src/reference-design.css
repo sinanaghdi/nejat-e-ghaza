@@ -805,3 +805,132 @@ label { color: var(--text-secondary); font-size: .84rem; font-weight: 700; }
 @media (max-width: 700px) {
   .header-orders-link { min-height: 36px; padding: 5px 8px; font-size: .67rem; }
 }
+
+
+/* Final responsive and public-facing polish */
+html, body, #root { width: 100%; max-width: 100%; min-width: 0; }
+body { overflow-x: clip; }
+button, a, input, select, textarea { min-width: 0; }
+img, svg { flex-shrink: 0; }
+input, select, textarea { max-width: 100%; }
+.legal-layout, .legal-content, .legal-section, .site-footer-inner,
+.merchant-intro-page, .merchant-intro-hero, .merchant-intro-benefits,
+.merchant-intro-step-grid, .merchant-intro-responsibilities { min-width: 0; }
+.legal-content p, .legal-content li { overflow-wrap: anywhere; }
+.legal-endnote { margin: 28px 0 0; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: .8rem; line-height: 1.9; }
+.site-footer-note p { max-width: 48ch; overflow-wrap: anywhere; }
+.site-footer-merchant-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 2px; color: #d3f2dc; font-size: .82rem; font-weight: 800; text-underline-offset: 4px; }
+.site-footer-merchant-link:hover { text-decoration: underline; }
+.site-footer-status { display: inline-flex; align-items: center; gap: 6px; }
+.header-location-icon { flex: 0 0 auto; display: block; }
+.header-search > svg { flex: 0 0 auto; color: var(--muted); }
+.header-cart > svg { flex: 0 0 auto; }
+.mobile-bottom-nav svg { flex: 0 0 auto; }
+.mobile-bottom-nav a, .mobile-bottom-nav button { min-width: 0; }
+.mobile-bottom-nav button:focus-visible, .mobile-bottom-nav a:focus-visible { outline-offset: -2px; }
+.announcement-bar { overflow-wrap: anywhere; }
+.nav .brand-copy { min-width: 0; }
+.nav .brand-copy strong, .nav .brand-copy small { overflow-wrap: normal; }
+.header-actions { min-width: 0; }
+.header-search input { min-width: 0; width: 100%; }
+.site-footer a:focus-visible, .legal-toc a:focus-visible, .merchant-intro-faq summary:focus-visible { outline: 3px solid rgba(82,183,136,.7); outline-offset: 3px; }
+.merchant-intro-page { padding-top: 20px; padding-bottom: 36px; }
+.merchant-intro-breadcrumb { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; margin: 0 0 20px; color: var(--muted); font-size: .78rem; }
+.merchant-intro-breadcrumb a { color: var(--primary); font-weight: 700; }
+.merchant-intro-hero { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, .75fr); gap: clamp(22px, 4vw, 48px); align-items: center; padding: clamp(22px, 4vw, 52px); border: 1px solid #dbe8dd; border-radius: 26px; background: linear-gradient(135deg, #f0f8f1 0%, #fff 68%); box-shadow: 0 12px 34px rgba(27,67,50,.06); }
+.merchant-intro-copy { min-width: 0; }
+.merchant-intro-copy > .eyebrow { display: flex; align-items: center; gap: 8px; }
+.merchant-intro-hero h1 { margin: 0 0 16px; max-width: 17ch; color: var(--primary); font-size: clamp(1.8rem, 3.5vw, 3rem); font-weight: 900; line-height: 1.6; }
+.merchant-intro-lead { max-width: 65ch; margin: 0; color: var(--text-secondary); font-size: .98rem; line-height: 2.1; }
+.merchant-intro-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 22px; }
+.merchant-intro-actions .primary-button, .merchant-intro-actions .secondary-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; }
+.merchant-intro-caption { margin: 14px 0 0; color: var(--muted); font-size: .77rem; line-height: 1.9; }
+.merchant-intro-summary { min-width: 0; padding: 24px; border: 1px solid #e0eae1; border-radius: 20px; background: #fff; box-shadow: var(--shadow-card); }
+.merchant-intro-summary-icon { width: 54px; height: 54px; display: grid; place-items: center; margin-bottom: 17px; border-radius: 16px; color: var(--primary); background: #e8f5eb; }
+.merchant-intro-summary h2 { margin: 0 0 18px; color: var(--primary); font-size: 1.18rem; line-height: 1.8; }
+.merchant-intro-summary ul, .merchant-intro-responsibilities ul { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.merchant-intro-summary li, .merchant-intro-responsibilities li { display: flex; align-items: flex-start; gap: 9px; color: var(--text-secondary); font-size: .84rem; line-height: 1.9; }
+.merchant-intro-summary li svg, .merchant-intro-responsibilities li svg { flex: 0 0 auto; margin-top: 3px; color: var(--success); }
+.merchant-intro-benefits { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; margin: 22px 0 54px; }
+.merchant-intro-benefits article { min-width: 0; padding: 22px; border: 1px solid var(--border); border-radius: 17px; background: #fff; }
+.merchant-intro-benefit-icon { width: 44px; height: 44px; display: grid; place-items: center; margin-bottom: 13px; border-radius: 13px; color: var(--primary); background: var(--primary-soft); }
+.merchant-intro-benefits h2 { margin: 0 0 8px; color: var(--primary); font-size: 1rem; line-height: 1.8; }
+.merchant-intro-benefits p, .merchant-intro-section-heading > p:last-child, .merchant-intro-responsibilities > div > p:last-child, .merchant-intro-final-cta > div > p:last-child { margin: 0; color: var(--muted); font-size: .85rem; line-height: 2; }
+.merchant-intro-steps, .merchant-intro-faq { margin: 0 0 54px; }
+.merchant-intro-section-heading { max-width: 760px; margin-bottom: 20px; }
+.merchant-intro-section-heading h2, .merchant-intro-responsibilities h2, .merchant-intro-final-cta h2 { margin: 0 0 8px; color: var(--primary); font-size: clamp(1.35rem, 2.3vw, 1.9rem); line-height: 1.7; }
+.merchant-intro-step-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.merchant-intro-step-grid article { min-width: 0; padding: 22px; border: 1px solid var(--border); border-radius: 17px; background: #fff; }
+.merchant-intro-step-number { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; color: #fff; background: var(--primary); font-weight: 900; }
+.merchant-intro-step-grid h3 { margin: 13px 0 7px; color: var(--text); font-size: .98rem; line-height: 1.8; }
+.merchant-intro-step-grid p { margin: 0; color: var(--muted); font-size: .84rem; line-height: 2; }
+.merchant-intro-responsibilities { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); align-items: start; gap: 28px; margin: 0 0 54px; padding: clamp(20px, 3vw, 32px); border: 1px solid #dbe8dd; border-radius: 20px; background: #f4f8f3; }
+.merchant-intro-responsibilities > div > p:last-child { color: var(--text-secondary); }
+.merchant-intro-responsibilities ul { gap: 10px; }
+.merchant-intro-faq-list { display: grid; gap: 10px; }
+.merchant-intro-faq details { border: 1px solid var(--border); border-radius: 13px; background: #fff; overflow: hidden; }
+.merchant-intro-faq summary { position: relative; padding: 15px 18px; color: var(--text); font-size: .9rem; font-weight: 800; cursor: pointer; list-style: none; }
+.merchant-intro-faq summary::-webkit-details-marker { display: none; }
+.merchant-intro-faq summary::after { content: "+"; margin-inline-start: 12px; color: var(--primary); font-size: 1.15rem; }
+.merchant-intro-faq details[open] summary::after { content: "−"; }
+.merchant-intro-faq details p { margin: 0; padding: 0 18px 17px; color: var(--muted); font-size: .86rem; line-height: 2; }
+.merchant-intro-final-cta { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: clamp(22px, 3.4vw, 36px); border-radius: 22px; color: #fff; background: var(--primary); }
+.merchant-intro-final-cta h2 { color: #fff; }
+.merchant-intro-final-cta > div > p:last-child { color: #d6e8db; }
+.merchant-intro-final-cta .secondary-button { color: var(--primary); background: #fff; border: 1px solid rgba(255,255,255,.5); }
+.merchant-intro-demo-note { margin: 20px 0 0; padding: 12px 15px; border: 1px solid #eadbb7; border-radius: 12px; color: #705218; background: #fff9e9; font-size: .77rem; line-height: 1.9; }
+
+@media (max-width: 980px) {
+  .merchant-intro-hero { grid-template-columns: minmax(0, 1fr) minmax(230px, .8fr); gap: 22px; }
+  .merchant-intro-summary { padding: 19px; }
+  .merchant-intro-benefits { margin-bottom: 42px; }
+  .merchant-intro-responsibilities { grid-template-columns: 1fr; }
+  .merchant-intro-final-cta { align-items: flex-start; flex-direction: column; }
+}
+@media (max-width: 860px) {
+  .nav-links { display: none; }
+  .nav { justify-content: space-between; }
+  .header-actions { gap: 7px; }
+}
+@media (max-width: 700px) {
+  body { padding-bottom: max(86px, calc(76px + env(safe-area-inset-bottom))); }
+  .site-footer { padding-bottom: max(88px, calc(78px + env(safe-area-inset-bottom))); }
+  .merchant-intro-page { padding-top: 14px; padding-bottom: 26px; }
+  .merchant-intro-breadcrumb { margin-bottom: 14px; }
+  .merchant-intro-hero { grid-template-columns: minmax(0, 1fr); gap: 18px; padding: 21px 18px; border-radius: 18px; }
+  .merchant-intro-hero h1 { max-width: none; font-size: clamp(1.65rem, 7vw, 2.15rem); line-height: 1.7; }
+  .merchant-intro-lead { font-size: .85rem; line-height: 2.05; }
+  .merchant-intro-actions { display: grid; grid-template-columns: minmax(0, 1fr); align-items: stretch; margin-top: 18px; }
+  .merchant-intro-actions > a { width: 100%; }
+  .merchant-intro-summary { padding: 18px; }
+  .merchant-intro-benefits, .merchant-intro-step-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .merchant-intro-benefits { margin: 14px 0 36px; }
+  .merchant-intro-benefits article, .merchant-intro-step-grid article { padding: 17px; }
+  .merchant-intro-steps, .merchant-intro-faq, .merchant-intro-responsibilities { margin-bottom: 36px; }
+  .merchant-intro-responsibilities { padding: 18px; gap: 16px; }
+  .merchant-intro-final-cta { gap: 8px; padding: 20px 17px; border-radius: 18px; }
+  .merchant-intro-final-cta .merchant-intro-actions { width: 100%; }
+  .legal-page { margin-top: 12px; }
+  .legal-layout { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .legal-toc { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; padding: 11px; }
+  .legal-toc h2 { grid-column: 1 / -1; }
+  .legal-toc a { min-width: 0; padding: 8px 7px; font-size: .75rem; overflow-wrap: anywhere; }
+  .legal-content { padding: 18px 15px; border-radius: 15px; }
+  .legal-section + .legal-section { margin-top: 23px; padding-top: 20px; }
+}
+@media (max-width: 380px) {
+  .announcement-bar { font-size: .66rem; gap: 6px; padding-inline: 8px; }
+  .nav { width: calc(100% - 20px); gap: 5px; }
+  .nav .brand { min-width: 0; gap: 5px; }
+  .brand-mark { width: 33px; height: 33px; }
+  .brand-copy strong { font-size: .84rem; }
+  .header-actions { gap: 4px; }
+  .nav .login-button, .nav .signup-button { min-height: 35px; padding-inline: 6px; font-size: .69rem; }
+  .header-cart { min-height: 35px; padding-inline: 7px; }
+  .legal-toc { grid-template-columns: minmax(0, 1fr); }
+  .legal-toc h2 { grid-column: auto; }
+  .merchant-intro-summary { padding: 15px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .merchant-intro-faq details, .merchant-intro-actions a { transition: none !important; }
+}

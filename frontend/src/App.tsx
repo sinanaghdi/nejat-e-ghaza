@@ -30,13 +30,14 @@ import { CustomerDashboardPage } from "./pages/CustomerDashboardPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
 import { LegalPage, type LegalPageKind } from "./pages/LegalPage";
 import { SiteFooter } from "./components/SiteFooter";
+import { MerchantIntroPage } from "./pages/MerchantIntroPage";
 
 const legalRoutes: Record<string, LegalPageKind> = {
   "/privacy": "privacy",
   "/terms": "terms",
   "/safety": "safety",
-  "/security": "security",
-  "/license": "license",
+  "/merchant-terms": "merchant-terms",
+  "/cookies": "cookies",
 };
 
 function App() {
@@ -197,6 +198,13 @@ function App() {
       <>
         {header}
         <LegalPage kind={legalPageKind} />
+      </>
+    );
+  } else if (location.pathname === "/for-restaurants") {
+    page = (
+      <>
+        {header}
+        <MerchantIntroPage cartCount={cartCount} userRole={user?.role ?? null} onCart={() => setCartOpen(true)} />
       </>
     );
   } else if (location.pathname === "/login" || location.pathname === "/register") {

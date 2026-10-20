@@ -30,6 +30,7 @@ import { CustomerDashboardPage } from "./pages/CustomerDashboardPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
 import { LegalPage, type LegalPageKind } from "./pages/LegalPage";
 import { SiteFooter } from "./components/SiteFooter";
+import { MobileBottomNav } from "./components/MobileBottomNav";
 import { MerchantIntroPage } from "./pages/MerchantIntroPage";
 
 const legalRoutes: Record<string, LegalPageKind> = {
@@ -465,6 +466,9 @@ function App() {
     <>
       {page}
       {location.pathname !== "/merchant" && location.pathname !== "/admin" && <SiteFooter />}
+      {(location.pathname === "/orders" || location.pathname === "/profile") && (
+        <MobileBottomNav cartCount={cartCount} userRole={user?.role ?? null} onCart={() => setCartOpen(true)} />
+      )}
 
       {(location.pathname === "/" || location.pathname === "/merchant") && (
         <>

@@ -13,7 +13,8 @@ export type UiIconName =
   | "arrow-left"
   | "shield-check"
   | "check"
-  | "calendar";
+  | "calendar"
+  | "user";
 
 const paths: Record<UiIconName, ReactNode> = {
   search: <><circle cx="10.8" cy="10.8" r="6.6" /><path d="m16 16 4.2 4.2" /></>,
@@ -29,6 +30,7 @@ const paths: Record<UiIconName, ReactNode> = {
   "shield-check": <><path d="M12 3 20 6v5c0 5-3.4 8.2-8 10-4.6-1.8-8-5-8-10V6l8-3Z" /><path d="m8.5 12 2.2 2.2 4.8-5" /></>,
   check: <><path d="m5 12 4 4L19 6" /></>,
   calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></>,
+  user: <><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></>,
 };
 
 type Props = {

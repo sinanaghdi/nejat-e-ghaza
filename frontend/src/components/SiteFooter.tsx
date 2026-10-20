@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
+import { UiIcon } from "./UiIcon";
 
 const policyLinks = [
   { to: "/privacy", label: "حریم خصوصی" },
   { to: "/terms", label: "شرایط استفاده" },
   { to: "/safety", label: "ایمنی غذا و بازپرداخت" },
-  { to: "/security", label: "امنیت" },
-  { to: "/license", label: "مجوز و حقوق استفاده" },
+  { to: "/merchant-terms", label: "شرایط همکاری فروشندگان" },
+  { to: "/cookies", label: "کوکی‌ها و ذخیره‌سازی" },
 ];
 
 export function SiteFooter() {
@@ -13,32 +14,33 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="site-footer-inner">
         <div className="site-footer-brand">
-          <Link className="brand" to="/" aria-label="بازگشت به صفحه اصلی نجات غذا">نجات غذا</Link>
-          <p>غذای خوب، کمتر هدر می‌رود.</p>
-          <span className="site-footer-status">نسخهٔ آزمایشی و نمونه‌کار</span>
+          <Link className="brand" to="/" aria-label="بازگشت به صفحهٔ اصلی نجات غذا">
+            <span className="brand-mark" aria-hidden="true">ن</span>
+            <span className="brand-copy"><strong>نجات غذا</strong><small>غذای خوب، کمتر هدر می‌رود</small></span>
+          </Link>
+          <p>راهی برای عرضهٔ غذای مازادِ قابل‌مصرف با قیمت روشن و تحویل حضوری.</p>
+          <span className="site-footer-status"><UiIcon name="leaf" size={14} /> معرفی اولیهٔ پایلوت</span>
         </div>
 
         <nav className="site-footer-links" aria-label="قوانین و اطلاعات">
-          <h2>اطلاعات و سیاست‌ها</h2>
+          <h2>قوانین و سیاست‌ها</h2>
           {policyLinks.map((item) => (
             <Link key={item.to} to={item.to}>{item.label}</Link>
           ))}
         </nav>
 
         <div className="site-footer-note">
-          <h2>پیش از استفاده</h2>
+          <h2>وضعیت فعلی</h2>
           <p>
-            نسخهٔ نمایشی برای بررسی تجربهٔ کاربری است؛ خرید و پرداخت واقعی در آن انجام نمی‌شود.
-            اطلاعات واقعی بانکی یا محرمانه را در نسخهٔ دمو وارد نکنید.
+            این نسخه برای معرفی محصول و بررسی تجربهٔ کاربری است. ثبت سفارش و پرداخت زنده تا اعلام رسمی آغاز پایلوت فعال نیست.
+            لطفاً اطلاعات بانکی یا محرمانهٔ واقعی وارد نکنید.
           </p>
-          <a href="https://github.com/sinanaghdi/nejat-e-ghaza" target="_blank" rel="noreferrer">
-            مخزن عمومی پروژه در GitHub
-          </a>
+          <Link className="site-footer-merchant-link" to="/for-restaurants">اطلاعات همکاری فروشندگان <span aria-hidden="true">←</span></Link>
         </div>
       </div>
       <div className="site-footer-bottom">
         <span>© ۲۰۲۶ نجات غذا</span>
-        <span>متن‌های حقوقی این نسخه، پیش‌نویس MVP هستند و پیش از پایلوت باید بازبینی شوند.</span>
+        <span>شرایط نهایی پایلوت و مسیر پشتیبانی پیش از فعال‌سازی رسمی اعلام می‌شوند.</span>
       </div>
     </footer>
   );

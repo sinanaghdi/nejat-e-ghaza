@@ -11,28 +11,28 @@ function demoDate(offsetHours: number): string {
 const DEMO_OFFERS: FoodOffer[] = [
   {
     id: 1, merchant_id: 101,
-    merchant: { id: 101, business_name: "کافه سبز", city: "کرمانشاه", address: "بلوار طاق‌بستان", latitude: 34.329, longitude: 47.077 },
+    merchant: { id: 101, business_name: "کافهٔ نمونهٔ ساحل", city: "بابلسر", address: "نشانی نمونه", latitude: 36.70, longitude: 52.65 },
     title: "باکس صبحانه ویژه", description: "ترکیبی از صبحانه تازه و خوراکی‌های روز کافه با تخفیف ویژه.",
     original_price: 180000, sale_price: 89000, quantity: 8, available_quantity: 5,
     pickup_start: demoDate(1), pickup_end: demoDate(4), image_url: null, is_active: true, moderation_status: "APPROVED", moderation_reason: null, moderated_at: null, created_at: demoDate(-1),
   },
   {
     id: 2, merchant_id: 102,
-    merchant: { id: 102, business_name: "فست‌فود هفت", city: "کرمانشاه", address: "خیابان برق", latitude: 34.317, longitude: 47.082 },
+    merchant: { id: 102, business_name: "فست‌فود نمونهٔ آمل", city: "آمل", address: "نشانی نمونه", latitude: 36.47, longitude: 52.35 },
     title: "باکس پیتزا و سیب‌زمینی", description: "غذای مازاد تازه امشب با قیمت کمتر؛ مناسب یک نفر.",
     original_price: 320000, sale_price: 159000, quantity: 6, available_quantity: 3,
     pickup_start: demoDate(2), pickup_end: demoDate(5), image_url: null, is_active: true, moderation_status: "APPROVED", moderation_reason: null, moderated_at: null, created_at: demoDate(-0.5),
   },
   {
     id: 3, merchant_id: 103,
-    merchant: { id: 103, business_name: "رستوران خانه", city: "کرمانشاه", address: "میدان آزادگان", latitude: 34.301, longitude: 47.088 },
+    merchant: { id: 103, business_name: "رستوران نمونهٔ آمل", city: "آمل", address: "نشانی نمونه", latitude: 36.46, longitude: 52.34 },
     title: "باکس شام خانوادگی", description: "چند غذای محبوب رستوران برای جلوگیری از هدررفت مواد غذایی.",
     original_price: 540000, sale_price: 249000, quantity: 4, available_quantity: 2,
     pickup_start: demoDate(1.5), pickup_end: demoDate(4.5), image_url: null, is_active: true, moderation_status: "APPROVED", moderation_reason: null, moderated_at: null, created_at: demoDate(-2),
   },
   {
     id: 4, merchant_id: 101,
-    merchant: { id: 101, business_name: "کافه سبز", city: "کرمانشاه", address: "بلوار طاق‌بستان", latitude: 34.329, longitude: 47.077 },
+    merchant: { id: 101, business_name: "کافهٔ نمونهٔ ساحل", city: "بابلسر", address: "نشانی نمونه", latitude: 36.70, longitude: 52.65 },
     title: "باکس در انتظار بررسی", description: "پیشنهاد نمونه برای نمایش صف بررسی مدیر.",
     original_price: 210000, sale_price: 99000, quantity: 5, available_quantity: 5,
     pickup_start: demoDate(2), pickup_end: demoDate(5), image_url: null,
@@ -227,12 +227,12 @@ let DEMO_ORDERS: Order[] = [
 const DEMO_MERCHANT_PROFILE: MerchantProfile = {
   id: 101,
   user_id: 21,
-  business_name: "کافه سبز",
-  description: "کافه دمو برای نمایش پنل فروشنده نجات غذا",
-  address: "بلوار طاق‌بستان",
-  city: "کرمانشاه",
-  latitude: 34.329,
-  longitude: 47.077,
+  business_name: "کافهٔ نمونهٔ ساحل",
+  description: "فروشگاه نمایشی برای آشنایی با پنل فروشندهٔ نجات غذا",
+  address: "نشانی نمونه",
+  city: "بابلسر",
+  latitude: 36.70,
+  longitude: 52.65,
   verification_status: "VERIFIED",
   verification_reason: null,
 };
@@ -279,10 +279,10 @@ const DEMO_ADMIN_USERS = [
 ];
 
 const DEMO_ADMIN_MERCHANTS: AdminMerchant[] = [
-  { id: 101, user_id: 21, business_name: "کافه سبز", address: "بلوار طاق‌بستان", city: "کرمانشاه", verification_status: "VERIFIED", verification_reason: null, created_at: demoDate(-24) },
-  { id: 102, user_id: 22, business_name: "فست‌فود هفت", address: "خیابان برق", city: "کرمانشاه", verification_status: "VERIFIED", verification_reason: null, created_at: demoDate(-48) },
-  { id: 103, user_id: 23, business_name: "رستوران خانه", address: "میدان آزادگان", city: "کرمانشاه", verification_status: "VERIFIED", verification_reason: null, created_at: demoDate(-72) },
-  { id: 104, user_id: 24, business_name: "کافه در انتظار تایید", address: "خیابان دانشگاه", city: "کرمانشاه", verification_status: "PENDING", verification_reason: null, created_at: demoDate(-4) },
+  { id: 101, user_id: 21, business_name: "کافهٔ نمونهٔ ساحل", address: "نشانی نمونه", city: "بابلسر", verification_status: "VERIFIED", verification_reason: null, created_at: demoDate(-24) },
+  { id: 102, user_id: 22, business_name: "فست‌فود نمونهٔ آمل", address: "نشانی نمونه", city: "آمل", verification_status: "VERIFIED", verification_reason: null, created_at: demoDate(-48) },
+  { id: 103, user_id: 23, business_name: "رستوران نمونهٔ آمل", address: "نشانی نمونه", city: "آمل", verification_status: "VERIFIED", verification_reason: null, created_at: demoDate(-72) },
+  { id: 104, user_id: 24, business_name: "کافهٔ نمونه در انتظار تأیید", address: "نشانی نمونه", city: "بابلسر", verification_status: "PENDING", verification_reason: null, created_at: demoDate(-4) },
 ];
 
 const DEMO_SETTLEMENTS: MerchantSettlement[] = [

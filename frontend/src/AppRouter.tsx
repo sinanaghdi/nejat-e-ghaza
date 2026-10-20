@@ -17,6 +17,7 @@ export function AppRouter() {
         <Route path="/notifications" element={<App />} />
         <Route path="/dashboard" element={<App />} />
         <Route path="/merchant" element={<App />} />
+        <Route path="/for-restaurants" element={<App />} />
         <Route path="/admin" element={<App />} />
         <Route path="/login" element={<App />} />
         <Route path="/register" element={<App />} />
@@ -24,8 +25,8 @@ export function AppRouter() {
         <Route path="/privacy" element={<App />} />
         <Route path="/terms" element={<App />} />
         <Route path="/safety" element={<App />} />
-        <Route path="/security" element={<App />} />
-        <Route path="/license" element={<App />} />
+        <Route path="/merchant-terms" element={<App />} />
+        <Route path="/cookies" element={<App />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </HashRouter>

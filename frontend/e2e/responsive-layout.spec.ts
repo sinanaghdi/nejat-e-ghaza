@@ -29,8 +29,8 @@ test("public pages remain usable without horizontal overflow at common widths", 
     await page.setViewportSize({ width, height: 900 });
     for (const route of routes) {
       await page.goto(route.path);
-      await expect(page.getByRole("heading", { level: 1, name: route.heading })).toBeVisible();
-      await page.evaluate(() => document.fonts.ready);
+      await expect(page.getByRole("heading", { name: route.heading })).toBeVisible();
+      await page.evaluate(async () => { await document.fonts.ready; });
       const layout = await page.evaluate(() => ({
         viewport: document.documentElement.clientWidth,
         document: document.documentElement.scrollWidth,

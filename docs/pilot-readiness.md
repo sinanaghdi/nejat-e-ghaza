@@ -2,6 +2,8 @@
 
 **Status:** planning and verification checklist — not evidence that production services are configured or that live transactions have passed.
 
+برای نقشهٔ جامع و فارسیِ مراحل اجرا، معیارهای قبولی، ریسک‌ها و ترتیب وابستگی‌ها به [نقشهٔ راه تولید](production-roadmap.fa.md) مراجعه کنید.
+
 This document turns the current MVP into a controlled, measurable pilot. Keep the pilot blocked until every mandatory gate below has an owner and evidence.
 
 ## Current release boundary

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import type { User } from "../lib/api";
+import { UiIcon } from "./UiIcon";
 
 type Props = {
   user: User | null;
@@ -41,13 +42,13 @@ export function Header({ user, cartCount, onOrders, onMerchant, onLogin, onLogou
         </Link>
 
         <div className="header-location" aria-label="محدوده‌های پایلوت">
-          <span className="header-location-icon" aria-hidden="true">⌖</span>
+          <UiIcon className="header-location-icon" name="pin" size={18} />
           <span><small>محدوده‌های فعال</small><strong>بابلسر و آمل</strong></span>
         </div>
 
         <form className="header-search" role="search" onSubmit={submitSearch}>
           <label className="sr-only" htmlFor="header-offer-search">جستجوی پیشنهادها</label>
-          <span aria-hidden="true">⌕</span>
+          <UiIcon name="search" size={18} />
           <input
             id="header-offer-search"
             value={query}
@@ -64,13 +65,13 @@ export function Header({ user, cartCount, onOrders, onMerchant, onLogin, onLogou
             navigate("/");
             window.setTimeout(() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
           }}>چطور کار می‌کند؟</a>
-          <Link to="/merchant">همکاری فروشندگان</Link>
+          <Link to="/for-restaurants">همکاری فروشندگان</Link>
         </div>
 
         <div className="header-actions">
           {user?.role === "CUSTOMER" && <Link className="header-orders-link" to="/orders" onClick={onOrders}>سفارش‌های من</Link>}
           <Link className="header-cart" to="/cart" aria-label={cartCount > 0 ? `سبد خرید، ${cartCount} قلم` : "سبد خرید"}>
-            <span aria-hidden="true">▱</span>
+            <UiIcon name="bag" size={19} />
             <span className="header-cart-label">سبد خرید</span>
             {cartCount > 0 && <b>{cartCount.toLocaleString("fa-IR")}</b>}
           </Link>

@@ -129,7 +129,7 @@ export function HomePage({
         </div>
         <div className="category-pills">
           {categories.map((category, index) => (
-            <button key={category.label} type="button" className={index === 0 ? "category-pill category-pill-active" : "category-pill"} onClick={() => onQuickSearch(category.query)} aria-pressed={false}>
+            <button key={category.label} type="button" className={index === 0 ? "category-pill category-pill-active" : "category-pill"} onClick={() => onQuickSearch(category.query)}>
               <span aria-hidden="true">{category.glyph}</span>{category.label}
             </button>
           ))}
@@ -169,7 +169,7 @@ export function HomePage({
 
       <section className="merchant-cta page-content">
         <div><p className="eyebrow">همکاری محلی</p><h2>صاحب کافه، رستوران یا نانوایی هستی؟</h2><p>بسته‌های مازادِ قابل‌مصرف را با موجودی و زمان دریافت شفاف معرفی کن.</p></div>
-        <Link className="primary-button" to="/merchant">شروع همکاری فروشندگان <span aria-hidden="true">←</span></Link>
+        <Link className="primary-button" to="/for-restaurants">آشنایی با همکاری فروشندگان <span aria-hidden="true">←</span></Link>
       </section>
 
       <MobileBottomNav cartCount={cartCount} userRole={user?.role || null} onCart={onCart} />

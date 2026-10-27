@@ -1,0 +1,35 @@
+name: Build Persian handbook PDF
+
+on:
+  push:
+    paths:
+      - "docs/technical-handbook.fa.md"
+      - ".github/workflows/build-handbook-pdf.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PDF toolchain and Persian fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc texlive-xetex texlive-lang-arabic fonts-noto-core
+      - name: Render PDF
+        run: |
+          pandoc docs/technical-handbook.fa.md             --from markdown+pipe_tables             --pdf-engine=xelatex             -V lang=fa             -V dir=rtl             -V mainfont="Noto Naskh Arabic"             -V monofont="DejaVu Sans Mono"             -V geometry:margin=18mm             -V colorlinks=true             -V title="هندبوک فنی نجات غذا"             -o docs/Nejat-e-Ghaza-Technical-Handbook-FA.pdf
+      - name: Commit generated PDF
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/Nejat-e-Ghaza-Technical-Handbook-FA.pdf
+          if git diff --cached --quiet; then
+            echo "PDF unchanged"
+          else
+            git commit -m "docs: publish Persian technical handbook PDF"
+            git push
+          fi

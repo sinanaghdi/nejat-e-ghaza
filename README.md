@@ -6,6 +6,15 @@
 
 > This repository is an MVP/portfolio implementation. Production SMS delivery, live gateway transactions, automatic provider-side split payments, and food-safety/dispute operations must be verified before a public pilot.
 
+## Project handbook
+
+- [هندبوک فنی فارسی — منبع کامل و قابل ویرایش](docs/technical-handbook.fa.md)
+- [دانلود هندبوک فنی فارسی — PDF](docs/Nejat-e-Ghaza-Technical-Handbook-FA.pdf) (پس از اجرای موفق workflow تولید PDF)
+- [معماری و توسعه](DEVELOPMENT.md)
+- [نقشه راه تولید](docs/production-roadmap.fa.md)
+- [چک‌لیست آمادگی پایلوت](docs/pilot-readiness.md)
+- [Runbook تأیید انتشار](docs/release-verification-runbook.md)
+
 ## What is implemented
 
 - Persian RTL, responsive React + TypeScript interface.
@@ -25,7 +34,8 @@ The public [GitHub Pages demo](https://sinanaghdi.github.io/nejat-e-ghaza/) uses
 
 The UI includes [Privacy](https://sinanaghdi.github.io/nejat-e-ghaza/#/privacy), [Terms](https://sinanaghdi.github.io/nejat-e-ghaza/#/terms), [Food safety and refunds](https://sinanaghdi.github.io/nejat-e-ghaza/#/safety), [Security](https://sinanaghdi.github.io/nejat-e-ghaza/#/security), and [License](https://sinanaghdi.github.io/nejat-e-ghaza/#/license) pages. These policy texts are MVP drafts, not final legal advice. The production owner/contact details, data-retention schedule, operational refund terms and applicable legal terms must be completed before a real public pilot.
 
-See [SECURITY.md](SECURITY.md) for secret handling, secure configuration, and vulnerability disclosure. No production API key or password should be placed in source code. Frontend `VITE_*` values are public after build; keep secrets in backend environment variables or encrypted deployment secrets.
+See [SECURITY.md](SECURITY.md) for secret handling, secure configuration, and vulnerability disclosure. No production API key or password should be placed in source code. Frontend VITE_* values are public after build; keep secrets in backend environment variables or encrypted deployment secrets.
+
 ## Quick start
 
 ### Requirements
@@ -44,7 +54,7 @@ pip install -r requirements.txt
 copy .env.example .env
 ```
 
-The checked-in `.env.example` is a **production-oriented template**, not ready-to-run credentials. For local development, set `ENVIRONMENT=development`, `PAYMENT_PROVIDER=mock`, `SMS_PROVIDER=mock`, `AUTH_COOKIE_SECURE=false`, and local PostgreSQL/Redis URLs. Never use mock providers in production.
+The checked-in .env.example is a **production-oriented template**, not ready-to-run credentials. For local development, set ENVIRONMENT=development, PAYMENT_PROVIDER=mock, SMS_PROVIDER=mock, AUTH_COOKIE_SECURE=false, and local PostgreSQL/Redis URLs. Never use mock providers in production.
 
 ```bash
 alembic upgrade head
@@ -65,25 +75,23 @@ The Vite app is normally available at http://localhost:5173.
 
 ### Docker Compose
 
-For the production-style stack, configure all required secrets and provider values in `.env`, then run:
+For the production-style stack, configure all required secrets and provider values in .env, then run:
 
 ```bash
 docker compose up --build
 ```
 
-The Compose file forces `ENVIRONMENT=production`; it will reject placeholder secrets and mock SMS/payment providers. Do not use this command with the example secrets unchanged.
+The Compose file forces ENVIRONMENT=production; it will reject placeholder secrets and mock SMS/payment providers. Do not use this command with the example secrets unchanged.
 
 ## Authentication and payments
 
-- Existing email/password auth is retained for compatibility; mobile OTP is available through `/api/auth/otp/request` and `/api/auth/otp/verify`.
-- In local development, `SMS_PROVIDER=mock` returns a test-only `debug_code`. Production rejects the mock provider.
+- Existing email/password auth is retained for compatibility; mobile OTP is available through /api/auth/otp/request and /api/auth/otp/verify.
+- In local development, SMS_PROVIDER=mock returns a test-only debug_code. Production rejects the mock provider.
 - The payment callback is not treated as proof of payment: the server verifies the authority and amount with the configured provider.
 - Active payment attempts stay bound to the provider that issued their authority; unknown provider names never fall back to a mock gateway.
-- If a verified charge arrives after an order was cancelled or expired, the order stays closed and the payment is marked `REFUND_REQUIRED`. The customer and admins are notified; admins can review `GET /api/admin/payments/refund-required` and record an already-completed manual refund through `PATCH /api/admin/payments/{payment_id}/refund-completed`.
+- If a verified charge arrives after an order was cancelled or expired, the order stays closed and the payment is marked REFUND_REQUIRED. The customer and admins are notified; admins can review GET /api/admin/payments/refund-required and record an already-completed manual refund through PATCH /api/admin/payments/{payment_id}/refund-completed.
 - Refunds are **not automated**. An admin must complete the refund through the agreed provider/bank process before recording its reference in the system.
 - A settlement records gross amount, commission and net payable. The current implementation **does not automatically transfer money or split a ZarinPal transaction**; an admin records a payout reference after a real bank transfer.
-
-See the [Persian production roadmap](docs/production-roadmap.fa.md) for the full phased work plan, ownership, acceptance criteria and risk register; [DEVELOPMENT.md](DEVELOPMENT.md) for architecture/API details; [SECURITY.md](SECURITY.md) for launch blockers; [the pilot-readiness plan](docs/pilot-readiness.md) for go/no-go gates; and [the release verification runbook](docs/release-verification-runbook.md) for repeatable test commands and evidence requirements.
 
 ## Tests
 
@@ -97,7 +105,7 @@ npm run e2e
 
 ## Architecture decisions
 
-- `SELECT ... FOR UPDATE` around inventory reservation to reduce overselling under concurrent orders.
+- SELECT ... FOR UPDATE around inventory reservation to reduce overselling under concurrent orders.
 - HttpOnly session cookie plus a separate CSRF token for browser sessions.
 - OTP hashes and short expiry instead of storing raw verification codes.
 - Decimal/Numeric for payment and commission calculations.
@@ -105,10 +113,6 @@ npm run e2e
 - A settlement ledger with explicit manual payout tracking rather than claiming unsupported automatic split settlement.
 
 Details: [Architecture decisions](docs/architecture-decisions.md).
-
-## Repository topics
-
-Suggested GitHub About topics: `fastapi`, `react`, `typescript`, `food-waste`, `marketplace`, `persian`, `postgresql`, `celery`, `otp-authentication`.
 
 ## License
 

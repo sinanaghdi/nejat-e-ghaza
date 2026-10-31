@@ -63,7 +63,7 @@ export function HomePage({
 
       <section className="impact-strip">
         <div className="impact-strip-inner">
-          <p><span aria-hidden="true">✳</span><strong>یک انتخاب کوچک، دورریز کمتر</strong><span className="impact-strip-copy">غذای مازادِ سالم را از فروشگاه‌های محلی پیدا کن.</span></p>
+          <p><span aria-hidden="true">✳</span><strong>یک انتخاب کوچک، دورریز کمتر</strong><span className="impact-strip-copy">بسته‌های مازادِ قابل‌مصرف را از فروشگاه‌های محلی پیدا کن.</span></p>
           <div className="city-switcher" role="group" aria-label="انتخاب شهر برای مشاهده پیشنهادها">
             <button type="button" onClick={() => onExploreCity("")} className="city-chip city-chip-all"><span aria-hidden="true">⌖</span> همه مناطق</button>
             <button type="button" onClick={() => onExploreCity("بابلسر")} className="city-chip">🌊 بابلسر</button>

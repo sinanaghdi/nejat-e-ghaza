@@ -32,7 +32,7 @@ def check_rate_limit(
     if scope == "global":
         key = f"rl:{bucket}"
     elif scope == "ip":
-        key = f"rl:{bucket}:ip:{client_ip}"
+        key = f"rl:{bucket}:{client_ip}"
     elif scope == "subject":
         if subject_id is None or not str(subject_id).strip():
             raise ValueError("subject_id is required for subject-scoped rate limits")

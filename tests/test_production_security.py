@@ -137,3 +137,12 @@ def test_request_id_replaces_invalid_untrusted_values(client, request_id):
     generated = response.headers["x-request-id"]
     assert len(generated) == 32
     assert all(character in "0123456789abcdef" for character in generated)
+
+
+def test_nginx_overwrites_untrusted_forwarded_for_header():
+    from pathlib import Path
+
+    nginx_config = Path(__file__).resolve().parents[1] / "docker" / "nginx" / "nginx.conf"
+    content = nginx_config.read_text(encoding="utf-8")
+    assert content.count("proxy_set_header X-Forwarded-For $remote_addr;") == 3
+    assert "$proxy_add_x_forwarded_for" not in content

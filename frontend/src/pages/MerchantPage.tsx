@@ -24,12 +24,12 @@ export function MerchantPage(props: Props) {
       <aside className="dashboard-sidebar merchant-sidebar">
         <Link className="dashboard-brand" to="/">
           <span className="dashboard-brand-mark" aria-hidden="true">ن</span>
-          <span><strong>پنل همکاران</strong><small>پلتفرم نجات غذا</small></span>
+          <span><strong>پنل همکاران</strong><small>سهمینو</small></span>
         </Link>
         <div className="sidebar-caption">مدیریت فروشگاه</div>
         <nav className="dashboard-side-nav" aria-label="ناوبری پنل فروشنده">
           <a className="active" href="#merchant-overview"><span aria-hidden="true">▦</span> نمای کلی فروشگاه</a>
-          <a href="#merchant-offers"><span aria-hidden="true">◈</span> مدیریت بسته‌های نجات</a>
+          <a href="#merchant-offers"><span aria-hidden="true">◈</span> مدیریت بسته‌ها</a>
           <a href="#merchant-orders"><span aria-hidden="true">▤</span> سفارش‌ها و تحویل حضوری</a>
           <a href="#merchant-settlements"><span aria-hidden="true">◇</span> آمار و امور مالی</a>
           <button type="button" onClick={props.onEditProfile}><span aria-hidden="true">⚙</span> تنظیمات فروشگاه</button>

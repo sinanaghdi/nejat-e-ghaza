@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 const routes = [
   { path: "/", heading: /غذای درجه‌یک را/ },
-  { path: "/#/offers", heading: "همه پیشنهادهای فعال" },
+  { path: "/#/offers", heading: "غذاهای خوب را، هوشمندانه‌تر پیدا کن." },
   { path: "/#/for-restaurants", heading: /غذای مازادِ قابل‌مصرف/ },
   { path: "/#/privacy", heading: "سیاست حریم خصوصی" },
   { path: "/#/terms", heading: "شرایط استفاده از سهمینو" },

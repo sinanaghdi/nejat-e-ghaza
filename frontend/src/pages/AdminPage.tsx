@@ -239,7 +239,7 @@ export function AdminPage(props: Props) {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = "nejat-e-ghaza-settlements.csv";
+    anchor.download = "sahmino-settlements.csv";
     anchor.click();
     URL.revokeObjectURL(url);
   }
@@ -249,7 +249,7 @@ export function AdminPage(props: Props) {
       <aside className="dashboard-sidebar admin-sidebar">
         <Link className="dashboard-brand" to="/">
           <span className="dashboard-brand-mark" aria-hidden="true">ن</span>
-          <span><strong>مرکز مدیریت</strong><small>پلتفرم نجات غذا</small></span>
+          <span><strong>مرکز مدیریت</strong><small>سهمینو</small></span>
         </Link>
         <div className="sidebar-caption">پایش و عملیات</div>
         <nav className="dashboard-side-nav" aria-label="ناوبری پنل مدیریت">
@@ -267,7 +267,7 @@ export function AdminPage(props: Props) {
 
       <div className="admin-console-main">
         <header className="console-topbar">
-          <div><span className="console-overline">مرکز کنترل منطقه‌ای</span><strong>مدیریت نجات غذا · مازندران</strong></div>
+          <div><span className="console-overline">مرکز کنترل منطقه‌ای</span><strong>مدیریت سهمینو · مازندران</strong></div>
           <div className="console-topbar-actions"><button type="button" className="console-logout" onClick={props.onLogout}>خروج</button><span className="console-status"><span aria-hidden="true">●</span> داده‌ها از API سامانه</span><Link className="console-market-link" to="/">بازگشت به سایت <span aria-hidden="true">↗</span></Link></div>
         </header>
       <section className="page-shell admin-page">
@@ -292,7 +292,7 @@ export function AdminPage(props: Props) {
           <div><strong>{visibleOffers.length.toLocaleString("fa-IR")}</strong><span>پیشنهاد در انتظار</span></div>
           <div><strong>{visibleOrders.length.toLocaleString("fa-IR")}</strong><span>سفارش</span></div>
           <div><strong>{visibleCompletedOrders.length.toLocaleString("fa-IR")}</strong><span>تکمیل‌شده</span></div>
-          <div><strong>{visibleRescuedMeals.toLocaleString("fa-IR")}</strong><span>غذای نجات‌یافته</span></div>
+          <div><strong>{visibleRescuedMeals.toLocaleString("fa-IR")}</strong><span>بسته‌های دریافت‌شده</span></div>
           <div><strong>{visibleCancellationRate.toLocaleString("fa-IR")}٪</strong><span>نرخ لغو</span></div>
           <div><strong>{visibleGrossSales.toLocaleString("fa-IR")}</strong><span>فروش ثبت‌شده (تومان)</span></div>
           <div><strong>{visibleSettlements.filter((item) => item.status === "PENDING").reduce((sum, item) => sum + item.net_amount, 0).toLocaleString("fa-IR")}</strong><span>تسویه در انتظار (تومان)</span></div>

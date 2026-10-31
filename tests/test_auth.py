@@ -1,3 +1,5 @@
+from app.db.models.audit_log import AuditLog
+
 def test_register_customer(client):
     response = client.post("/api/auth/register", json={"name":"Ali","email":"ali@example.com","password":"password123"})
     assert response.status_code == 201
@@ -94,3 +96,67 @@ def test_login_rejects_password_over_bcrypt_utf8_byte_limit(client):
     )
     assert response.status_code == 422
     assert "72 UTF-8 bytes" in response.text
+
+
+def test_registration_and_login_write_audit_events(client, db):
+    email = "auth-audit@example.com"
+
+    registered = client.post(
+        "/api/auth/register",
+        json={"name": "Audit User", "email": email, "password": "password123"},
+    )
+    assert registered.status_code == 201
+    user_id = registered.json()["id"]
+
+    registration_events = (
+        db.query(AuditLog)
+        .filter(
+            AuditLog.action == "auth.registered",
+            AuditLog.entity_id == str(user_id),
+        )
+        .all()
+    )
+    assert len(registration_events) == 1
+    assert registration_events[0].actor_user_id == user_id
+    assert registration_events[0].success is True
+
+    logged_in = client.post(
+        "/api/auth/login",
+        json={"email": email, "password": "password123"},
+    )
+    assert logged_in.status_code == 200
+
+    login_events = (
+        db.query(AuditLog)
+        .filter(
+            AuditLog.action == "auth.login",
+            AuditLog.entity_id == str(user_id),
+        )
+        .all()
+    )
+    assert len(login_events) == 1
+    assert login_events[0].actor_user_id == user_id
+    assert login_events[0].success is True
+
+
+def test_duplicate_registration_does_not_create_second_audit_event(client, db):
+    payload = {
+        "name": "Audit User",
+        "email": "auth-audit-duplicate@example.com",
+        "password": "password123",
+    }
+    first = client.post("/api/auth/register", json=payload)
+    second = client.post("/api/auth/register", json=payload)
+
+    assert first.status_code == 201
+    assert second.status_code == 409
+
+    events = (
+        db.query(AuditLog)
+        .filter(
+            AuditLog.action == "auth.registered",
+            AuditLog.entity_id == str(first.json()["id"]),
+        )
+        .all()
+    )
+    assert len(events) == 1

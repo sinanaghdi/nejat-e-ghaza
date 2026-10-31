@@ -46,7 +46,7 @@ export function OrdersModal({ open, orders, loading, error, onClose, onRetry }: 
           <div className="state-card">
             <div className="state-icon">📦</div>
             <h3>هنوز سفارشی نداری</h3>
-            <p>یک پیشنهاد انتخاب کن و اولین غذایت را نجات بده.</p>
+            <p>یک پیشنهاد انتخاب کن و اولین خریدت را از سهمینو انجام بده.</p>
           </div>
         )}
 

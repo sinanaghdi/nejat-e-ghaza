@@ -1,4 +1,8 @@
+import os
+import uuid
+
 import pytest
+from redis import Redis
 from fastapi import HTTPException
 from redis.exceptions import ConnectionError
 
@@ -101,3 +105,49 @@ def test_rate_limit_rejects_invalid_policy(limit, window):
             limit=limit,
             window_seconds=window,
         )
+
+
+
+def test_rate_limit_lua_executes_against_real_redis(monkeypatch):
+    redis_url = os.getenv("REDIS_TEST_URL")
+    if not redis_url:
+        pytest.skip("REDIS_TEST_URL is not configured")
+
+    client = Redis.from_url(redis_url, decode_responses=True)
+    key = None
+    try:
+        client.ping()
+        monkeypatch.setattr(rate_limit, "redis_client", client)
+        bucket = f"lua-integration-{uuid.uuid4().hex}"
+        key = f"rl:{bucket}:203.0.113.12"
+
+        rate_limit.check_rate_limit(
+            make_request(),
+            bucket,
+            limit=2,
+            window_seconds=60,
+        )
+        assert client.get(key) == "1"
+        assert 0 < client.ttl(key) <= 60
+
+        rate_limit.check_rate_limit(
+            make_request(),
+            bucket,
+            limit=2,
+            window_seconds=60,
+        )
+        assert client.get(key) == "2"
+
+        with pytest.raises(HTTPException) as error:
+            rate_limit.check_rate_limit(
+                make_request(),
+                bucket,
+                limit=2,
+                window_seconds=60,
+            )
+        assert error.value.status_code == 429
+        assert 0 < client.ttl(key) <= 60
+    finally:
+        if key:
+            client.delete(key)
+        client.close()

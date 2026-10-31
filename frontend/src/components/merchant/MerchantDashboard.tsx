@@ -151,7 +151,7 @@ export function MerchantDashboard({
                       <div><strong>{offers.filter((offer) => offer.is_active).length}</strong><span>پیشنهاد فعال</span></div>
                       <div><strong>{orders.length}</strong><span>کل سفارش</span></div>
                       <div><strong>{completedOrders.length}</strong><span>تحویل‌شده</span></div>
-                      <div><strong>{rescuedMeals}</strong><span>غذای نجات‌یافته</span></div>
+                      <div><strong>{rescuedMeals}</strong><span>بسته‌های دریافت‌شده</span></div>
                       <div><strong>{grossSales.toLocaleString("fa-IR")}</strong><span>فروش ثبت‌شده (تومان)</span></div>
                       <div><strong>{cancellationRate}٪</strong><span>نرخ لغو</span></div>
                       <div><strong>{settlements.filter((item) => item.status === "PENDING").reduce((sum, item) => sum + item.net_amount, 0).toLocaleString("fa-IR")}</strong><span>در انتظار تسویه (تومان)</span></div>

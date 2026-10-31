@@ -1,4 +1,5 @@
 import type { FoodOffer } from "../lib/api";
+import { SafeImage } from "./SafeImage";
 import { formatPickupTime, formatToman } from "../lib/formatters";
 
 function discountPercent(offer: FoodOffer): number {
@@ -19,7 +20,7 @@ export function OfferCard({ offer, onSelect }: Props) {
     <article className="offer-card reference-offer-card">
       <button className="offer-card-hit-area" type="button" onClick={() => onSelect(offer)} aria-label={`مشاهده بسته ${offer.title}`}>
         <div className="offer-image">
-          {offer.image_url ? <img src={offer.image_url} alt={offer.title} loading="lazy" /> : <span className="offer-image-fallback" aria-hidden="true">🍱</span>}
+          <SafeImage src={offer.image_url} alt={offer.title} fallback={<span className="offer-image-fallback" aria-hidden="true">🍱</span>} />
           {discount > 0 && <span className="discount-badge">{discount.toLocaleString("fa-IR")}٪ تخفیف</span>}
           {lowStock && <span className="stock-badge">فقط {offer.available_quantity.toLocaleString("fa-IR")} عدد مانده</span>}
         </div>

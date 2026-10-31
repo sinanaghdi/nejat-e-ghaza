@@ -136,11 +136,11 @@ Main قبل از شروع این شاخه روی commit dc8a2e484e454d80029b619a
 
 ### وضعیت آخرین ادغام‌های ممیزی
 
-PR #31 (commit `c1838ba42e1dbf6b4df1a969c6bf241cfd2eebf5`)، PR #32 (commit `42c2eb898765212b06ad67ad4a1fd87e5ab8c103`)، PR #33 (commit `9f2b3b9482aeced62a3e5f4f354c1c0c41fb5022`) و PR #34 (commit `0d8e3f0f603870833f3be8c68351e389d02eaab7`) با موفقیت در main ادغام شدند. Main اکنون روی commit `d801a6a9a2b4cde5602223c2b40798d734fa7839` است. شواهد CI برای head PR #32:
+PR #31 (commit `c1838ba42e1dbf6b4df1a969c6bf241cfd2eebf5`)، PR #32 (commit `42c2eb898765212b06ad67ad4a1fd87e5ab8c103`)، PR #33 (commit `9f2b3b9482aeced62a3e5f4f354c1c0c41fb5022`)، PR #34 (commit `0d8e3f0f603870833f3be8c68351e389d02eaab7`) و PR #35 (commit `491a57a590e7a2e31ffa138dac1d28b015efeee6`) با موفقیت در main ادغام شدند. Main اکنون روی commit `d91c09361ab1c3326fb97a3559caa5f55c4385a2` است. شواهد CI برای head PR #32:
 
-- Unit/Integration: **137 passed, 1 skipped**؛ شامل Migration PostgreSQL، تست‌های بک‌اند، مرزبندی pickup_code و Audit احراز هویت.
+- Unit/Integration: **142 passed, 1 skipped**؛ شامل Migration PostgreSQL، تست‌های بک‌اند، مرزبندی pickup_code، ۶۴ بیت entropy و rate limit هر فروشنده.
 - Frontend E2E: **9 passed**؛ شامل ماتریس واکنش‌گرایی، تست‌های مسیر مشتری، قوانین، پنل‌ها و رقابت پاسخ جست‌وجو.
-- Redis integration: **9 passed**؛ Lua script روی Redis 7 واقعی، TTL و رفتار 429 را آزمایش کرد.
+- Redis integration: **11 passed**؛ Lua script روی Redis 7 واقعی، TTL، رفتار 429 و rate limit بر اساس subject را آزمایش کرد.
 - TypeScript و production build: موفق.
 - npm audit بعد از ارتقای React Router: **0 vulnerabilities**.
 - Docker imageهای API و Frontend: موفق.
@@ -149,7 +149,7 @@ PR #31 (commit `c1838ba42e1dbf6b4df1a969c6bf241cfd2eebf5`)، PR #32 (commit `42c
 - Deploy GitHub Pages: موفق.
 - Bundle فرانت‌اند در build: JavaScript برابر 368.92 KB خام / 99.55 KB gzip؛ CSS برابر 140.35 KB خام / 26.25 KB gzip. این فقط اندازهٔ bundle است، نه زمان بارگذاری واقعی.
 
-[Tests workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251522291) · [Python workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251522250) · [Secret scan](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251522286) · [Deploy](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251522362)
+[Tests workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251745276) · [Python workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251745250) · [Secret scan](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251745209) · [Deploy](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251745194)
 
 **تاریخچهٔ شکست و اصلاح:** commit `2cb0419` در تست واحد تنظیمات Nginx یک assertion شکست‌خورده داشت؛ تست، نام متغیرهای ممنوع را در comment توضیحی هم جست‌وجو می‌کرد، نه فقط directiveهای اجرایی را. تست اصلاح شد تا commentها از directiveها جدا شوند. PR #30 و PR #31 در main ادغام شدند؛ PR #32 نیز اصلاح تراکنشی Audit برای Register/Login را با CI موفق به main رساند.
 
@@ -190,6 +190,7 @@ PR #31 (commit `c1838ba42e1dbf6b4df1a969c6bf241cfd2eebf5`)، PR #32 (commit `42c
 | docker-compose.yml, Dockerfile.production | خاموش‌کردن access log خام Uvicorn |
 | tests/*, frontend/e2e/* | regression tests برای تغییرات بالا |
 | app/services/auth.py, app/api/routes/auth.py | اتمیک‌کردن ثبت‌نام با Audit و ثبت Audit در endpoint واقعی Login |
+| app/services/order.py, app/core/rate_limit.py, app/api/routes/orders.py | کد ۶۴ بیتی و rate-limit per merchant برای تحویل |
 | tests/test_auth.py | تست تعداد/مالکیت رخدادهای ثبت‌نام و Login |
 | frontend/package.json | ارتقای React Router به v7.18.5؛ منتظر CI مستقل در PR بعدی |
 

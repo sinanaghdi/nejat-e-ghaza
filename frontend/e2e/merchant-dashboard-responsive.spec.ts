@@ -20,6 +20,17 @@ const profile = {
   verification_reason: null,
 };
 
+const merchantOrder = {
+  id: 901,
+  customer_id: 31,
+  merchant_id: 101,
+  total_amount: "125000.00",
+  status: "READY_FOR_PICKUP",
+  pickup_code: "E2E-CUSTOMER-ONLY-PICKUP-SECRET",
+  created_at: "2026-10-31T18:00:00Z",
+  items: [{ id: 1, food_offer_id: 501, quantity: 1, unit_price: "125000.00", subtotal: "125000.00" }],
+};
+
 const widths = [320, 360, 390, 540, 768, 820, 1024, 1280, 1440];
 
 test("merchant workspace fits mobile, tablet and desktop widths", async ({ page }) => {
@@ -70,10 +81,18 @@ test("merchant workspace fits mobile, tablet and desktop widths", async ({ page 
       return;
     }
 
+    if (path === "/api/orders/merchant" && method === "GET") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify([merchantOrder]),
+      });
+      return;
+    }
+
     if (method === "GET" && [
       "/api/offers",
       "/api/offers/mine",
-      "/api/orders/merchant",
       "/api/merchant/settlements",
     ].includes(path)) {
       await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
@@ -101,6 +120,8 @@ test("merchant workspace fits mobile, tablet and desktop widths", async ({ page 
   await expect(page.getByRole("heading", { level: 1, name: profile.business_name })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "ناوبری پنل فروشنده" })).toBeVisible();
   await expect(page.locator(".dashboard-brand-mark")).toBeVisible();
+  await expect(page.getByText("سفارش #901")).toBeVisible();
+  await expect(page.locator("body")).not.toContainText("E2E-CUSTOMER-ONLY-PICKUP-SECRET");
 
   for (const width of widths) {
     await page.setViewportSize({ width, height: 900 });

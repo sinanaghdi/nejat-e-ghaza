@@ -1,3 +1,7 @@
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
 @import "@fontsource/vazirmatn/400.css";
 @import "@fontsource/vazirmatn/500.css";
 @import "@fontsource/vazirmatn/600.css";
@@ -101,3 +105,6 @@ h4 {
   text-wrap: balance;
 }
 
+
+/* Latin text uses Inter; Persian remains Vazirmatn. */
+:lang(en), .latin-text { font-family: "Inter", "Manrope", sans-serif; }

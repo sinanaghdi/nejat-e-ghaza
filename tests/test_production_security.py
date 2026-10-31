@@ -91,3 +91,25 @@ def test_cors_allows_csrf_header(client):
     assert response.status_code == 200
     allowed = response.headers["access-control-allow-headers"].lower()
     assert "x-csrf-token" in allowed
+
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("jwt_algorithm", "none"),
+        ("jwt_algorithm", "RS256"),
+        ("access_token_expire_minutes", 0),
+        ("order_payment_timeout_minutes", 0),
+        ("rate_limit_requests", 0),
+        ("rate_limit_window_seconds", 0),
+        ("otp_ttl_seconds", 0),
+        ("otp_rate_limit_per_phone", 0),
+        ("otp_rate_limit_window_seconds", 0),
+        ("payment_http_timeout_seconds", 0),
+    ],
+)
+def test_security_and_timeout_configuration_rejects_invalid_values(field, value):
+    settings = make_settings(**{field: value})
+    with pytest.raises(RuntimeError):
+        settings.validate_production()

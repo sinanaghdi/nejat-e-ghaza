@@ -3,6 +3,7 @@ import type { FoodOffer, User } from "../lib/api";
 import { formatToman } from "../lib/formatters";
 import { Header } from "../components/Header";
 import { MobileBottomNav } from "../components/MobileBottomNav";
+import { SafeImage } from "../components/SafeImage";
 
 type CartItem = { offer: FoodOffer; quantity: number };
 
@@ -60,7 +61,7 @@ export function CartPage({
               {cart.map((item) => (
                 <article className="cart-item cart-page-item" key={item.offer.id}>
                   <div className="cart-item-image">
-                    {item.offer.image_url ? <img src={item.offer.image_url} alt="" /> : "🍱"}
+                    <SafeImage src={item.offer.image_url} alt="" fallback={<span aria-hidden="true">🍱</span>} />
                   </div>
                   <div className="cart-item-info">
                     <span className="merchant">{item.offer.merchant.business_name}</span>

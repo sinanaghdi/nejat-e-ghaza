@@ -5,6 +5,7 @@ import { Header } from "../components/Header";
 import { HowItWorks } from "../components/HowItWorks";
 import { OfferCard } from "../components/OfferCard";
 import { MobileBottomNav } from "../components/MobileBottomNav";
+import { SafeImage } from "../components/SafeImage";
 
 type Props = {
   user: User | null;
@@ -62,7 +63,7 @@ export function HomePage({
 
       <section className="impact-strip">
         <div className="impact-strip-inner">
-          <p><span aria-hidden="true">✳</span><strong>یک انتخاب کوچک، دورریز کمتر</strong><span className="impact-strip-copy">غذای مازادِ سالم را از فروشگاه‌های محلی پیدا کن.</span></p>
+          <p><span aria-hidden="true">✳</span><strong>یک انتخاب کوچک، دورریز کمتر</strong><span className="impact-strip-copy">بسته‌های مازادِ قابل‌مصرف را از فروشگاه‌های محلی پیدا کن.</span></p>
           <div className="city-switcher" role="group" aria-label="انتخاب شهر برای مشاهده پیشنهادها">
             <button type="button" onClick={() => onExploreCity("")} className="city-chip city-chip-all"><span aria-hidden="true">⌖</span> همه مناطق</button>
             <button type="button" onClick={() => onExploreCity("بابلسر")} className="city-chip">🌊 بابلسر</button>
@@ -90,7 +91,7 @@ export function HomePage({
           </div>
           <div className="hero-showcase">
             <div className="hero-photo-frame">
-              {spotlight?.image_url ? <img src={spotlight.image_url} alt={spotlight.title} /> : <div className="hero-placeholder-food" aria-hidden="true">🍲</div>}
+              <SafeImage src={spotlight?.image_url} alt={spotlight?.title || "پیشنهاد غذایی سهمینو"} className="hero-photo-image" loading="eager" fetchPriority="high" fallback={<div className="hero-placeholder-food" aria-hidden="true">🍲</div>} />
               <span className="hero-photo-badge"><span aria-hidden="true">✳</span> انتخاب امروز</span>
               <div className="hero-floating-note">
                 <span className="floating-note-icon" aria-hidden="true">♻</span>

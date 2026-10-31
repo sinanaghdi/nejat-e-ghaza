@@ -1,13 +1,13 @@
-type Props = { className?: string; title?: string };
+type Props = { className?: string };
 
 /** Sahmino's standalone S / circular-food / leaf brand mark. */
-export function SahminoMark({ className, title = "نماد سهمینو" }: Props) {
+export function SahminoMark({ className }: Props) {
   return (
     <svg
       className={className}
       viewBox="0 0 64 64"
-      role="img"
-      aria-label={title}
+      aria-hidden="true"
+      focusable="false"
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
@@ -29,7 +29,7 @@ export function SahminoMark({ className, title = "نماد سهمینو" }: Prop
         d="M42.2 8.4c5.8-.2 10.5 2.2 13.4 6.6-5.7 1.6-10.9.3-14.1-3.4"
         fill="#E9A44B"
       />
-      <path d="M47.8 13.4c2.1-2.1 4.5-3.4 7.8-4.2" fill="none" stroke="#E9A44B" strokeWidth="2.2" strokeLinecap="round" />
+      <path d="M44.8 11.7c2.2.9 4.4 2.1 6.2 3.5" fill="none" stroke="#C9832A" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   );
 }

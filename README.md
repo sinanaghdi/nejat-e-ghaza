@@ -13,6 +13,7 @@
 - [معماری و توسعه](DEVELOPMENT.md)
 - [نقشه راه تولید](docs/production-roadmap.fa.md)
 - [چک‌لیست آمادگی پایلوت](docs/pilot-readiness.md)
+- [شرح وظایف و انتظارات همکاری مارکتینگ و برندینگ](docs/marketing-branding-brief.fa.md)
 - [Runbook تأیید انتشار](docs/release-verification-runbook.md)
 
 ## What is implemented

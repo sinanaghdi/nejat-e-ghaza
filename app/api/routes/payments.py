@@ -1,4 +1,5 @@
 from typing import Annotated
+import hmac
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from fastapi.responses import RedirectResponse
@@ -36,7 +37,7 @@ def payment_webhook(
     db: Annotated[Session, Depends(get_db)],
     x_webhook_secret: Annotated[str | None, Header()] = None,
 ):
-    if not x_webhook_secret or x_webhook_secret != settings.payment_webhook_secret:
+    if not x_webhook_secret or not hmac.compare_digest(x_webhook_secret, settings.payment_webhook_secret):
         raise HTTPException(status_code=401, detail="Invalid webhook credentials")
     return payment_service.verify_payment(db, payload.authority)
 

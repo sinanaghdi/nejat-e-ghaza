@@ -62,7 +62,7 @@ button:disabled { cursor: not-allowed; opacity: .65; }
 .price-row { margin: 18px 0 14px; }
 .price-row > div { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .price-row strong { font-size: 1.15rem; }
-.price-row del { color: #9a9f99; font-size: .8rem; }
+.price-row del { color: #596458; font-size: .8rem; }
 .offer-meta { display: grid; gap: 7px; color: #596458; font-size: .78rem; line-height: 1.6; }
 .secondary-button { width: 100%; margin-top: 16px; background: #edf1eb; color: #31583B; font-weight: 700; }
 .secondary-button.compact { width: auto; padding-inline: 24px; }
@@ -76,7 +76,7 @@ button:disabled { cursor: not-allowed; opacity: .65; }
 .steps-section { padding-bottom: 70px; }
 .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 50px; }
 .step { border-top: 1px solid #d9ddd7; padding-top: 20px; }
-.step-number { color: #819087; font-size: .8rem; font-weight: 700; }
+.step-number { color: #596458; font-size: .8rem; font-weight: 700; }
 .steps h3 { font-size: 1.35rem; margin: 12px 0 7px; }
 .steps p { color: #596458; line-height: 1.8; margin: 0; }
 
@@ -130,7 +130,7 @@ button:disabled { cursor: not-allowed; opacity: .65; }
 .detail-description { color: #596458; line-height: 2; }
 .detail-price { display: flex; align-items: baseline; gap: 12px; margin: 20px 0; }
 .detail-price strong { font-size: 1.5rem; }
-.detail-price del { color: #9a9f99; font-size: .85rem; }
+.detail-price del { color: #596458; font-size: .85rem; }
 .detail-meta { display: grid; gap: 8px; color: #596458; font-size: .85rem; margin-bottom: 24px; }
 .quantity-control { display: flex; align-items: center; justify-content: space-between; width: 150px; border: 1px solid #dfe4dd; border-radius: 12px; overflow: hidden; margin-bottom: 18px; }
 .quantity-control button, .mini-quantity button { border: 0; background: #f1f3ef; color: #31583B; font-size: 1.2rem; width: 44px; height: 42px; }
@@ -174,7 +174,7 @@ button:disabled { cursor: not-allowed; opacity: .65; }
 .orders-list { display: grid; gap: 14px; }
 .order-card { border: 1px solid #e4e8e2; border-radius: 17px; padding: 18px; background: #fbfcfa; }
 .order-card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid #e5e9e3; }
-.order-label { display: block; color: #7b847e; font-size: .72rem; margin-bottom: 3px; }
+.order-label { display: block; color: #596458; font-size: .72rem; margin-bottom: 3px; }
 .order-card-top strong { font-size: 1.1rem; }
 .status-badge { display: inline-flex; border-radius: 999px; padding: 6px 10px; font-size: .72rem; font-weight: 700; background: #e9eee8; color: #3e5746; }
 .status-paid, .status-ready_for_pickup { background: #e3efe5; color: #28613b; }
@@ -212,7 +212,7 @@ button:disabled { cursor: not-allowed; opacity: .65; }
 .merchant-row, .merchant-order-row { display: flex; align-items: center; gap: 10px; padding: 13px; border: 1px solid #e5e9e3; border-radius: 13px; background: #fff; }
 .merchant-row > div, .merchant-order-row > div { flex: 1; min-width: 0; display: grid; gap: 4px; }
 .merchant-row strong, .merchant-order-row strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.merchant-row span, .merchant-order-row span { color: #7b847d; font-size: .72rem; }
+.merchant-row span, .merchant-order-row span { color: #596458; font-size: .72rem; }
 .active-dot, .inactive-dot { flex: 0 0 auto; font-weight: 700; }
 .active-dot { color: #2d7044 !important; }
 .inactive-dot { color: #9a4c3d !important; }
@@ -1036,7 +1036,7 @@ select {
 
 .dashboard-quick-links span,
 .dashboard-order-row span {
-  color: #78827b;
+  color: #596458;
   font-size: .77rem;
   line-height: 1.6;
 }
@@ -1365,7 +1365,7 @@ button:disabled:hover {
 }
 
 :where(input, select, textarea)::placeholder {
-  color: #89938b;
+  color: #596458;
   opacity: 1;
 }
 
@@ -1769,7 +1769,7 @@ label {
 
 .site-footer p {
   margin: 0;
-  color: #657168;
+  color: #596458;
   font-size: .85rem;
   line-height: 1.9;
 }
@@ -1816,7 +1816,7 @@ label {
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
   padding: 16px 0 calc(22px + env(safe-area-inset-bottom));
-  color: #778279;
+  color: #596458;
   font-size: .76rem;
   line-height: 1.8;
 }
@@ -1833,7 +1833,7 @@ label {
   gap: 9px;
   margin: 0 0 24px;
   font-size: .82rem;
-  color: #78847a;
+  color: #596458;
 }
 
 .legal-breadcrumb a {
@@ -1861,7 +1861,7 @@ label {
 
 .legal-updated {
   margin: 12px 0 0;
-  color: #89938b;
+  color: #596458;
   font-size: .8rem;
 }
 
@@ -1914,7 +1914,7 @@ label {
 .legal-toc a {
   border-radius: 10px;
   padding: 9px 10px;
-  color: #647167;
+  color: #596458;
   font-size: .85rem;
   line-height: 1.8;
   transition: background .18s ease, color .18s ease;
@@ -1979,7 +1979,7 @@ label {
 }
 
 .legal-section li::marker {
-  color: #6b8a6d;
+  color: #4F6547;
 }
 
 .legal-section a {

@@ -216,7 +216,6 @@ def test_concurrent_offer_edit_and_order_reservation_preserve_inventory(postgres
     try:
         final_offer = verify_db.get(FoodOffer, offer_id)
         from app.db.models.order import Order
-from app.db.models.phone_otp import PhoneOTP
         from app.db.models.order_item import OrderItem
 
         order = verify_db.get(Order, order_id)

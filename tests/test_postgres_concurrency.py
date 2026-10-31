@@ -1,15 +1,17 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
+from threading import Event
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event as sqlalchemy_event, select
 from sqlalchemy.orm import sessionmaker
 
 from app.db.database import Base
 from app.db.models.food_offer import FoodOffer
 from app.db.models.merchant import Merchant
+from app.db.models.order import Order
 from app.db.models.user import User
 from app.models.enums import UserRole
 from app.schemas.order import OrderCreate
@@ -223,5 +225,110 @@ def test_concurrent_offer_edit_and_order_reservation_preserve_inventory(postgres
         assert final_offer.quantity == 6
         assert final_offer.available_quantity == 3
         assert final_offer.quantity - final_offer.available_quantity == 3
+    finally:
+        verify_db.close()
+
+
+def test_order_creation_cannot_commit_after_merchant_is_suspended(postgres_session_factory):
+    setup_db = postgres_session_factory()
+    try:
+        customer = User(
+            name="Suspension Race Customer",
+            email="pg-suspension-customer@example.com",
+            password_hash=hash_password("password123"),
+            role=UserRole.CUSTOMER,
+        )
+        merchant_user = User(
+            name="Suspension Race Merchant",
+            email="pg-suspension-merchant@example.com",
+            password_hash=hash_password("password123"),
+            role=UserRole.MERCHANT,
+        )
+        setup_db.add_all([customer, merchant_user])
+        setup_db.commit()
+
+        merchant = Merchant(
+            user_id=merchant_user.id,
+            business_name="Suspension Race Cafe",
+            address="Main St",
+            city="Babolsar",
+            verification_status="VERIFIED",
+        )
+        setup_db.add(merchant)
+        setup_db.commit()
+
+        offer = FoodOffer(
+            merchant_id=merchant.id,
+            title="Suspension Race Offer",
+            original_price=Decimal("100.00"),
+            sale_price=Decimal("50.00"),
+            quantity=5,
+            available_quantity=5,
+            moderation_status="APPROVED",
+            pickup_start=datetime.now(timezone.utc),
+            pickup_end=datetime.now(timezone.utc) + timedelta(hours=2),
+        )
+        setup_db.add(offer)
+        setup_db.commit()
+
+        customer_id = customer.id
+        merchant_id = merchant.id
+        offer_id = offer.id
+        engine = setup_db.get_bind()
+    finally:
+        setup_db.close()
+
+    # Hold the merchant row exactly as the admin suspension transaction would.
+    admin_db = postgres_session_factory()
+    locked_merchant = admin_db.scalar(
+        select(Merchant).where(Merchant.id == merchant_id).with_for_update()
+    )
+    assert locked_merchant is not None
+
+    merchant_lock_requested = Event()
+
+    def observe_merchant_lock(_conn, _cursor, statement, _parameters, _context, _executemany):
+        normalized = " ".join(statement.lower().split())
+        if "from merchants" in normalized and "for update" in normalized:
+            merchant_lock_requested.set()
+
+    sqlalchemy_event.listen(engine, "before_cursor_execute", observe_merchant_lock)
+
+    def attempt_order():
+        order_db = postgres_session_factory()
+        try:
+            buyer = order_db.get(User, customer_id)
+            return create_order(
+                order_db,
+                buyer,
+                OrderCreate(items=[{"food_offer_id": offer_id, "quantity": 1}]),
+            )
+        except HTTPException as exc:
+            return exc
+        finally:
+            order_db.close()
+
+    try:
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(attempt_order)
+            assert merchant_lock_requested.wait(timeout=5), "Order request did not reach the merchant lock"
+
+            # This commits while the order request is blocked on the merchant row.
+            locked_merchant.verification_status = "SUSPENDED"
+            admin_db.commit()
+
+            result = future.result(timeout=10)
+        assert isinstance(result, HTTPException)
+        assert result.status_code == 409
+    finally:
+        sqlalchemy_event.remove(engine, "before_cursor_execute", observe_merchant_lock)
+        admin_db.close()
+
+    verify_db = postgres_session_factory()
+    try:
+        final_offer = verify_db.get(FoodOffer, offer_id)
+        order_count = verify_db.query(Order).filter(Order.merchant_id == merchant_id).count()
+        assert final_offer.available_quantity == 5
+        assert order_count == 0
     finally:
         verify_db.close()

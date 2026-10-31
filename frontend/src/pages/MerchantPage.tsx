@@ -1,6 +1,7 @@
 import { Link, NavLink } from "react-router-dom";
 import type { FoodOffer, MerchantProfile, Order } from "../lib/api";
 import { MerchantDashboard } from "../components/merchant/MerchantDashboard";
+import { SahminoMark } from "../components/SahminoMark";
 
 type Props = {
   loading: boolean;
@@ -23,7 +24,7 @@ export function MerchantPage(props: Props) {
     <main className="app merchant-console">
       <aside className="dashboard-sidebar merchant-sidebar">
         <Link className="dashboard-brand" to="/">
-          <span className="dashboard-brand-mark" aria-hidden="true">ن</span>
+          <SahminoMark className="dashboard-brand-mark" />
           <span><strong>پنل همکاران</strong><small>سهمینو</small></span>
         </Link>
         <div className="sidebar-caption">مدیریت فروشگاه</div>

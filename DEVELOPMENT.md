@@ -1,10 +1,10 @@
-# Nejat-e-Ghaza — Architecture & Development
+# Sahmino — Architecture & Development
 
 This document describes the implementation currently present in the repository. It is not a future-state plan. See [README.md](README.md) for the short product overview and local setup.
 
 ## Product boundary
 
-Nejat-e-Ghaza is a food-surplus marketplace: merchants publish discounted end-of-day food offers, customers reserve and pay, then collect their orders during a pickup window. It is not a full restaurant POS/CRM.
+Sahmino is a food-surplus marketplace: merchants publish discounted end-of-day food offers, customers reserve and pay, then collect their orders during a pickup window. It is not a full restaurant POS/CRM.
 
 The public demo uses in-memory seeded data. Production workflows require a deployed API, PostgreSQL, Redis, configured SMS and payment providers, and a public HTTPS callback URL.
 

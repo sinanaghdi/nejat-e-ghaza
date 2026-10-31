@@ -1,4 +1,4 @@
-# Nejat-e-Ghaza Frontend
+# Sahmino Frontend
 
 React + TypeScript + Vite frontend for the Persian, RTL customer experience.
 

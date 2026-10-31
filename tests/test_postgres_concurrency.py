@@ -16,6 +16,7 @@ from app.schemas.order import OrderCreate
 from app.schemas.offer import OfferUpdate
 from app.services.order import create_order
 from app.services.offer import update_offer
+from app.services import otp as otp_service
 from app.core.security import hash_password
 from fastapi import HTTPException
 
@@ -215,6 +216,7 @@ def test_concurrent_offer_edit_and_order_reservation_preserve_inventory(postgres
     try:
         final_offer = verify_db.get(FoodOffer, offer_id)
         from app.db.models.order import Order
+from app.db.models.phone_otp import PhoneOTP
         from app.db.models.order_item import OrderItem
 
         order = verify_db.get(Order, order_id)
@@ -223,5 +225,71 @@ def test_concurrent_offer_edit_and_order_reservation_preserve_inventory(postgres
         assert final_offer.quantity == 6
         assert final_offer.available_quantity == 3
         assert final_offer.quantity - final_offer.available_quantity == 3
+    finally:
+        verify_db.close()
+
+
+def test_concurrent_otp_issuance_keeps_one_active_code_and_sends_one_sms(
+    postgres_session_factory,
+    monkeypatch,
+):
+    phone_number = "09123456789"
+    start_barrier = Barrier(2)
+    sent_codes: list[str] = []
+    sent_lock = Lock()
+
+    class FakeSMSProvider:
+        def send_otp(self, _phone_number: str, code: str) -> None:
+            with sent_lock:
+                sent_codes.append(code)
+
+    monkeypatch.setattr(
+        otp_service,
+        "get_sms_provider",
+        lambda: FakeSMSProvider(),
+    )
+
+    def request_code():
+        db = postgres_session_factory()
+        try:
+            start_barrier.wait(timeout=10)
+            return otp_service.request_phone_otp(
+                db,
+                phone_number,
+                "Concurrent OTP User",
+            )
+        except HTTPException as exc:
+            return exc
+        finally:
+            db.close()
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        results = list(executor.map(lambda _index: request_code(), range(2)))
+
+    successes = [result for result in results if isinstance(result, tuple)]
+    failures = [result for result in results if isinstance(result, HTTPException)]
+
+    assert len(successes) == 1
+    assert len(failures) == 1
+    assert failures[0].status_code == 429
+    assert len(sent_codes) == 1
+    assert successes[0][0] == phone_number
+    assert successes[0][1] == sent_codes[0]
+
+    verify_db = postgres_session_factory()
+    try:
+        active_codes = (
+            verify_db.query(PhoneOTP)
+            .filter(
+                PhoneOTP.phone_number == phone_number,
+                PhoneOTP.consumed_at.is_(None),
+            )
+            .all()
+        )
+        assert len(active_codes) == 1
+        assert active_codes[0].code_hash == otp_service._code_hash(
+            phone_number,
+            successes[0][1],
+        )
     finally:
         verify_db.close()

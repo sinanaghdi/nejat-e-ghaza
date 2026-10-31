@@ -13,7 +13,7 @@ from app.core.request_context import get_request_id
 from app.models.enums import OfferModerationStatus, UserRole
 from app.schemas.merchant import MerchantAdminResponse, MerchantVerificationUpdate
 from app.schemas.offer import AdminOfferModerationResponse, OfferModerationUpdate
-from app.schemas.order import OrderResponse
+from app.schemas.order import OrderOperationalResponse
 from app.schemas.payment import PaymentResponse, MarkRefundCompletedRequest
 from app.schemas.settlement import MarkSettlementPaidRequest, MerchantSettlementResponse
 from app.schemas.user import RoleUpdate, UserAdminResponse
@@ -33,7 +33,7 @@ def list_users(
     return admin_service.list_users(db)
 
 
-@router.get("/orders", response_model=list[OrderResponse])
+@router.get("/orders", response_model=list[OrderOperationalResponse])
 def list_orders(
     current_user: Annotated[User, Depends(require_role(UserRole.ADMIN))],
     db: Annotated[Session, Depends(get_db)],

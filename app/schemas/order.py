@@ -25,7 +25,8 @@ class OrderItemResponse(BaseModel):
     subtotal: Decimal
 
 
-class OrderResponse(BaseModel):
+class OrderOperationalResponse(BaseModel):
+    """Order view for operators; the customer-only pickup secret is omitted."""
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -33,9 +34,13 @@ class OrderResponse(BaseModel):
     merchant_id: int
     total_amount: Decimal
     status: OrderStatus
-    pickup_code: str
     created_at: datetime
     items: list[OrderItemResponse]
+
+
+class OrderResponse(OrderOperationalResponse):
+    """Customer-owned order view, which includes the pickup secret."""
+    pickup_code: str
 
 
 class PickupVerifyRequest(BaseModel):

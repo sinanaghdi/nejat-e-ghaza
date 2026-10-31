@@ -219,7 +219,7 @@ export function MerchantDashboard({
                             <div>
                               <strong>سفارش #{order.id}</strong>
                               <span>
-                                {formatToman(order.total_amount)} · کد {order.pickup_code}
+                                {formatToman(order.total_amount)}
                               </span>
                             </div>
 

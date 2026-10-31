@@ -64,7 +64,8 @@
 | P2 | X-Request-ID ورودی بدون محدودیت طول/کاراکتر در log و audit context پذیرفته می‌شد | پذیرش فقط حروف/اعداد و . _ : - در محدودهٔ ۱ تا ۶۴ کاراکتر؛ در غیر این صورت تولید UUID | تست ورودی معتبر و نامعتبر اضافه شده |
 | P2 | ایجاد/ویرایش پروفایل فروشنده Audit Trail نداشت و create race می‌توانست IntegrityError خام بدهد | قفل ویرایش، ثبت رویدادهای ساخت/ویرایش و تبدیل رقابت ساخت پروفایل به 409 | تست ایجاد و ویرایش پروفایل اضافه شده |
 | P1 | Nginx مقدار X-Forwarded-For ورودی را append می‌کرد و Uvicorn همهٔ Forwarded senderها را trusted می‌دانست | بازنویسی X-Forwarded-For با IP اتصال در Nginx edge | تست پیکربندی اضافه شده |
-| P1 | لاگ دسترسی پیش‌فرض می‌توانست URL کامل callback و query string حامل Authority را ثبت کند | access log سفارشی بدون URL/path/query؛ خاموش‌کردن access log خام Uvicorn در Docker/Compose | تست پیکربندی اضافه شده؛ CI نسخهٔ نهایی باید تأیید شود |
+| P1 | لاگ دسترسی پیش‌فرض می‌توانست URL کامل callback و query string حامل Authority را ثبت کند | access log سفارشی بدون URL/path/query؛ خاموش‌کردن access log خام Uvicorn در Docker/Compose | تست پیکربندی اضافه شده؛ CI revision ادغام‌شده موفق |
+| P1 | API فهرست سفارش فروشنده، فهرست مدیر و پاسخ تأیید تحویل کد دریافت مشتری را نیز برمی‌گرداند؛ پنل فروشنده هم کد را نشان می‌داد | تفکیک `OrderResponse` مشتری از `OrderOperationalResponse`؛ حذف pickup_code از endpointهای فروشنده/مدیر/تأیید تحویل و حذف نمایش آن در پنل فروشنده | تست API دسترسی مشتری/فروشنده/مدیر اضافه شده؛ CI revision نهایی باید تأیید شود |
 
 **توضیح:** سطح اولویت، ارزیابی مهندسی بر اساس اثر بالقوه است؛ به معنی اثبات وقوع سوءاستفاده یا رخداد امنیتی در Production نیست.
 
@@ -135,18 +136,20 @@ Main قبل از شروع این شاخه روی commit dc8a2e484e454d80029b619a
 
 ### وضعیت آخرین ادغام‌های ممیزی
 
-PR #31 در commit `c1838ba42e1dbf6b4df1a969c6bf241cfd2eebf5` و PR #32 در commit `42c2eb898765212b06ad67ad4a1fd87e5ab8c103` با موفقیت در main ادغام شدند. شواهد CI برای head PR #32:
+PR #31 (commit `c1838ba42e1dbf6b4df1a969c6bf241cfd2eebf5`)، PR #32 (commit `42c2eb898765212b06ad67ad4a1fd87e5ab8c103`) و PR #33 (commit `9f2b3b9482aeced62a3e5f4f354c1c0c41fb5022`) با موفقیت در main ادغام شدند. Main اکنون روی commit `24e6243648dac2a33f609dbbb8eadff469c54147` است. شواهد CI برای head PR #32:
 
 - Unit/Integration: **136 passed, 1 skipped**؛ شامل Migration PostgreSQL و تست‌های بک‌اند.
 - Frontend E2E: **9 passed**؛ شامل ماتریس واکنش‌گرایی، تست‌های مسیر مشتری، قوانین، پنل‌ها و رقابت پاسخ جست‌وجو.
 - Redis integration: **9 passed**؛ Lua script روی Redis 7 واقعی، TTL و رفتار 429 را آزمایش کرد.
 - TypeScript و production build: موفق.
+- npm audit بعد از ارتقای React Router: **0 vulnerabilities**.
 - Docker imageهای API و Frontend: موفق.
 - Python pytest/Flake8 workflow: موفق.
 - Secret scanning: موفق.
 - Deploy GitHub Pages: موفق.
+- Bundle فرانت‌اند در build: JavaScript برابر 368.93 KB خام / 99.55 KB gzip؛ CSS برابر 140.35 KB خام / 26.25 KB gzip. این فقط اندازهٔ bundle است، نه زمان بارگذاری واقعی.
 
-[Tests workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41250999299) · [Python workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41250999266) · [Secret scan](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41250999321)
+[Tests workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251275198) · [Python workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251275290) · [Secret scan](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251275258) · [Deploy](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251275181)
 
 **تاریخچهٔ شکست و اصلاح:** commit `2cb0419` در تست واحد تنظیمات Nginx یک assertion شکست‌خورده داشت؛ تست، نام متغیرهای ممنوع را در comment توضیحی هم جست‌وجو می‌کرد، نه فقط directiveهای اجرایی را. تست اصلاح شد تا commentها از directiveها جدا شوند. PR #30 و PR #31 در main ادغام شدند؛ PR #32 نیز اصلاح تراکنشی Audit برای Register/Login را با CI موفق به main رساند.
 
@@ -160,6 +163,9 @@ PR #31 در commit `c1838ba42e1dbf6b4df1a969c6bf241cfd2eebf5` و PR #32 در com
 - هم‌خوانی CHECKهای ORM و Migration.
 - رقابت رزرو موجودی و ویرایش پیشنهاد روی PostgreSQL.
 - out-of-order marketplace request response.
+- جلوگیری از افشای pickup_code به فروشنده/مدیر و پاسخ‌های عملیاتی.
+- آزمون ثبت‌نام و Login با Audit اتمیک.
+- ارتقای React Router و npm audit در آستانهٔ Moderate.
 - request ID ورودی و Nginx Forwarded-For sanitization.
 - کنترل access logging برای جلوگیری از ثبت callback query values.
 - اجرای Lua rate limiter با Redis واقعی در job مستقل CI.
@@ -201,8 +207,14 @@ PR #31 در commit `c1838ba42e1dbf6b4df1a969c6bf241cfd2eebf5` و PR #32 در com
 - سیاست revoke/session invalidation و بررسی کامل OTP concurrency.
 - pagination و performance baseline با dataset و بار شبیه Production.
 - قفل‌کردن dependencyها و تکرارپذیری نصب.
-- رفع دو هشدار Moderate در React Router: گزارش `npm audit` روی v6.30.6 دو advisory با نسخهٔ اصلاح‌شدهٔ v7.18.0+ نشان داد؛ این پروژه در شاخهٔ ممیزی به v7.18.5 ارتقا داده شده اما CI این ارتقا باید جداگانه سبز شود.
+- ارتقای React Router از v6.30.6 به v7.18.5 برای رفع دو advisory Moderate (GHSA-wrjc-x8rr-h8h6 و GHSA-337j-9hxr-rhxg)؛ ارتقا در main ادغام شد و npm audit در CI بعدی صفر آسیب‌پذیری گزارش کرد.
+- تفکیک pickup_code از پاسخ‌های عملیاتی فروشنده/مدیر؛ این اصلاح در PR پیگیری بعدی است و تا ادغام و CI موفق هنوز جزو وضعیت main نیست.
 - بازبینی accessibility به‌صورت کامل (keyboard، screen-reader، focus، error announcement)، نه صرفاً تست contrast.
 - بازبینی حقوقی/حریم خصوصی در حوزهٔ پایلوت توسط مسئول واجد صلاحیت.
 
 **معیار توقف:** تا وقتی پرداخت واقعی/بازپرداخت/تسویه قابل تطبیق، سیاست ایمنی/تحویل روشن، دسترسی‌ها و secrets امن و Backup قابل بازیابی نیستند، محصول نباید برای دریافت پول و سفارش عمومی Production معرفی شود.
+
+
+### تفکیک کد دریافت (pickup code)
+
+کد دریافت یک راز متعلق به سفارش مشتری است که برای تأیید تحویل باید از خود مشتری گرفته شود. ممیزی نشان داد پاسخ‌های عملیاتی سفارش از Schema مشتری استفاده می‌کردند و در نتیجه `pickup_code` در فهرست فروشنده و مدیر نیز serialize می‌شد؛ پنل فروشنده هم کد را نشان می‌داد. در اصلاح follow-up، Schema عملیاتی جدا شده و این فیلد از endpointهای فروشنده، مدیر، تغییر وضعیت و پاسخ تأیید تحویل حذف شده است. پاسخ ایجاد سفارش و جزئیات/فهرست سفارش مشتری همچنان کد را نگه می‌دارد. تست جدید هر سه مرز نقش را بررسی می‌کند.

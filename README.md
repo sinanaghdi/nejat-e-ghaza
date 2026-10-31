@@ -1,8 +1,10 @@
-# نجات غذا | Nejat-e-Ghaza
+# سهمینو | SAHMINO
 
-**A Persian-first food-surplus marketplace for Iran.**
+**A Persian-first food-rescue marketplace for Iran.**
 
-نجات غذا به کافه‌ها، رستوران‌ها و فست‌فودها کمک می‌کند غذای مازاد قابل‌مصرف را با تخفیف عرضه کنند؛ مشتری پیشنهادهای موجود را می‌بیند، سفارش را رزرو و پرداخت می‌کند و در پنجره زمانی مشخص حضوری تحویل می‌گیرد.
+> سهمینو (SAHMINO) — غذای خوب، سهم تو. The repository name remains `nejat-e-ghaza` for continuity; Sahmino is the product and customer-facing brand.
+
+سهمینو به کافه‌ها، رستوران‌ها و فست‌فودها کمک می‌کند غذای مازاد قابل‌مصرف را با تخفیف عرضه کنند؛ مشتری پیشنهادهای موجود را می‌بیند، سفارش را رزرو و پرداخت می‌کند و در پنجره زمانی مشخص حضوری تحویل می‌گیرد.
 
 > This repository is an MVP/portfolio implementation. Production SMS delivery, live gateway transactions, automatic provider-side split payments, and food-safety/dispute operations must be verified before a public pilot.
 
@@ -13,6 +15,7 @@
 - [معماری و توسعه](DEVELOPMENT.md)
 - [نقشه راه تولید](docs/production-roadmap.fa.md)
 - [چک‌لیست آمادگی پایلوت](docs/pilot-readiness.md)
+- [راهنمای هویت برند سهمینو](docs/brand-guidelines.fa.md)
 - [شرح وظایف و انتظارات همکاری مارکتینگ و برندینگ](docs/marketing-branding-brief.fa.md)
 - [Runbook تأیید انتشار](docs/release-verification-runbook.md)
 

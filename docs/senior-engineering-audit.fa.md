@@ -119,6 +119,11 @@
 - جست‌وجوی ILIKE %term% و مرتب‌سازی بر expression تخفیف/فاصله بدون Query Plan واقعی نباید بهینه‌سازی حدسی شود.
 - وابستگی‌های Python عمدتاً version range یا بدون pin هستند و Frontend workflow از npm install استفاده می‌کند؛ lockfile/constraints و نصب reproducible باید در یک PR مستقل تکمیل شود.
 
+
+### ریسک چرخهٔ آغاز پرداخت
+
+در مسیر ایجاد درخواست پرداخت، Order در تراکنش قفل می‌شود و درخواست شبکه‌ای به Provider قبل از پایان تراکنش/آزادشدن lock اجرا می‌شود. Timeout فعلی درخواست خارجی را محدود می‌کند، اما latency یا اختلال Provider می‌تواند قفل ردیف و connection دیتابیس را در مدت تماس خارجی نگه دارد. تبدیل این مسیر به state machine دو مرحله‌ای به idempotency key، وضعیت PaymentIntent، رفتار retry و reconcile authorityهای ساخته‌شده پیش از commit نیاز دارد؛ بدون طراحی lifecycle و قرارداد Provider، این بخش عمداً بازنویسی نشده و به‌عنوان ریسک P1/P2 باقی می‌ماند.
+
 ## ۶. DevOps، Logging و Release
 
 - Compose فقط Nginx را host-publish می‌کند؛ API با expose در شبکهٔ Compose در دسترس است و PostgreSQL/Redis host port ندارند.
@@ -132,11 +137,11 @@
 
 ### Baseline قبل از ممیزی
 
-Main قبل از شروع این شاخه روی commit dc8a2e484e454d80029b619acad1c83303c6da1a قرار داشت. Workflowهای Build، Tests، Python، Secret scanning و Deploy آن revision در بررسی قبلی موفق بودند. این نتیجه تنها baseline همان commit است.
+Main در آغاز ممیزی روی commit dc8a2e484e454d80029b619acad1c83303c6da1a قرار داشت و در وضعیت فعلی این گزارش روی commit `09b3886443bda495cd120c37c589a16ef3e59ea1` است. Workflowهای Build، Tests، Python، Secret scanning و Deploy آن revision در بررسی قبلی موفق بودند. این نتیجه تنها baseline همان commit است.
 
 ### وضعیت آخرین ادغام‌های ممیزی
 
-PR #31 (commit `c1838ba42e1dbf6b4df1a969c6bf241cfd2eebf5`)، PR #32 (commit `42c2eb898765212b06ad67ad4a1fd87e5ab8c103`)، PR #33 (commit `9f2b3b9482aeced62a3e5f4f354c1c0c41fb5022`)، PR #34 (commit `0d8e3f0f603870833f3be8c68351e389d02eaab7`) و PR #35 (commit `491a57a590e7a2e31ffa138dac1d28b015efeee6`) با موفقیت در main ادغام شدند. Main اکنون روی commit `d91c09361ab1c3326fb97a3559caa5f55c4385a2` است. شواهد CI برای head PR #32:
+PR #31 (commit `c1838ba42e1dbf6b4df1a969c6bf241cfd2eebf5`)، PR #32 (commit `42c2eb898765212b06ad67ad4a1fd87e5ab8c103`)، PR #33 (commit `9f2b3b9482aeced62a3e5f4f354c1c0c41fb5022`)، PR #34 (commit `0d8e3f0f603870833f3be8c68351e389d02eaab7`)، PR #35 (commit `491a57a590e7a2e31ffa138dac1d28b015efeee6`) و PR #36 (commit `f84cfda51548dc1702d764e1cb8348388813766d`) با موفقیت در main ادغام شدند. Main اکنون روی commit `09b3886443bda495cd120c37c589a16ef3e59ea1` است. PR #37 و PR #38 هر دو باز و Draft هستند؛ CI هر دو سبز است اما تا زمان ادغام، بخشی از main محسوب نمی‌شوند. شواهد CI برای head PR #32:
 
 - Unit/Integration: **142 passed, 1 skipped**؛ شامل Migration PostgreSQL، تست‌های بک‌اند، مرزبندی pickup_code، ۶۴ بیت entropy و rate limit هر فروشنده.
 - Frontend E2E: **9 passed**؛ شامل ماتریس واکنش‌گرایی، تست‌های مسیر مشتری، قوانین، پنل‌ها و رقابت پاسخ جست‌وجو.
@@ -152,6 +157,22 @@ PR #31 (commit `c1838ba42e1dbf6b4df1a969c6bf241cfd2eebf5`)، PR #32 (commit `42c
 [Tests workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251745276) · [Python workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251745250) · [Secret scan](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251745209) · [Deploy](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251745194)
 
 **تاریخچهٔ شکست و اصلاح:** commit `2cb0419` در تست واحد تنظیمات Nginx یک assertion شکست‌خورده داشت؛ تست، نام متغیرهای ممنوع را در comment توضیحی هم جست‌وجو می‌کرد، نه فقط directiveهای اجرایی را. تست اصلاح شد تا commentها از directiveها جدا شوند. PR #30 و PR #31 در main ادغام شدند؛ PR #32 نیز اصلاح تراکنشی Audit برای Register/Login را با CI موفق به main رساند.
+
+### آخرین شواهد CI برای اصلاحات بعد از main
+
+**PR #37 — قفل‌گذاری تعلیق فروشنده و ثبت سفارش** (باز، Draft، head `506b134b9b6a248691f1cd4c6b326f084c60f74a`):
+- Unit/Integration روی PostgreSQL: 143 passed, 1 skipped.
+- 9 Playwright E2E، 11 Redis integration.
+- TypeScript/build، npm audit (0 vulnerabilities)، Docker، Python workflow و secret scan: موفق.
+- [Tests run 41252254246](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41252254246)
+
+**PR #38 — یک OTP فعال برای هر شماره** (باز، Draft، head `2adc0967646e37470139bdd0c93fa5acfd2fa03b`):
+- Unit/Integration روی PostgreSQL: 145 passed, 1 skipped؛ شامل تست دو session هم‌زمان OTP.
+- 9 Playwright E2E، 11 Redis integration.
+- TypeScript/build، npm audit (0 vulnerabilities)، Docker، Python workflow و secret scan: موفق.
+- [Tests run 41252704787](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41252704787)
+
+این دو PR هنوز ادغام نشده‌اند؛ بنابراین شواهدشان وضعیت main را تغییر نمی‌دهد.
 
 ### آزمون‌هایی که در این شاخه اضافه شدند
 
@@ -205,7 +226,7 @@ PR #31 (commit `c1838ba42e1dbf6b4df1a969c6bf241cfd2eebf5`)، PR #32 (commit `42c
 - تصمیم و قرارداد رسمی دربارهٔ غذا، آلرژن، نگهداری، pickup، لغو، no-show، refund و پشتیبانی.
 - میزبانی واقعی HTTPS، secret manager، backup و restore drill، rollback و هشدارهای عملیاتی.
 - بازبینی provider rotation و مدیریت authorityهای معلق.
-- سیاست revoke/session invalidation و بررسی کامل OTP concurrency.
+- سیاست revoke/session invalidation. هم‌زمانی صدور OTP در PR #38 اصلاح و CI آن سبز شده، اما تا ادغام PR همچنان در main حل‌نشده محسوب می‌شود.
 - pagination و performance baseline با dataset و بار شبیه Production.
 - قفل‌کردن dependencyها و تکرارپذیری نصب.
 - ارتقای React Router از v6.30.6 به v7.18.5 برای رفع دو advisory Moderate (GHSA-wrjc-x8rr-h8h6 و GHSA-337j-9hxr-rhxg)؛ ارتقا در main ادغام شد و npm audit در CI بعدی صفر آسیب‌پذیری گزارش کرد.
@@ -235,3 +256,9 @@ Rate Limit در API برای IP و شمارهٔ موبایل وجود دارد،
 
 **وضعیت:** این اصلاح در شاخهٔ `audit/otp-single-active` است و تا ادغام و CI موفق، جزو وضعیت main نیست.
 
+
+### وضعیت PRهای باز در پایان این گزارش
+
+- **PR #37**: سریال‌سازی تعلیق فروشنده با ثبت سفارش؛ 143 passed / 1 skipped، 9 E2E و 11 Redis tests؛ باز و Draft.
+- **PR #38**: تضمین یک OTP فعال برای هر شماره؛ 145 passed / 1 skipped، 9 E2E و 11 Redis tests؛ باز و Draft.
+- **Main**: `09b3886443bda495cd120c37c589a16ef3e59ea1`. هیچ‌یک از دو تغییر بالا هنوز در main نیستند.

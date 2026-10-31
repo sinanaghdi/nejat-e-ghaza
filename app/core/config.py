@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    app_name: str = "Nejat-e-Ghaza"
+    app_name: str = "Sahmino | سهمینو"
     environment: str = "development"
     database_url: str
     jwt_secret_key: str

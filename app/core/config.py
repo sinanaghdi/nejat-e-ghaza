@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     order_payment_timeout_minutes: int = 15
     rate_limit_requests: int = 120
     rate_limit_window_seconds: int = 60
+    pickup_verification_rate_limit: int = 30
+    pickup_verification_rate_window_seconds: int = 60
     otp_ttl_seconds: int = 300
     otp_rate_limit_per_phone: int = 3
     otp_rate_limit_window_seconds: int = 3600
@@ -60,6 +62,8 @@ class Settings(BaseSettings):
             raise RuntimeError("ORDER_PAYMENT_TIMEOUT_MINUTES must be at least 1.")
         if self.rate_limit_requests < 1 or self.rate_limit_window_seconds < 1:
             raise RuntimeError("RATE_LIMIT_REQUESTS and RATE_LIMIT_WINDOW_SECONDS must be positive.")
+        if self.pickup_verification_rate_limit < 1 or self.pickup_verification_rate_window_seconds < 1:
+            raise RuntimeError("PICKUP_VERIFICATION_RATE_LIMIT and PICKUP_VERIFICATION_RATE_WINDOW_SECONDS must be positive.")
         if self.otp_ttl_seconds < 1:
             raise RuntimeError("OTP_TTL_SECONDS must be at least 1.")
         if self.otp_rate_limit_per_phone < 1 or self.otp_rate_limit_window_seconds < 1:

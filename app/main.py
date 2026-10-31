@@ -17,10 +17,10 @@ from app.middleware.request_context import RequestContextMiddleware
 from app.middleware.csrf import CSRFMiddleware
 
 configure_logging()
-logger = logging.getLogger("nejat_e_ghaza")
+logger = logging.getLogger("sahmino")
 settings.validate_production()
 
-app = FastAPI(title="Nejat-e-Ghaza")
+app = FastAPI(title="Sahmino | سهمینو")
 
 app.add_middleware(RequestContextMiddleware)
 app.add_middleware(CSRFMiddleware)

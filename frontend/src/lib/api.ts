@@ -1225,7 +1225,7 @@ function normalizeOrder(value: unknown): Order {
     merchant_id: Number(order.merchant_id),
     total_amount: Number(order.total_amount),
     status: String(order.status) as Order["status"],
-    pickup_code: String(order.pickup_code),
+    pickup_code: order.pickup_code == null ? "" : String(order.pickup_code),
     created_at: String(order.created_at),
     items: rawItems.map((value) => {
       const item = value as Record<string, unknown>;

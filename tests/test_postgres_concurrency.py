@@ -1,5 +1,6 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier, Lock
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
@@ -217,6 +218,7 @@ def test_concurrent_offer_edit_and_order_reservation_preserve_inventory(postgres
         final_offer = verify_db.get(FoodOffer, offer_id)
         from app.db.models.order import Order
         from app.db.models.order_item import OrderItem
+from app.db.models.phone_otp import PhoneOTP
 
         order = verify_db.get(Order, order_id)
         item = verify_db.query(OrderItem).filter(OrderItem.order_id == order_id).one()

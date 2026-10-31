@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.request_context import get_request_id
@@ -14,18 +15,32 @@ def register_user(db: Session, name: str, email: str, password: str, role: UserR
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email is already registered")
 
     user = User(name=name, email=email, password_hash=hash_password(password), role=role)
-    created = user_repository.create(db, user)
-    record_event(
-        db,
-        action="auth.registered",
-        entity_type="user",
-        entity_id=created.id,
-        actor=created,
-        request_id=get_request_id(),
-    )
-    db.commit()
-    db.refresh(created)
-    return created
+    try:
+        db.add(user)
+        db.flush()
+        record_event(
+            db,
+            action="auth.registered",
+            entity_type="user",
+            entity_id=user.id,
+            actor=user,
+            request_id=get_request_id(),
+        )
+        db.commit()
+        db.refresh(user)
+        return user
+    except IntegrityError as exc:
+        db.rollback()
+        # The unique index is the source of truth under concurrent registration.
+        if user_repository.get_by_email(db, email):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Email is already registered",
+            ) from exc
+        raise
+    except Exception:
+        db.rollback()
+        raise
 
 
 def authenticate_user(db: Session, email: str, password: str) -> User:

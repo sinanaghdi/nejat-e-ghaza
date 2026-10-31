@@ -24,7 +24,7 @@ export function AuthModal({ open, mode, loading, error, success, name, email, pa
       <section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title" onMouseDown={(event) => event.stopPropagation()}>
         <button className="modal-close" type="button" onClick={onClose} aria-label="بستن">×</button>
         <div className="auth-header">
-          <span className="eyebrow">نجات غذا</span>
+          <span className="eyebrow">سهمینو</span>
           <h2 id="auth-title">{mode === "login" ? "خوش آمدی" : "ساخت حساب کاربری"}</h2>
           <p>{mode === "login" ? "برای ادامه وارد حساب خودت شو." : "چند ثانیه بیشتر طول نمی‌کشد."}</p>
         </div>

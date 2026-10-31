@@ -43,6 +43,13 @@ class OfferUpdate(BaseModel):
 
     @model_validator(mode="after")
     def validate_offer(self):
+        # PATCH fields are optional because omitted values mean "leave unchanged",
+        # but non-nullable database columns must not accept an explicit JSON null.
+        nullable_fields = {"description", "image_url"}
+        for field_name in self.model_fields_set - nullable_fields:
+            if getattr(self, field_name) is None:
+                raise ValueError(f"{field_name} cannot be null")
+
         for field_name in ("pickup_start", "pickup_end"):
             value = getattr(self, field_name)
             if value is not None and (value.tzinfo is None or value.utcoffset() is None):

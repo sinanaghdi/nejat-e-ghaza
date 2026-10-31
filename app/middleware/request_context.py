@@ -1,4 +1,5 @@
 import logging
+import re
 import time
 import uuid
 
@@ -12,7 +13,12 @@ logger = logging.getLogger("nejat_e_ghaza.http")
 
 class RequestContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        request_id = request.headers.get("X-Request-ID") or uuid.uuid4().hex
+        supplied_request_id = request.headers.get("X-Request-ID", "")
+        request_id = (
+            supplied_request_id
+            if re.fullmatch(r"[A-Za-z0-9._:-]{1,64}", supplied_request_id)
+            else uuid.uuid4().hex
+        )
         client_ip = request.client.host if request.client else None
 
         request_token = request_id_context.set(request_id)

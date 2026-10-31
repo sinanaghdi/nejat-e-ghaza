@@ -9,6 +9,8 @@ from app.core.csrf import generate_csrf_token, set_csrf_cookie
 from app.core.dependencies import get_current_user
 from app.core.rate_limit import check_rate_limit
 from app.core.security import create_access_token
+from app.core.request_context import get_request_id
+from app.services.audit import record_event
 from app.services.otp import normalize_iran_mobile, request_phone_otp, verify_phone_otp
 from app.db.database import get_db
 from app.db.models.user import User
@@ -69,6 +71,15 @@ def login(
         scope="global",
     )
     user = authenticate_user(db, payload.email, payload.password)
+    record_event(
+        db,
+        action="auth.login",
+        entity_type="user",
+        entity_id=user.id,
+        actor=user,
+        request_id=get_request_id(),
+    )
+    db.commit()
 
     access_token = create_access_token(str(user.id))
     csrf_token = generate_csrf_token()

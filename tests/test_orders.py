@@ -517,6 +517,57 @@ def test_merchant_can_complete_ready_order_with_pickup_code(client, db):
     )
     assert response.status_code == 200
     assert response.json()["status"] == "COMPLETED"
+    assert "pickup_code" not in response.json()
+
+
+def test_pickup_code_is_returned_only_to_customer_order_views(client, db):
+    customer, merchant_user, _, offer = _setup_order(db)
+    customer_token = _login(client, customer.email)
+    merchant_token = _login(client, merchant_user.email)
+
+    created = client.post(
+        "/api/orders",
+        json={"items": [{"food_offer_id": offer.id, "quantity": 1}]},
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    assert created.status_code == 201
+    order_id = created.json()["id"]
+    pickup_code = created.json()["pickup_code"]
+    assert pickup_code
+
+    customer_orders = client.get(
+        "/api/orders",
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    assert customer_orders.status_code == 200
+    customer_order = next(item for item in customer_orders.json() if item["id"] == order_id)
+    assert customer_order["pickup_code"] == pickup_code
+
+    merchant_orders = client.get(
+        "/api/orders/merchant",
+        headers={"Authorization": f"Bearer {merchant_token}"},
+    )
+    assert merchant_orders.status_code == 200
+    merchant_order = next(item for item in merchant_orders.json() if item["id"] == order_id)
+    assert "pickup_code" not in merchant_order
+
+    admin = User(
+        name="Pickup Admin",
+        email="pickup-admin@example.com",
+        password_hash=hash_password("password123"),
+        role=UserRole.ADMIN,
+    )
+    db.add(admin)
+    db.commit()
+    admin_token = _login(client, admin.email)
+
+    admin_orders = client.get(
+        "/api/admin/orders",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert admin_orders.status_code == 200
+    admin_order = next(item for item in admin_orders.json() if item["id"] == order_id)
+    assert "pickup_code" not in admin_order
 
 
 def test_merchant_rejects_wrong_pickup_code(client, db):

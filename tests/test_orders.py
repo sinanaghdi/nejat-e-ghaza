@@ -533,7 +533,7 @@ def test_pickup_code_is_returned_only_to_customer_order_views(client, db):
     assert created.status_code == 201
     order_id = created.json()["id"]
     pickup_code = created.json()["pickup_code"]
-    assert pickup_code
+    assert len(pickup_code) == 16
 
     customer_orders = client.get(
         "/api/orders",
@@ -658,3 +658,45 @@ def test_payment_webhook_rejects_invalid_secret(client, db):
         headers={"X-Webhook-Secret": "wrong-secret-value"},
     )
     assert response.status_code == 401
+
+
+def test_pickup_verification_is_rate_limited_per_merchant(client, db, monkeypatch):
+    from app.core import rate_limit
+
+    customer, merchant_user, _, offer = _setup_order(db)
+    customer_token = _login(client, customer.email)
+    merchant_token = _login(client, merchant_user.email)
+
+    created = client.post(
+        "/api/orders",
+        json={"items": [{"food_offer_id": offer.id, "quantity": 1}]},
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    assert created.status_code == 201
+    order_id = created.json()["id"]
+
+    from app.db.models.order import Order
+    from app.models.enums import OrderStatus
+
+    order = db.get(Order, order_id)
+    order.status = OrderStatus.READY_FOR_PICKUP
+    db.commit()
+
+    class FakeRedis:
+        def __init__(self):
+            self.key = None
+
+        def eval(self, script, key_count, key, window):
+            self.key = key
+            return 31
+
+    fake = FakeRedis()
+    monkeypatch.setattr(rate_limit, "redis_client", fake)
+
+    response = client.post(
+        f"/api/orders/{order_id}/pickup/verify",
+        json={"pickup_code": created.json()["pickup_code"]},
+        headers={"Authorization": f"Bearer {merchant_token}"},
+    )
+    assert response.status_code == 429
+    assert fake.key == f"rl:pickup-verify:subject:{merchant_user.id}"

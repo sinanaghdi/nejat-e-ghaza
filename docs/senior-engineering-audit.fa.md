@@ -136,18 +136,20 @@ Main قبل از شروع این شاخه روی commit dc8a2e484e454d80029b619a
 
 ### وضعیت آخرین ادغام‌های ممیزی
 
-PR #31 در commit `c1838ba42e1dbf6b4df1a969c6bf241cfd2eebf5` و PR #32 در commit `42c2eb898765212b06ad67ad4a1fd87e5ab8c103` با موفقیت در main ادغام شدند. main در شروع چرخهٔ بعدی روی commit `c80142cf641cd6e83f54bf838970da9afbb2234d` بود. شواهد CI برای head PR #32:
+PR #31 (commit `c1838ba42e1dbf6b4df1a969c6bf241cfd2eebf5`)، PR #32 (commit `42c2eb898765212b06ad67ad4a1fd87e5ab8c103`) و PR #33 (commit `9f2b3b9482aeced62a3e5f4f354c1c0c41fb5022`) با موفقیت در main ادغام شدند. Main اکنون روی commit `24e6243648dac2a33f609dbbb8eadff469c54147` است. شواهد CI برای head PR #32:
 
 - Unit/Integration: **136 passed, 1 skipped**؛ شامل Migration PostgreSQL و تست‌های بک‌اند.
 - Frontend E2E: **9 passed**؛ شامل ماتریس واکنش‌گرایی، تست‌های مسیر مشتری، قوانین، پنل‌ها و رقابت پاسخ جست‌وجو.
 - Redis integration: **9 passed**؛ Lua script روی Redis 7 واقعی، TTL و رفتار 429 را آزمایش کرد.
 - TypeScript و production build: موفق.
+- npm audit بعد از ارتقای React Router: **0 vulnerabilities**.
 - Docker imageهای API و Frontend: موفق.
 - Python pytest/Flake8 workflow: موفق.
 - Secret scanning: موفق.
 - Deploy GitHub Pages: موفق.
+- Bundle فرانت‌اند در build: JavaScript برابر 368.93 KB خام / 99.55 KB gzip؛ CSS برابر 140.35 KB خام / 26.25 KB gzip. این فقط اندازهٔ bundle است، نه زمان بارگذاری واقعی.
 
-[Tests workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41250999299) · [Python workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41250999266) · [Secret scan](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41250999321)
+[Tests workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251275198) · [Python workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251275290) · [Secret scan](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251275258) · [Deploy](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251275181)
 
 **تاریخچهٔ شکست و اصلاح:** commit `2cb0419` در تست واحد تنظیمات Nginx یک assertion شکست‌خورده داشت؛ تست، نام متغیرهای ممنوع را در comment توضیحی هم جست‌وجو می‌کرد، نه فقط directiveهای اجرایی را. تست اصلاح شد تا commentها از directiveها جدا شوند. PR #30 و PR #31 در main ادغام شدند؛ PR #32 نیز اصلاح تراکنشی Audit برای Register/Login را با CI موفق به main رساند.
 
@@ -205,7 +207,8 @@ PR #31 در commit `c1838ba42e1dbf6b4df1a969c6bf241cfd2eebf5` و PR #32 در com
 - سیاست revoke/session invalidation و بررسی کامل OTP concurrency.
 - pagination و performance baseline با dataset و بار شبیه Production.
 - قفل‌کردن dependencyها و تکرارپذیری نصب.
-- ارتقای React Router از v6.30.6 به v7.18.5 برای رفع دو advisory Moderate (GHSA-wrjc-x8rr-h8h6 و GHSA-337j-9hxr-rhxg)؛ CI آستانهٔ npm audit نیز از High به Moderate سخت‌تر شده است. این commit/route hardening هنوز باید در CI جدید همین شاخه پاس شود.
+- ارتقای React Router از v6.30.6 به v7.18.5 برای رفع دو advisory Moderate (GHSA-wrjc-x8rr-h8h6 و GHSA-337j-9hxr-rhxg)؛ ارتقا در main ادغام شد و npm audit در CI بعدی صفر آسیب‌پذیری گزارش کرد.
+- تفکیک pickup_code از پاسخ‌های عملیاتی فروشنده/مدیر؛ این اصلاح در PR پیگیری بعدی است و تا ادغام و CI موفق هنوز جزو وضعیت main نیست.
 - بازبینی accessibility به‌صورت کامل (keyboard، screen-reader، focus، error announcement)، نه صرفاً تست contrast.
 - بازبینی حقوقی/حریم خصوصی در حوزهٔ پایلوت توسط مسئول واجد صلاحیت.
 

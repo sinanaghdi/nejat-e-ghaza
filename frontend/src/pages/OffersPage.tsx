@@ -36,7 +36,7 @@ const quickCategories = [
   { label: "نان و شیرینی", query: "نان شیرینی", icon: "🥐" },
   { label: "فست‌فود", query: "برگر پیتزا", icon: "🍔" },
   { label: "کافه و دسر", query: "کافه دسر", icon: "☕" },
-  { label: "بسته سورپرایز", query: "بسته سهمینو", icon: "🎁" },
+  { label: "بسته سورپرایز", query: "بسته غذایی", icon: "🎁" },
 ];
 
 export function OffersPage({
@@ -78,7 +78,7 @@ export function OffersPage({
             <p>قیمت، موجودی و زمان دریافت را قبل از رزرو بررسی کن. سفارش‌ها برای تحویل حضوری از فروشنده محلی هستند.</p>
           </div>
           <div className="marketplace-summary-pills">
-            <span><b aria-hidden="true">✓</b> قیمت اصلی و قیمت سهمینو</span>
+            <span><b aria-hidden="true">✓</b> قیمت اصلی و قیمت با تخفیف</span>
             <span><b aria-hidden="true">◷</b> زمان تحویل مشخص</span>
             <span><b aria-hidden="true">⌖</b> محدودهٔ محلی</span>
           </div>

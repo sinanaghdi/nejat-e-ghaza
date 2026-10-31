@@ -1,9 +1,11 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
 from app.core.dependencies import get_current_user, require_role
+from app.core.config import settings
+from app.core.rate_limit import check_rate_limit
 from app.db.database import get_db
 from app.db.models.user import User
 from app.models.enums import UserRole, OrderStatus
@@ -36,9 +38,18 @@ def get_order(order_id: int, current_user: Annotated[User, Depends(require_role(
 def verify_pickup(
     order_id: int,
     payload: PickupVerifyRequest,
+    request: Request,
     current_user: Annotated[User, Depends(require_role(UserRole.MERCHANT))],
     db: Annotated[Session, Depends(get_db)],
 ):
+    check_rate_limit(
+        request,
+        "pickup-verify",
+        limit=settings.pickup_verification_rate_limit,
+        window_seconds=settings.pickup_verification_rate_window_seconds,
+        scope="subject",
+        subject_id=current_user.id,
+    )
     return order_service.verify_pickup_code(db, current_user, order_id, payload.pickup_code)
 
 

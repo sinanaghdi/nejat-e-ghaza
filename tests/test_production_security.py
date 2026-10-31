@@ -107,6 +107,8 @@ def test_cors_allows_csrf_header(client):
         ("otp_rate_limit_per_phone", 0),
         ("otp_rate_limit_window_seconds", 0),
         ("payment_http_timeout_seconds", 0),
+        ("pickup_verification_rate_limit", 0),
+        ("pickup_verification_rate_window_seconds", 0),
     ],
 )
 def test_security_and_timeout_configuration_rejects_invalid_values(field, value):

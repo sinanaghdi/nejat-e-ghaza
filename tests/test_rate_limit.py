@@ -151,3 +151,28 @@ def test_rate_limit_lua_executes_against_real_redis(monkeypatch):
         if key:
             client.delete(key)
         client.close()
+
+
+def test_subject_rate_limit_uses_authenticated_subject_key(monkeypatch):
+    fake = FakeRedis(result=1)
+    monkeypatch.setattr(rate_limit, "redis_client", fake)
+
+    rate_limit.check_rate_limit(
+        make_request("198.51.100.9"),
+        "pickup-verify",
+        limit=30,
+        window_seconds=60,
+        scope="subject",
+        subject_id=42,
+    )
+
+    assert fake.calls[0][2] == "rl:pickup-verify:subject:42"
+
+
+def test_subject_rate_limit_requires_subject_id():
+    with pytest.raises(ValueError):
+        rate_limit.check_rate_limit(
+            make_request(),
+            "pickup-verify",
+            scope="subject",
+        )

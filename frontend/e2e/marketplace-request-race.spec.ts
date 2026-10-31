@@ -67,7 +67,7 @@ test("older marketplace search response cannot overwrite a newer result", async 
   });
 
   await page.goto("/#/offers");
-  await expect(page.getByRole("heading", { name: "همه پیشنهادهای فعال" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "غذاهای خوب را، هوشمندانه‌تر پیدا کن." })).toBeVisible();
 
   const search = page.getByLabel("جست‌وجوی غذا یا فروشگاه");
   const searchButton = page.getByRole("button", { name: "جست‌وجو" });
@@ -79,8 +79,8 @@ test("older marketplace search response cannot overwrite a newer result", async 
   await search.fill("سریع");
   await searchButton.click();
 
-  await expect(page.getByRole("heading", { name: "پیشنهاد جدید و سریع" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "پیشنهاد قدیمی و کند" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { level: 3, name: "پیشنهاد جدید و سریع" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 3, name: "پیشنهاد قدیمی و کند" })).toHaveCount(0);
 
   await page.waitForTimeout(450);
   await expect(page.getByRole("heading", { name: "پیشنهاد جدید و سریع" })).toBeVisible();

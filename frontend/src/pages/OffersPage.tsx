@@ -36,7 +36,7 @@ const quickCategories = [
   { label: "نان و شیرینی", query: "نان شیرینی", icon: "🥐" },
   { label: "فست‌فود", query: "برگر پیتزا", icon: "🍔" },
   { label: "کافه و دسر", query: "کافه دسر", icon: "☕" },
-  { label: "بسته سورپرایز", query: "بسته نجات", icon: "🎁" },
+  { label: "بسته سورپرایز", query: "بسته سهمینو", icon: "🎁" },
 ];
 
 export function OffersPage({
@@ -71,14 +71,14 @@ export function OffersPage({
 
       <section className="page-shell marketplace-page">
         <div className="marketplace-intro">
-          <div className="marketplace-breadcrumb"><span>نجات غذا</span><span aria-hidden="true">‹</span><strong>کاوش پیشنهادها</strong></div>
+          <div className="marketplace-breadcrumb"><span>سهمینو</span><span aria-hidden="true">‹</span><strong>کاوش پیشنهادها</strong></div>
           <div className="page-header marketplace-header">
-            <p className="eyebrow">بازار نجات غذا · بابلسر و آمل</p>
+            <p className="eyebrow">بازار سهمینو · بابلسر و آمل</p>
             <h1>غذاهای خوب را، هوشمندانه‌تر پیدا کن.</h1>
             <p>قیمت، موجودی و زمان دریافت را قبل از رزرو بررسی کن. سفارش‌ها برای تحویل حضوری از فروشنده محلی هستند.</p>
           </div>
           <div className="marketplace-summary-pills">
-            <span><b aria-hidden="true">✓</b> قیمت اصلی و قیمت نجات</span>
+            <span><b aria-hidden="true">✓</b> قیمت اصلی و قیمت سهمینو</span>
             <span><b aria-hidden="true">◷</b> زمان تحویل مشخص</span>
             <span><b aria-hidden="true">⌖</b> محدودهٔ محلی</span>
           </div>

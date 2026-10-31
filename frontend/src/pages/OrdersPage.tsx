@@ -18,7 +18,7 @@ export function OrdersPage({ orders, loading, error, onRetry }: Props) {
       </header>
       {loading && <div className="state-card"><div className="spinner" />در حال دریافت سفارش‌ها...</div>}
       {!loading && error && <div className="state-card error-state"><div className="state-icon">!</div><h3>دریافت سفارش‌ها ناموفق بود</h3><p>{error}</p><button className="secondary-button compact" type="button" onClick={onRetry}>تلاش دوباره</button></div>}
-      {!loading && !error && orders.length === 0 && <div className="state-card"><div className="state-icon">📦</div><h3>هنوز سفارشی نداری</h3><p>از بین پیشنهادهای موجود، اولین غذایت را نجات بده.</p></div>}
+      {!loading && !error && orders.length === 0 && <div className="state-card"><div className="state-icon">📦</div><h3>هنوز سفارشی نداری</h3><p>از بین پیشنهادهای موجود، اولین خریدت را از سهمینو انجام بده.</p></div>}
       {!loading && !error && orders.length > 0 && (
         <div className="page-orders-list">
           {orders.map(order => (

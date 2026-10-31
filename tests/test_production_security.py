@@ -113,3 +113,27 @@ def test_security_and_timeout_configuration_rejects_invalid_values(field, value)
     settings = make_settings(**{field: value})
     with pytest.raises(RuntimeError):
         settings.validate_production()
+
+
+def test_request_id_accepts_valid_bounded_identifier(client):
+    request_id = "pilot-req_2026.10:abc123"
+    response = client.get("/health", headers={"X-Request-ID": request_id})
+    assert response.status_code == 200
+    assert response.headers["x-request-id"] == request_id
+
+
+@pytest.mark.parametrize(
+    "request_id",
+    [
+        "x" * 100,
+        "bad request id",
+        "invalid/with/slashes",
+        "newline\\nforged",
+    ],
+)
+def test_request_id_replaces_invalid_untrusted_values(client, request_id):
+    response = client.get("/health", headers={"X-Request-ID": request_id})
+    assert response.status_code == 200
+    generated = response.headers["x-request-id"]
+    assert len(generated) == 32
+    assert all(character in "0123456789abcdef" for character in generated)

@@ -1,3 +1,4 @@
+import pytest
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import update
 from app.db.models.user import User
@@ -266,3 +267,86 @@ def test_merchant_cannot_restore_sold_inventory(client, db):
 
     assert response.status_code == 422
     assert "unsold inventory" in response.json()["detail"]
+
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "title",
+        "original_price",
+        "sale_price",
+        "quantity",
+        "available_quantity",
+        "pickup_start",
+        "pickup_end",
+        "is_active",
+    ],
+)
+def test_offer_patch_rejects_null_for_non_nullable_fields(field):
+    from pydantic import ValidationError
+    from app.schemas.offer import OfferUpdate
+
+    with pytest.raises(ValidationError):
+        OfferUpdate.model_validate({field: None})
+
+
+def test_offer_patch_allows_null_for_nullable_fields():
+    from app.schemas.offer import OfferUpdate
+
+    payload = OfferUpdate.model_validate({"description": None, "image_url": None})
+    assert payload.description is None
+    assert payload.image_url is None
+
+
+def test_offer_update_records_audit_event(client, db):
+    from app.db.models.audit_log import AuditLog
+    from app.db.models.food_offer import FoodOffer
+    from app.db.models.merchant import Merchant
+    from datetime import datetime, timedelta, timezone
+
+    merchant_user = make_merchant(db, user_id=34)
+    merchant = Merchant(
+        user_id=merchant_user.id,
+        business_name="کافه ثبت رویداد",
+        address="خیابان اصلی",
+        city="بابلسر",
+    )
+    db.add(merchant)
+    db.commit()
+
+    now = datetime.now(timezone.utc)
+    offer = FoodOffer(
+        merchant_id=merchant.id,
+        title="باکس ممیزی",
+        original_price=200000,
+        sale_price=100000,
+        quantity=4,
+        available_quantity=4,
+        pickup_start=now + timedelta(hours=1),
+        pickup_end=now + timedelta(hours=3),
+    )
+    db.add(offer)
+    db.commit()
+
+    token = client.post(
+        "/api/auth/login",
+        json={"email": merchant_user.email, "password": "password123"},
+    ).json()["access_token"]
+
+    response = client.patch(
+        f"/api/offers/{offer.id}",
+        json={"title": "باکس ویرایش‌شده"},
+        headers={"Authorization": f"Bearer {token}", "X-Request-ID": "offer-update-audit"},
+    )
+    assert response.status_code == 200
+
+    event = (
+        db.query(AuditLog)
+        .filter(AuditLog.action == "offer.updated", AuditLog.entity_id == str(offer.id))
+        .one()
+    )
+    assert event.actor_user_id == merchant_user.id
+    assert event.request_id == "offer-update-audit"
+    assert event.details["updated_fields"] == ["title"]
+    assert event.details["moderation_reset"] is True

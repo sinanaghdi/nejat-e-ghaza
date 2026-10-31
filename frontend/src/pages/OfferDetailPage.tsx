@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { SafeImage } from "../components/SafeImage";
 import type { FoodOffer, User } from "../lib/api";
 import { QuantityControl } from "../components/QuantityControl";
 import { MobileBottomNav } from "../components/MobileBottomNav";
@@ -41,7 +42,7 @@ export function OfferDetailPage({ offer, loading, error, user, cartCount, quanti
           <section className="offer-detail-main">
             <div className="detail-gallery-card">
               <div className="detail-image detail-image-page">
-                {offer.image_url ? <img src={offer.image_url} alt={offer.title} /> : <span className="detail-image-fallback" aria-hidden="true">🍱</span>}
+                <SafeImage src={offer.image_url} alt={offer.title} loading="eager" fallback={<span className="detail-image-fallback" aria-hidden="true">🍱</span>} />
                 {discount > 0 && <span className="discount-badge">{discount.toLocaleString("fa-IR")}٪ تخفیف</span>}
                 {lowStock && <span className="stock-badge">فقط {offer.available_quantity.toLocaleString("fa-IR")} عدد باقی مانده</span>}
               </div>

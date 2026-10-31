@@ -153,12 +153,13 @@ def test_production_access_logs_do_not_capture_url_paths_or_query_strings():
 
     root = Path(__file__).resolve().parents[1]
     nginx = (root / "docker" / "nginx" / "nginx.conf").read_text(encoding="utf-8")
+    nginx_directives = "\\n".join(line.split("#", 1)[0] for line in nginx.splitlines())
     dockerfile = (root / "Dockerfile.production").read_text(encoding="utf-8")
     compose = (root / "docker-compose.yml").read_text(encoding="utf-8")
 
     assert "access_log /dev/stdout safe_access;" in nginx
-    assert "$request_uri" not in nginx
-    assert "$args" not in nginx
-    assert '"$request"' not in nginx
+    assert "$request_uri" not in nginx_directives
+    assert "$args" not in nginx_directives
+    assert '"$request"' not in nginx_directives
     assert "--no-access-log" in dockerfile
     assert "--no-access-log" in compose

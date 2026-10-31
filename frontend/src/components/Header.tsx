@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import type { User } from "../lib/api";
 import { UiIcon } from "./UiIcon";
+import { SahminoMark } from "./SahminoMark";
 
 type Props = {
   user: User | null;
@@ -27,17 +28,17 @@ export function Header({ user, cartCount, onOrders, onMerchant, onLogin, onLogou
     <header className="site-header">
       <div className="announcement-bar">
         <span className="announcement-mark" aria-hidden="true">✳</span>
-        <span>نجات غذای باکیفیت؛ انتخابی هوشمندانه برای امروز</span>
+        <span>غذای خوب، سهم تو؛ انتخابی هوشمندانه برای امروز</span>
         <span className="announcement-divider" aria-hidden="true">|</span>
         <span className="announcement-secondary">پایلوت محلی: بابلسر و آمل</span>
       </div>
 
       <nav className="nav" aria-label="ناوبری اصلی">
-        <Link className="brand" to="/" aria-label="صفحه اصلی نجات غذا">
-          <span className="brand-mark" aria-hidden="true">ن</span>
+        <Link className="brand" to="/" aria-label="صفحه اصلی سهمینو">
+          <SahminoMark className="brand-mark" />
           <span className="brand-copy">
-            <strong>نجات غذا</strong>
-            <small>نجات مازاد باکیفیت روزانه</small>
+            <strong>سهمینو</strong>
+            <small>غذای خوب، سهم تو.</small>
           </span>
         </Link>
 

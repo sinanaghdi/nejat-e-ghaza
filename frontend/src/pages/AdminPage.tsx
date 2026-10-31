@@ -27,6 +27,7 @@ import {
 import { getToken } from "../lib/auth";
 import { Header } from "../components/Header";
 import { MobileBottomNav } from "../components/MobileBottomNav";
+import { SahminoMark } from "../components/SahminoMark";
 
 type Props = {
   user: User | null;
@@ -248,7 +249,7 @@ export function AdminPage(props: Props) {
     <main className="app admin-console">
       <aside className="dashboard-sidebar admin-sidebar">
         <Link className="dashboard-brand" to="/">
-          <span className="dashboard-brand-mark" aria-hidden="true">ن</span>
+          <SahminoMark className="dashboard-brand-mark" />
           <span><strong>مرکز مدیریت</strong><small>سهمینو</small></span>
         </Link>
         <div className="sidebar-caption">پایش و عملیات</div>

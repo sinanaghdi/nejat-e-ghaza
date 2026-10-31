@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 const policyPages = [
   { path: "privacy", title: "سیاست حریم خصوصی" },
-  { path: "terms", title: "شرایط استفاده از نجات غذا" },
+  { path: "terms", title: "شرایط استفاده از سهمینو" },
   { path: "safety", title: "ایمنی غذا، لغو و بازپرداخت" },
   { path: "merchant-terms", title: "شرایط همکاری فروشندگان" },
   { path: "cookies", title: "سیاست کوکی‌ها و ذخیره‌سازی" },

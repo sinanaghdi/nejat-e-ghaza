@@ -581,3 +581,29 @@ def test_admin_cannot_mark_order_as_paid_without_payment_verification(client, db
 
     order = db.get(Order, order_id)
     assert order.status == OrderStatus.PENDING
+
+
+def test_payment_webhook_rejects_invalid_secret(client, db):
+    customer, _, _, offer = _setup_order(db)
+    token = _login(client, customer.email)
+    order_response = client.post(
+        "/api/orders",
+        json={"items": [{"food_offer_id": offer.id, "quantity": 1}]},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert order_response.status_code == 201
+    order_id = order_response.json()["id"]
+
+    payment_response = client.post(
+        f"/api/payments/orders/{order_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert payment_response.status_code == 200
+    authority = payment_response.json()["payment"]["authority"]
+
+    response = client.post(
+        "/api/payments/webhook",
+        json={"authority": authority},
+        headers={"X-Webhook-Secret": "wrong-secret-value"},
+    )
+    assert response.status_code == 401

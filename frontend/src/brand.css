@@ -77,10 +77,13 @@ input[type="url"] {
 }
 
 /* Text roles: avoid using the lighter sage or orange as small text on cream. */
-.eyebrow,
+.eyebrow {
+  color: var(--brand-sage-ink);
+}
+
 .hero-kicker,
 .hero-copy-block .hero-kicker {
-  color: var(--brand-sage-ink);
+  color: var(--brand-cream);
 }
 
 .page-header > p:not(.eyebrow),
@@ -333,3 +336,5 @@ img {
     transition-duration: .01ms !important;
   }
 }
+
+.mobile-bottom-nav b { color: var(--brand-charcoal); background: var(--brand-orange); }

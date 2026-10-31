@@ -4,6 +4,7 @@ import { AppRouter } from "./AppRouter";
 import "./typography.css";
 import "./styles.css";
 import "./reference-design.css";
+import "./brand.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

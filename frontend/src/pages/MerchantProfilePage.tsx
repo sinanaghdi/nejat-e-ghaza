@@ -110,7 +110,7 @@ export function MerchantProfilePage({
             <section className="merchant-profile-hero">
               <div className="merchant-profile-avatar" aria-hidden="true">🏪</div>
               <div>
-                <p className="eyebrow">فروشگاه نجات غذا</p>
+                <p className="eyebrow">فروشگاه در سهمینو</p>
                 <h1>{merchant.business_name}</h1>
                 <p>{merchant.city} · {merchant.address}</p>
                 <span className="profile-role">{offers.length} پیشنهاد فعال</span>

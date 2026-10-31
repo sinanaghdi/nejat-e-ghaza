@@ -1,0 +1,57 @@
+/* Sahmino brand system — single source of truth for the customer-facing UI. */
+:root {
+  --brand-forest: #31583B;
+  --brand-forest-hover: #25472F;
+  --brand-cream: #F4EEDC;
+  --brand-orange: #E9A44B;
+  --brand-sage: #647D59;
+  --brand-charcoal: #292F29;
+  --brand-white: #FFFFFF;
+
+  --primary: var(--brand-forest);
+  --primary-hover: var(--brand-forest-hover);
+  --primary-soft: #E8F0E5;
+  --primary-container: var(--brand-forest);
+  --mint: var(--brand-sage);
+  --mint-soft: #EAF0E5;
+  --amber: var(--brand-orange);
+  --amber-soft: #FBF0DF;
+  --canvas: var(--brand-cream);
+  --surface: var(--brand-white);
+  --surface-soft: #FBF9F2;
+  --surface-subtle: #EEE8D8;
+  --text: var(--brand-charcoal);
+  --text-secondary: #596458;
+  --muted: #778174;
+  --border: #E3DDCE;
+  --border-strong: #D1C9B8;
+  --success: #426B47;
+  --warning: #B9782F;
+  --shadow-card: 0 2px 8px rgba(49, 88, 59, .055);
+  --shadow-hover: 0 10px 28px rgba(49, 88, 59, .10);
+}
+
+html, body { background: var(--brand-cream); color: var(--brand-charcoal); }
+.nav-links a:hover, .text-link:hover { color: var(--brand-forest); }
+.brand { display: inline-flex; align-items: center; gap: 10px; color: var(--brand-forest); text-decoration: none; }
+.brand-mark { display: block; width: 42px; height: 42px; flex: 0 0 42px; color: var(--brand-forest); }
+.brand-copy { display: grid; gap: 0; line-height: 1.35; }
+.brand-copy strong { color: var(--brand-forest); font-size: 1.2rem; font-weight: 850; }
+.brand-copy small { color: var(--text-secondary); font-size: .69rem; font-weight: 500; }
+.announcement-bar { background: var(--brand-forest); }
+.announcement-mark { color: var(--brand-orange); }
+.primary-button, .login-button { background: var(--brand-forest); }
+.primary-button:hover, .login-button:hover { background: var(--brand-forest-hover); }
+.discount-badge, .hero-photo-badge { background: var(--brand-forest); }
+.hero-panel { background: var(--brand-cream); }
+.hero-panel-orb { background: rgba(100, 125, 89, .16); }
+.hero-kicker, .eyebrow { color: var(--brand-sage); }
+.hero-copy-block h1 em { color: var(--brand-forest); }
+.category-pill-active { background: var(--brand-forest); border-color: var(--brand-forest); color: white; }
+.category-pill:hover, .secondary-button:hover { border-color: var(--brand-sage); }
+.hero-floating-note .floating-note-icon { color: var(--brand-forest); background: var(--brand-cream); }
+.site-footer { background: var(--brand-forest); }
+.site-footer .brand-mark, .site-footer .brand-copy strong { color: var(--brand-cream); }
+.site-footer .brand-copy small, .site-footer p, .site-footer-note p { color: #E1E8DC; }
+.site-footer-status { color: var(--brand-orange); }
+:focus-visible { outline-color: var(--brand-orange); }

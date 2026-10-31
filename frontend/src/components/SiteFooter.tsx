@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { UiIcon } from "./UiIcon";
+import { SahminoMark } from "./SahminoMark";
 
 const policyLinks = [
   { to: "/privacy", label: "حریم خصوصی" },
@@ -14,9 +15,9 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="site-footer-inner">
         <div className="site-footer-brand">
-          <Link className="brand" to="/" aria-label="بازگشت به صفحهٔ اصلی نجات غذا">
-            <span className="brand-mark" aria-hidden="true">ن</span>
-            <span className="brand-copy"><strong>نجات غذا</strong><small>غذای خوب، کمتر هدر می‌رود</small></span>
+          <Link className="brand" to="/" aria-label="بازگشت به صفحهٔ اصلی سهمینو">
+            <SahminoMark className="brand-mark" />
+            <span className="brand-copy"><strong>سهمینو</strong><small>غذای خوب، سهم تو.</small></span>
           </Link>
           <p>راهی برای عرضهٔ غذای مازادِ قابل‌مصرف با قیمت روشن و تحویل حضوری.</p>
           <span className="site-footer-status"><UiIcon name="leaf" size={14} /> معرفی اولیهٔ پایلوت</span>
@@ -39,7 +40,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="site-footer-bottom">
-        <span>© ۲۰۲۶ نجات غذا</span>
+        <span>© ۲۰۲۶ سهمینو</span>
         <span>شرایط نهایی پایلوت و مسیر پشتیبانی پیش از فعال‌سازی رسمی اعلام می‌شوند.</span>
       </div>
     </footer>

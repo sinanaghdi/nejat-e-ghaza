@@ -75,7 +75,7 @@ export function HomePage({
         <div className="hero-panel">
           <div className="hero-panel-orb" aria-hidden="true" />
           <div className="hero-copy-block">
-            <span className="hero-kicker"><span aria-hidden="true">✳</span> بازار محلی نجات غذا</span>
+            <span className="hero-kicker"><span aria-hidden="true">✳</span> بازار محلی سهمینو</span>
             <h1 id="home-title">غذای درجه‌یک را<br /><em>هوشمندانه‌تر</em> انتخاب کن.</h1>
             <p>بسته‌های مازادِ کافه‌ها، رستوران‌ها و نانوایی‌های اطراف را با قیمت مناسب پیدا کن؛ رزرو کن و در بازهٔ تحویل مشخص، حضوری از فروشنده تحویل بگیر.</p>
             <div className="hero-actions">
@@ -94,7 +94,7 @@ export function HomePage({
               <span className="hero-photo-badge"><span aria-hidden="true">✳</span> انتخاب امروز</span>
               <div className="hero-floating-note">
                 <span className="floating-note-icon" aria-hidden="true">♻</span>
-                <span><strong>نجات غذا، انتخاب به‌صرفه</strong><small>برای تو و کسب‌وکارهای محلی</small></span>
+                <span><strong>سهمینو، انتخاب به‌صرفه</strong><small>برای تو و کسب‌وکارهای محلی</small></span>
               </div>
             </div>
             {spotlight ? (
@@ -138,7 +138,7 @@ export function HomePage({
 
       <section id="offers" className="section featured-section">
         <div className="section-heading">
-          <div><p className="eyebrow">پیشنهادهای موجود در بازار</p><h2>بسته‌های نجات غذا</h2><p className="section-subtitle">قیمت، موجودی و زمان تحویل را در هر کارت بررسی کن.</p></div>
+          <div><p className="eyebrow">پیشنهادهای موجود در بازار</p><h2>بسته‌های سهمینو</h2><p className="section-subtitle">قیمت، موجودی و زمان تحویل را در هر کارت بررسی کن.</p></div>
           <Link className="secondary-button compact" to="/offers">مشاهده همه پیشنهادها <span aria-hidden="true">←</span></Link>
         </div>
 

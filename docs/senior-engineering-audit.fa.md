@@ -65,7 +65,7 @@
 | P2 | ایجاد/ویرایش پروفایل فروشنده Audit Trail نداشت و create race می‌توانست IntegrityError خام بدهد | قفل ویرایش، ثبت رویدادهای ساخت/ویرایش و تبدیل رقابت ساخت پروفایل به 409 | تست ایجاد و ویرایش پروفایل اضافه شده |
 | P1 | Nginx مقدار X-Forwarded-For ورودی را append می‌کرد و Uvicorn همهٔ Forwarded senderها را trusted می‌دانست | بازنویسی X-Forwarded-For با IP اتصال در Nginx edge | تست پیکربندی اضافه شده |
 | P1 | لاگ دسترسی پیش‌فرض می‌توانست URL کامل callback و query string حامل Authority را ثبت کند | access log سفارشی بدون URL/path/query؛ خاموش‌کردن access log خام Uvicorn در Docker/Compose | تست پیکربندی اضافه شده؛ CI revision ادغام‌شده موفق |
-| P1 | API فهرست سفارش فروشنده، فهرست مدیر و پاسخ تأیید تحویل کد دریافت مشتری را نیز برمی‌گرداند؛ پنل فروشنده هم کد را نشان می‌داد | تفکیک `OrderResponse` مشتری از `OrderOperationalResponse`؛ حذف pickup_code از endpointهای فروشنده/مدیر/تأیید تحویل و حذف نمایش آن در پنل فروشنده | تست API دسترسی مشتری/فروشنده/مدیر اضافه شده؛ CI revision نهایی باید تأیید شود |
+| P1 | API فهرست سفارش فروشنده، فهرست مدیر و پاسخ تأیید تحویل کد دریافت مشتری را نیز برمی‌گرداند؛ پنل فروشنده هم کد را نشان می‌داد | تفکیک `OrderResponse` مشتری از `OrderOperationalResponse`؛ حذف pickup_code از endpointهای فروشنده/مدیر/تأیید تحویل و حذف نمایش آن در پنل فروشنده | در PR #34 ادغام شد؛ ۱۳۷ تست بک‌اند موفق |
 
 **توضیح:** سطح اولویت، ارزیابی مهندسی بر اساس اثر بالقوه است؛ به معنی اثبات وقوع سوءاستفاده یا رخداد امنیتی در Production نیست.
 
@@ -136,9 +136,9 @@ Main قبل از شروع این شاخه روی commit dc8a2e484e454d80029b619a
 
 ### وضعیت آخرین ادغام‌های ممیزی
 
-PR #31 (commit `c1838ba42e1dbf6b4df1a969c6bf241cfd2eebf5`)، PR #32 (commit `42c2eb898765212b06ad67ad4a1fd87e5ab8c103`) و PR #33 (commit `9f2b3b9482aeced62a3e5f4f354c1c0c41fb5022`) با موفقیت در main ادغام شدند. Main اکنون روی commit `24e6243648dac2a33f609dbbb8eadff469c54147` است. شواهد CI برای head PR #32:
+PR #31 (commit `c1838ba42e1dbf6b4df1a969c6bf241cfd2eebf5`)، PR #32 (commit `42c2eb898765212b06ad67ad4a1fd87e5ab8c103`)، PR #33 (commit `9f2b3b9482aeced62a3e5f4f354c1c0c41fb5022`) و PR #34 (commit `0d8e3f0f603870833f3be8c68351e389d02eaab7`) با موفقیت در main ادغام شدند. Main اکنون روی commit `d801a6a9a2b4cde5602223c2b40798d734fa7839` است. شواهد CI برای head PR #32:
 
-- Unit/Integration: **136 passed, 1 skipped**؛ شامل Migration PostgreSQL و تست‌های بک‌اند.
+- Unit/Integration: **137 passed, 1 skipped**؛ شامل Migration PostgreSQL، تست‌های بک‌اند، مرزبندی pickup_code و Audit احراز هویت.
 - Frontend E2E: **9 passed**؛ شامل ماتریس واکنش‌گرایی، تست‌های مسیر مشتری، قوانین، پنل‌ها و رقابت پاسخ جست‌وجو.
 - Redis integration: **9 passed**؛ Lua script روی Redis 7 واقعی، TTL و رفتار 429 را آزمایش کرد.
 - TypeScript و production build: موفق.
@@ -147,9 +147,9 @@ PR #31 (commit `c1838ba42e1dbf6b4df1a969c6bf241cfd2eebf5`)، PR #32 (commit `42c
 - Python pytest/Flake8 workflow: موفق.
 - Secret scanning: موفق.
 - Deploy GitHub Pages: موفق.
-- Bundle فرانت‌اند در build: JavaScript برابر 368.93 KB خام / 99.55 KB gzip؛ CSS برابر 140.35 KB خام / 26.25 KB gzip. این فقط اندازهٔ bundle است، نه زمان بارگذاری واقعی.
+- Bundle فرانت‌اند در build: JavaScript برابر 368.92 KB خام / 99.55 KB gzip؛ CSS برابر 140.35 KB خام / 26.25 KB gzip. این فقط اندازهٔ bundle است، نه زمان بارگذاری واقعی.
 
-[Tests workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251275198) · [Python workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251275290) · [Secret scan](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251275258) · [Deploy](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251275181)
+[Tests workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251522291) · [Python workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251522250) · [Secret scan](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251522286) · [Deploy](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41251522362)
 
 **تاریخچهٔ شکست و اصلاح:** commit `2cb0419` در تست واحد تنظیمات Nginx یک assertion شکست‌خورده داشت؛ تست، نام متغیرهای ممنوع را در comment توضیحی هم جست‌وجو می‌کرد، نه فقط directiveهای اجرایی را. تست اصلاح شد تا commentها از directiveها جدا شوند. PR #30 و PR #31 در main ادغام شدند؛ PR #32 نیز اصلاح تراکنشی Audit برای Register/Login را با CI موفق به main رساند.
 

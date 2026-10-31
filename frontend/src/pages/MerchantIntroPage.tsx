@@ -53,7 +53,7 @@ export function MerchantIntroPage({ cartCount, userRole, onCart }: Props) {
         <div className="merchant-intro-copy">
           <p className="eyebrow"><UiIcon name="store" size={16} /> مخصوص کافه‌ها، رستوران‌ها و نانوایی‌ها</p>
           <h1 id="merchant-intro-title">غذای مازادِ قابل‌مصرف را به یک فرصت تازه تبدیل کنید.</h1>
-          <p className="merchant-intro-lead">نجات غذا به شما کمک می‌کند بسته‌های باقی‌ماندهٔ روز را با قیمت روشن، تعداد مشخص و زمان دریافت معلوم معرفی کنید؛ مشتری برای تحویل حضوری به فروشگاه شما مراجعه می‌کند.</p>
+          <p className="merchant-intro-lead">سهمینو به شما کمک می‌کند بسته‌های مازادِ مناسب عرضه را با قیمت روشن، تعداد مشخص و بازهٔ دریافت معلوم معرفی کنید؛ مشتری برای دریافت حضوری به فروشگاه شما مراجعه می‌کند.</p>
           <div className="merchant-intro-actions">
             <Link className="primary-button" to="/login">ورود فروشندگان <UiIcon name="arrow-left" size={18} /></Link>
             <Link className="secondary-button" to="/offers">دیدن نمونهٔ بازار</Link>

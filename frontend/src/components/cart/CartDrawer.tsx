@@ -1,5 +1,6 @@
 import type { FoodOffer } from "../../lib/api";
 import { formatToman } from "../../lib/formatters";
+import { SafeImage } from "../SafeImage";
 
 export type CartItem = { offer: FoodOffer; quantity: number };
 
@@ -31,7 +32,7 @@ export function CartDrawer({ cart, open, loading, error, onClose, onUpdateQuanti
             <div className="cart-items">
               {cart.map((item) => (
                 <div className="cart-item" key={item.offer.id}>
-                  <div className="cart-item-image">{item.offer.image_url ? <img src={item.offer.image_url} alt="" /> : "🍱"}</div>
+                  <div className="cart-item-image"><SafeImage src={item.offer.image_url} alt="" fallback={<span aria-hidden="true">🍱</span>} /></div>
                   <div className="cart-item-info">
                     <strong>{item.offer.title}</strong>
                     <span>{formatToman(item.offer.sale_price)}</span>

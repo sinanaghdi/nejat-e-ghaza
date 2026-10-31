@@ -121,6 +121,24 @@ test("admin can review and record a refund reconciliation through mocked API", a
   await expect(page.getByRole("heading", { name: "داشبورد مدیر" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "پیگیری بازپرداخت‌ها" })).toBeVisible();
   await expect(page.getByText("سفارش #1002 · پرداخت #8101")).toBeVisible();
+  await expect(page.locator(".dashboard-brand-mark")).toBeVisible();
+
+  for (const width of [320, 360, 390, 540, 768, 820, 1024, 1280, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    const layout = await page.evaluate(() => ({
+      viewport: document.documentElement.clientWidth,
+      document: document.documentElement.scrollWidth,
+      body: document.body.scrollWidth,
+      logo: document.querySelector(".dashboard-brand-mark")?.getBoundingClientRect().width ?? 0,
+      logoBackground: document.querySelector(".dashboard-brand-mark")
+        ? getComputedStyle(document.querySelector(".dashboard-brand-mark")!).backgroundColor
+        : "",
+    }));
+    expect(layout.document, `Admin document overflow at ${width}px: ${JSON.stringify(layout)}`).toBeLessThanOrEqual(layout.viewport + 1);
+    expect(layout.body, `Admin body overflow at ${width}px: ${JSON.stringify(layout)}`).toBeLessThanOrEqual(layout.viewport + 1);
+    expect(layout.logo, `Admin brand mark too small at ${width}px`).toBeGreaterThanOrEqual(30);
+    expect(layout.logoBackground, `Admin logo inherited a tile at ${width}px`).toBe("rgba(0, 0, 0, 0)");
+  }
 
   page.on("dialog", async (dialog) => {
     if (dialog.type === "confirm") {

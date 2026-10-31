@@ -50,6 +50,22 @@ class Settings(BaseSettings):
         ]
 
     def validate_production(self) -> None:
+        # These settings affect security or correctness in every environment;
+        # fail fast rather than allowing invalid values to fail per request.
+        if self.jwt_algorithm not in {"HS256", "HS384", "HS512"}:
+            raise RuntimeError("JWT_ALGORITHM must be one of HS256, HS384, or HS512.")
+        if self.access_token_expire_minutes < 1:
+            raise RuntimeError("ACCESS_TOKEN_EXPIRE_MINUTES must be at least 1.")
+        if self.order_payment_timeout_minutes < 1:
+            raise RuntimeError("ORDER_PAYMENT_TIMEOUT_MINUTES must be at least 1.")
+        if self.rate_limit_requests < 1 or self.rate_limit_window_seconds < 1:
+            raise RuntimeError("RATE_LIMIT_REQUESTS and RATE_LIMIT_WINDOW_SECONDS must be positive.")
+        if self.otp_ttl_seconds < 1:
+            raise RuntimeError("OTP_TTL_SECONDS must be at least 1.")
+        if self.otp_rate_limit_per_phone < 1 or self.otp_rate_limit_window_seconds < 1:
+            raise RuntimeError("OTP rate limit settings must be positive.")
+        if self.payment_http_timeout_seconds <= 0:
+            raise RuntimeError("PAYMENT_HTTP_TIMEOUT_SECONDS must be greater than zero.")
         if not 0 <= self.platform_commission_bps <= 10000:
             raise RuntimeError("PLATFORM_COMMISSION_BPS must be between 0 and 10000.")
 

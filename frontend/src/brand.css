@@ -364,3 +364,24 @@ img {
 .legal-notice p {
   color: var(--brand-secondary);
 }
+
+/* Dashboard sidebars use the same standalone mark as the public header. */
+.dashboard-brand-mark {
+  display: block;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  color: var(--brand-forest);
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-size: inherit;
+}
+
+@media (max-width: 700px) {
+  .dashboard-brand-mark {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+}

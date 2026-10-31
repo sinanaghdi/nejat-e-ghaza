@@ -1,0 +1,195 @@
+# گزارش ممیزی مهندسی ارشد سهمینو
+
+**تاریخ ممیزی:** ۳۱ اکتبر ۲۰۲۶  
+**مخزن:** sinanaghdi/nejat-e-ghaza  
+**شاخهٔ کاری:** audit/senior-engineering-hardening  
+**PR:** [#30 — Senior engineering audit](https://github.com/sinanaghdi/nejat-e-ghaza/pull/30)  
+**وضعیت:** گزارش مرحلهٔ اول ممیزی؛ این سند تأییدیهٔ Production نیست.
+
+---
+
+## ۱. خلاصهٔ اجرایی
+
+ممیزی از روی ساختار مخزن، مسیرهای اصلی API، سرویس‌های سفارش/پرداخت/OTP، مدل‌ها و Migrationهای دیتابیس، لایهٔ احراز هویت و CSRF، Rate Limiter، Nginx/Docker، فرانت‌اند و تست‌ها آغاز شد.
+
+تمرکز اصلاحات انجام‌شده روی صحت موجودی، ورودی‌های نامعتبر، Rate Limit، Audit Trail، اعتبارسنجی پیکربندی، ایمنی لاگ و جلوگیری از نمایش نتیجهٔ قدیمی در جست‌وجوی فرانت‌اند بوده است.
+
+**نتیجهٔ مهم:** کد و CI برای چند سناریوی بحرانی بهتر شده‌اند، اما اطلاعات در دسترس برای تأیید سرویس واقعی کافی نیست. پیامک و پرداخت زنده، استقرار Production، بازیابی Backup، قراردادهای عملیاتی غذا و بازپرداخت و بارگذاری زیر فشار واقعی در این ممیزی اجرا نشده‌اند.
+
+## ۲. معماری مشاهده‌شده
+
+### فناوری‌ها و اجزا
+
+| بخش | فناوری/مسئولیت مشاهده‌شده |
+|---|---|
+| Frontend | React 18، TypeScript، Vite، React Router، Playwright |
+| Backend | Python 3.12، FastAPI، Pydantic v2 |
+| Persistence | SQLAlchemy، PostgreSQL، Alembic |
+| Rate limit / broker | Redis |
+| Background jobs | Celery worker و Beat |
+| Edge | Nginx reverse proxy |
+| Deployment | Docker و Docker Compose |
+| CI | GitHub Actions، pytest، Playwright، npm audit، Docker build |
+
+### مسیر دامنه‌ای
+
+- مشتری، فروشنده و مدیر از React/TypeScript به Nginx و سپس FastAPI متصل می‌شوند.
+- FastAPI با PostgreSQL، Redis، Provider پیامک و Provider پرداخت تعامل دارد.
+- Celery worker/beat پردازش‌های زمان‌بندی‌شدهٔ سفارش را اجرا می‌کنند.
+- رخدادهای دامنه‌ای و اعلان‌ها در دیتابیس ثبت می‌شوند.
+- سفارش، پرداخت و دفتر تسویه به‌صورت جداول مجزا نگهداری می‌شوند.
+
+### نقش‌ها و جریان اصلی محصول
+
+- مشتری پیشنهاد تأییدشدهٔ فروشندهٔ تأییدشده را می‌بیند، موجودی را رزرو می‌کند، پرداخت را آغاز می‌کند و برای دریافت حضوری مراجعه می‌کند.
+- فروشنده پروفایل، پیشنهادها، موجودی، سفارش و کد تحویل را مدیریت می‌کند.
+- مدیر فروشندگان و پیشنهادها را بررسی می‌کند، سفارش‌ها را پایش می‌کند و مرجع تسویه/بازپرداخت ثبت‌شده را پیگیری می‌کند.
+- موجودی در زمان ایجاد سفارش داخل تراکنش و با قفل ردیف پیشنهاد کاهش می‌یابد.
+- تأیید پرداخت از سمت Provider انجام می‌شود؛ برگشت مرورگر به‌تنهایی پرداخت را معتبر نمی‌کند.
+- دفتر تسویه، مبلغ و ماندهٔ محاسباتی را ثبت می‌کند؛ انتقال بانکی خودکار در این کد اثبات نشده است.
+
+## ۳. مشکلات کشف‌شده و اصلاحات
+
+| اولویت | یافته | اصلاح انجام‌شده | وضعیت |
+|---|---|---|---|
+| P1 | محاسبهٔ موجودی در ویرایش پیشنهاد بدون قفل ردیف می‌توانست با رزرو هم‌زمان تداخل کند | قفل SELECT FOR UPDATE در ویرایش/غیرفعال‌سازی پیشنهاد و تراکنش با rollback | پیاده‌سازی و تست PostgreSQL اضافه شده |
+| P1 | PATCH با null صریح برای فیلد غیرقابل‌تهی می‌توانست به خطای دیتابیس/۵۰۰ ختم شود | رد null برای فیلدهای non-nullable؛ حفظ امکان null برای description و image_url | تست Schema اضافه شده |
+| P1 | عملیات تغییر پیشنهاد فاقد Audit Event مناسب بود | ثبت رویداد ایجاد، ویرایش و غیرفعال‌سازی همراه actor، request ID و فیلدهای تغییرکرده | تست Audit Event اضافه شده |
+| P1 | Redis INCR و EXPIRE دو عملیات جدا بودند؛ توقف فرایند بین آن‌ها می‌توانست شمارندهٔ بدون TTL بسازد | اجرای افزایش شمارنده و تنظیم TTL با یک Lua Script اتمیک | تست Fake Redis و سیاست خطا اضافه شده |
+| P1 | اعتبارسنجی Webhook Secret از مقایسهٔ رشته‌ای مستقیم استفاده می‌کرد | استفاده از hmac.compare_digest | تست Secret نامعتبر اضافه شده |
+| P1 | الگوریتم JWT و چند timeout/rate-limit حساس در زمان راه‌اندازی به‌طور کامل validate نمی‌شدند | allow-list الگوریتم HS256/384/512 و مثبت‌بودن token/OTP/order/rate-limit/HTTP timeoutها | تست config اضافه شده |
+| P1 | محدودیت ۷۲ بایت bcrypt با محدودیت طول کاراکتری Schema هم‌راستا نبود؛ رمز چندبایتی می‌توانست از Schema عبور کند | اعتبارسنجی طول UTF-8 در Register/Login | تست رمز فارسی بیش از حد اضافه شده |
+| P2 | ORM metadata همهٔ CHECK constraintهای تعریف‌شده در Migration اولیه را منعکس نمی‌کرد | همگام‌سازی Constraintهای موجود Offer و OrderItem در ORM؛ Migration جدید یا Constraint جدید ساخته نشد | تست قرارداد Schema اضافه شده |
+| P2 | پاسخ قدیمی جست‌وجو می‌توانست بعد از پاسخ جدیدتر روی UI بنشیند؛ خطای بارگذاری جزئیات هم در یک مسیر fire-and-forget دوباره throw می‌شد | کنترل نسخهٔ درخواست و نگهداری خطا در state خود Hook؛ Promise ردشدهٔ بدون مصرف حذف شد | تست E2E پاسخ‌های out-of-order اضافه شده |
+| P2 | X-Request-ID ورودی بدون محدودیت طول/کاراکتر در log و audit context پذیرفته می‌شد | پذیرش فقط حروف/اعداد و . _ : - در محدودهٔ ۱ تا ۶۴ کاراکتر؛ در غیر این صورت تولید UUID | تست ورودی معتبر و نامعتبر اضافه شده |
+| P1 | Nginx مقدار X-Forwarded-For ورودی را append می‌کرد و Uvicorn همهٔ Forwarded senderها را trusted می‌دانست | بازنویسی X-Forwarded-For با IP اتصال در Nginx edge | تست پیکربندی اضافه شده |
+| P1 | لاگ دسترسی پیش‌فرض می‌توانست URL کامل callback و query string حامل Authority را ثبت کند | access log سفارشی بدون URL/path/query؛ خاموش‌کردن access log خام Uvicorn در Docker/Compose | تست پیکربندی اضافه شده؛ CI نسخهٔ نهایی باید تأیید شود |
+
+**توضیح:** سطح اولویت، ارزیابی مهندسی بر اساس اثر بالقوه است؛ به معنی اثبات وقوع سوءاستفاده یا رخداد امنیتی در Production نیست.
+
+## ۴. وضعیت امنیت و عملیات حساس
+
+### مواردی که از کد و تست‌ها مشاهده/بررسی شده‌اند
+
+- احراز هویت cookie و Bearer در Backend انجام می‌شود.
+- برای درخواست‌های تغییردهنده با session cookie، CSRF بررسی می‌شود؛ Webhook و مسیرهای ورود/OTP استثناهای مشخص دارند.
+- نقش‌ها و مالکیت سفارش/پیشنهاد در سرویس‌های Backend بررسی می‌شوند.
+- سفارش و رزرو موجودی transaction و row locking دارند.
+- Payment verification ترتیب قفل Order سپس Payment را رعایت می‌کند؛ expiry worker نیز همین ترتیب را دنبال می‌کند.
+- callback پرداخت تکراری در سناریوهای موجود idempotent است و برای سفارش بسته‌شده وضعیت REFUND_REQUIRED ایجاد می‌شود.
+- Rate limiter در Production هنگام اختلال Redis fail-closed است؛ در Development برای ادامهٔ کار fail-open باقی می‌ماند.
+- access log خام Uvicorn برای Production خاموش شده است و log Nginx نباید URL/query string را ثبت کند.
+
+### ریسک‌های باقی‌مانده
+
+1. **Provider configuration rotation:** Payment فقط نام Provider ذخیره‌شده را با Provider انتخاب‌شدهٔ فعلی مقایسه می‌کند. تغییر نام Provider باعث رد verify پرداخت‌های معلق قبلی می‌شود؛ تغییر Merchant Account با همان نام Provider نیز نیازمند مدیریت credential تاریخی و runbook است. پیش از rotation باید تمام authorityهای معلق reconcile شوند یا پشتیبانی چندپیکربندی تاریخی پیاده‌سازی شود.
+2. **Session revocation:** JWT stateless است؛ logout کوکی کاربر را پاک می‌کند اما توکن سرقت‌شده تا انقضا قابل ابطال مرکزی نیست. عمر پیش‌فرض محدود است، ولی registry/revocation برای قطع فوری نشست پیاده‌سازی نشده است.
+3. **Webhook contract:** در endpoint عمومی موجود، shared secret بررسی می‌شود و سپس Provider verification انجام می‌گیرد. امضای بومی، timestamp/replay protocol مخصوص Provider و آزمون با حساب واقعی هنوز تأیید نشده‌اند.
+4. **Merchant payout:** دفتر تسویه محاسبات را نگهداری می‌کند؛ انتقال واقعی/تقسیم خودکار وجه در این مخزن اثبات نشده است.
+5. **OTP issuance race:** محدودیت Redis و بررسی ۶۰ ثانیه‌ای موجود است؛ هم‌زمانی دو درخواست OTP برای یک شماره در تراکنش‌های جداگانه هنوز با آزمون رقابتی PostgreSQL بررسی نشده است.
+6. **Bootstrap admin و بازیابی حساب:** روند عملیاتی کاملِ امن برای ساخت مدیر اولیه، بازیابی حساب و ابطال نشست باید پیش از Production با owner و شواهد تأیید شود.
+
+## ۵. دیتابیس و Performance
+
+### اصلاحات و کنترل‌ها
+
+- قفل پیشنهاد هنگام ویرایش با قفل استفاده‌شده در رزرو موجودی هم‌راستا شد.
+- CHECK constraintهای موجود در Migration اولیه به ORM metadata افزوده شدند تا تست‌هایی که از Base.metadata.create_all استفاده می‌کنند بخشی از قواعد Schema را جا نیندازند.
+- تست رقابت ویرایش پیشنهاد و رزرو موجودی با PostgreSQL مستقل اضافه شده است.
+- Migrationها در CI روی PostgreSQL 16 اجرا می‌شوند.
+
+### موارد اندازه‌گیری‌نشده
+
+در این محیط دسترسی به Production DB، حجم واقعی داده، Query Plan واقعی و بار شبکه/کاربر فراهم نبود. بنابراین موارد زیر **اندازه‌گیری نشده‌اند**:
+
+- API p50/p95/p99 latency
+- Query duration و EXPLAIN ANALYZE روی دادهٔ واقعی
+- تعداد query در هر endpoint و N+1 تحت دادهٔ واقعی
+- throughput و concurrent user capacity
+- CPU/RAM در بار واقعی
+- bundle/page load در محیط و شبکهٔ کاربران هدف
+- نرخ خطای Provider، SMS و reconciliation عملیاتی
+
+### ریسک‌های Performance/Scale برای فاز بعد
+
+- فهرست سفارش‌های مشتری و فروشنده در repository فعلی pagination صریح ندارد؛ با رشد داده، تعداد رکورد و حجم پاسخ می‌تواند افزایش یابد.
+- برخی لیست‌های admin/merchant باید از نظر سقف و pagination سراسری بازبینی شوند.
+- جست‌وجوی ILIKE %term% و مرتب‌سازی بر expression تخفیف/فاصله بدون Query Plan واقعی نباید بهینه‌سازی حدسی شود.
+- وابستگی‌های Python عمدتاً version range یا بدون pin هستند و Frontend workflow از npm install استفاده می‌کند؛ lockfile/constraints و نصب reproducible باید در یک PR مستقل تکمیل شود.
+
+## ۶. DevOps، Logging و Release
+
+- Compose فقط Nginx را host-publish می‌کند؛ API با expose در شبکهٔ Compose در دسترس است و PostgreSQL/Redis host port ندارند.
+- API قبل از شروع Uvicorn، Alembic migration را اجرا می‌کند.
+- Nginx headerهای امنیتی پایه، CSP و محدودیت body size دارد؛ این فایل خودبه‌خود TLS یا گواهی Production فراهم نمی‌کند.
+- X-Forwarded-For در Nginx به IP اتصال بازنویسی می‌شود. اگر سرویس پشت Load Balancer/CDN دیگری قرار گیرد، باید فقط CIDRهای رسمی آن upstream به‌صورت صریح در Nginx real-IP trust config تنظیم شوند؛ در غیر این صورت IP در حد edge proxy خواهد بود.
+- access log Nginx دیگر URL یا query string را ثبت نمی‌کند؛ Uvicorn خام access log غیرفعال شده است. Structured request log برنامه مسیر را بدون query ثبت می‌کند.
+- Backup/restore drill، rollback release، monitoring مرکزی، alerting، resource limits و TLS automation در محیط واقعی اجرا/تأیید نشده‌اند.
+
+## ۷. شواهد تست و CI
+
+### Baseline قبل از ممیزی
+
+Main قبل از شروع این شاخه روی commit dc8a2e484e454d80029b619acad1c83303c6da1a قرار داشت. Workflowهای Build، Tests، Python، Secret scanning و Deploy آن revision در بررسی قبلی موفق بودند. این نتیجه تنها baseline همان commit است.
+
+### آخرین revision کاملاً سبز پیش از اصلاحات Logging
+
+Commit 4521b6c09765f897e3f0862fb7ebe0142876d1cd:
+
+- Tests workflow: موفق؛ شامل Migration روی PostgreSQL، pytest، frontend typecheck/build، Playwright و Docker image build.
+- Python application workflow: موفق؛ شامل Flake8 و pytest.
+- Secret scanning: موفق.
+
+[Tests workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41250373271) · [Python workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41250373238) · [Secret scan](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41250373298)
+
+**مهم:** پس از آن اصلاح Nginx forwarded IP و logging، Docker commands و تست‌های پیکربندی اضافه شدند. CI revision جدید باید قبل از اعلام موفقیت نهایی همین تغییرات نیز سبز شود. وضعیت دقیق را از [PR #30](https://github.com/sinanaghdi/nejat-e-ghaza/pull/30) و Checks همان head دنبال کنید.
+
+### آزمون‌هایی که در این شاخه اضافه شدند
+
+- Redis atomic counter/TTL، failure policy و محدودهٔ ورودی.
+- PATCH null safety، فیلدهای nullable و event audit.
+- config validation برای الگوریتم و timeoutها.
+- Webhook secret نامعتبر.
+- UTF-8 password length برای Register/Login.
+- هم‌خوانی CHECKهای ORM و Migration.
+- رقابت رزرو موجودی و ویرایش پیشنهاد روی PostgreSQL.
+- out-of-order marketplace request response.
+- request ID ورودی و Nginx Forwarded-For sanitization.
+- کنترل access logging برای جلوگیری از ثبت callback query values.
+
+## ۸. Change log شاخهٔ ممیزی
+
+| مسیر | تغییر |
+|---|---|
+| app/services/offer.py | قفل ردیف، تراکنش و Audit Event برای عملیات پیشنهاد |
+| app/schemas/offer.py | رد null در فیلدهای non-nullable |
+| app/core/rate_limit.py | Lua atomic INCR + TTL و fail-closed در Production |
+| app/api/routes/payments.py | constant-time webhook secret comparison |
+| app/core/config.py | validation تنظیمات امنیتی و timeout |
+| app/schemas/auth.py | محدودیت ۷۲ بایت UTF-8 برای رمز |
+| app/db/models/food_offer.py | همگام‌سازی CHECKهای موجود با ORM metadata |
+| app/db/models/order_item.py | همگام‌سازی CHECK موجود با ORM metadata |
+| app/middleware/request_context.py | اعتبارسنجی X-Request-ID |
+| frontend/src/hooks/useMarketplace.ts | جلوگیری از اعمال پاسخ قدیمی و unhandled rejection |
+| docker/nginx/nginx.conf | بازنویسی XFF و access log بدون URL/query |
+| docker-compose.yml, Dockerfile.production | خاموش‌کردن access log خام Uvicorn |
+| tests/*, frontend/e2e/* | regression tests برای تغییرات بالا |
+
+## ۹. دروازهٔ انتشار و بدهی فنی باقی‌مانده
+
+**ارزیابی فعلی: CONDITIONALLY READY FOR STAGING — NOT READY FOR PRODUCTION.**
+
+قبل از Production، موارد زیر هنوز مانع یا نیازمند مدرک‌اند:
+
+- تکمیل CI روی آخرین commit شاخه و review/merge کنترل‌شده.
+- sandbox و سپس live transaction مجاز با Provider واقعی؛ تست SMS واقعی و callback reconciliation.
+- تصمیم و قرارداد رسمی دربارهٔ غذا، آلرژن، نگهداری، pickup، لغو، no-show، refund و پشتیبانی.
+- میزبانی واقعی HTTPS، secret manager، backup و restore drill، rollback و هشدارهای عملیاتی.
+- بازبینی provider rotation و مدیریت authorityهای معلق.
+- سیاست revoke/session invalidation و بررسی کامل OTP concurrency.
+- pagination و performance baseline با dataset و بار شبیه Production.
+- قفل‌کردن dependencyها و تکرارپذیری نصب.
+- بازبینی accessibility به‌صورت کامل (keyboard، screen-reader، focus، error announcement)، نه صرفاً تست contrast.
+- بازبینی حقوقی/حریم خصوصی در حوزهٔ پایلوت توسط مسئول واجد صلاحیت.
+
+**معیار توقف:** تا وقتی پرداخت واقعی/بازپرداخت/تسویه قابل تطبیق، سیاست ایمنی/تحویل روشن، دسترسی‌ها و secrets امن و Backup قابل بازیابی نیستند، محصول نباید برای دریافت پول و سفارش عمومی Production معرفی شود.

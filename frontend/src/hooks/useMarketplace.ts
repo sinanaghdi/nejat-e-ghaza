@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ApiError, getOffer, getOffers, type FoodOffer, type OfferSort } from "../lib/api";
 
 export function useMarketplace() {
@@ -12,6 +12,7 @@ export function useMarketplace() {
   const [locationStatus, setLocationStatus] = useState<
     "idle" | "loading" | "denied" | "ready"
   >("idle");
+  const requestVersionRef = useRef(0);
   const [userCoordinates, setUserCoordinates] = useState<{
     latitude: number;
     longitude: number;
@@ -24,6 +25,7 @@ export function useMarketplace() {
       sort?: Exclude<OfferSort, "distance">;
     } = {},
   ) {
+    const requestVersion = ++requestVersionRef.current;
     const activeQuery = overrides.query ?? search;
     const activeCity = overrides.city ?? city;
     const activeSort = overrides.sort ?? sort;
@@ -41,39 +43,54 @@ export function useMarketplace() {
           nearby && userCoordinates ? userCoordinates.longitude : undefined,
         radius_km: nearby && userCoordinates ? 10 : undefined,
       });
-      setOffers(items);
+      if (requestVersion === requestVersionRef.current) {
+        setOffers(items);
+      }
     } catch (err) {
-      setError(
-        err instanceof ApiError
-          ? err.message
-          : "ارتباط با سرور برقرار نشد. لطفاً دوباره تلاش کنید.",
-      );
+      if (requestVersion === requestVersionRef.current) {
+        setError(
+          err instanceof ApiError
+            ? err.message
+            : "ارتباط با سرور برقرار نشد. لطفاً دوباره تلاش کنید.",
+        );
+      }
     } finally {
-      setLoading(false);
+      if (requestVersion === requestVersionRef.current) {
+        setLoading(false);
+      }
     }
   }
 
-  async function loadOffer(offerId: number): Promise<FoodOffer> {
+  async function loadOffer(offerId: number): Promise<FoodOffer | null> {
+    const requestVersion = ++requestVersionRef.current;
     setLoading(true);
     setError("");
 
     try {
       const offer = await getOffer(offerId);
-      setOffers((current) =>
-        current.some((item) => item.id === offer.id)
-          ? current
-          : [...current, offer],
-      );
+      if (requestVersion === requestVersionRef.current) {
+        setOffers((current) =>
+          current.some((item) => item.id === offer.id)
+            ? current
+            : [...current, offer],
+        );
+      }
       return offer;
     } catch (err) {
-      const apiError =
-        err instanceof ApiError
-          ? err
-          : new ApiError("دریافت این پیشنهاد انجام نشد.", 500);
-      setError(apiError.message);
-      throw apiError;
+      if (requestVersion === requestVersionRef.current) {
+        const apiError =
+          err instanceof ApiError
+            ? err
+            : new ApiError("دریافت این پیشنهاد انجام نشد.", 500);
+        setError(apiError.message);
+      }
+      // The hook owns the error state; callers can safely trigger loading
+      // without an unhandled rejected promise from a fire-and-forget effect.
+      return null;
     } finally {
-      setLoading(false);
+      if (requestVersion === requestVersionRef.current) {
+        setLoading(false);
+      }
     }
   }
 

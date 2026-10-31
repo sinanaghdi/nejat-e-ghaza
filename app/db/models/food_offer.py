@@ -1,11 +1,18 @@
 from datetime import datetime, timezone
 from decimal import Decimal
-from sqlalchemy import Boolean, DateTime, ForeignKey, Numeric, String, Text
+from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 
 class FoodOffer(Base):
     __tablename__ = "food_offers"
+    __table_args__ = (
+        CheckConstraint("original_price > 0", name="ck_food_offers_original_price_positive"),
+        CheckConstraint("sale_price > 0", name="ck_food_offers_sale_price_positive"),
+        CheckConstraint("sale_price <= original_price", name="ck_food_offers_sale_lte_original"),
+        CheckConstraint("quantity > 0", name="ck_food_offers_quantity_positive"),
+        CheckConstraint("available_quantity >= 0", name="ck_food_offers_available_nonnegative"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     merchant_id: Mapped[int] = mapped_column(ForeignKey("merchants.id"), index=True)

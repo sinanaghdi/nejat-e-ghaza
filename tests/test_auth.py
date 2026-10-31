@@ -69,3 +69,28 @@ def test_logout_clears_session(client):
     )
     assert response.status_code == 200
     assert client.get("/api/auth/me").status_code == 401
+
+
+def test_register_rejects_password_over_bcrypt_utf8_byte_limit(client):
+    response = client.post(
+        "/api/auth/register",
+        json={
+            "name": "کاربر",
+            "email": "long-password@example.com",
+            "password": "آ" * 40,
+        },
+    )
+    assert response.status_code == 422
+    assert "72 UTF-8 bytes" in response.text
+
+
+def test_login_rejects_password_over_bcrypt_utf8_byte_limit(client):
+    response = client.post(
+        "/api/auth/login",
+        json={
+            "email": "user@example.com",
+            "password": "آ" * 40,
+        },
+    )
+    assert response.status_code == 422
+    assert "72 UTF-8 bytes" in response.text

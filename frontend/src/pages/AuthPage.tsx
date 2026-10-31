@@ -72,8 +72,8 @@ export function AuthPage({
   return (
     <main className="auth-page">
       <section className="auth-page-card">
-        <Link className="brand auth-brand" to="/">نجات غذا</Link>
-        <span className="eyebrow">{mode === "login" ? "ورود به بازار" : "شروع با نجات غذا"}</span>
+        <Link className="brand auth-brand" to="/">سهمینو</Link>
+        <span className="eyebrow">{mode === "login" ? "ورود به بازار" : "شروع با سهمینو"}</span>
         <h1>{mode === "login" ? "خوش آمدی" : "حساب کاربری بساز"}</h1>
         <p>{mode === "login" ? (demoMode ? "برای ورود به محیط نمایشی از ایمیل و رمز عبور استفاده کن." : loginMethod === "phone" ? "شماره موبایلت را وارد کن تا کد یک‌بارمصرف ورود را دریافت کنی." : "با ایمیل و رمز عبورت وارد حساب کاربری شو.") : "حساب بساز تا سفارش‌ها و فعالیت‌هایت را مدیریت کنی."}</p>
 

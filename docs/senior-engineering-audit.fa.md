@@ -133,17 +133,22 @@
 
 Main قبل از شروع این شاخه روی commit dc8a2e484e454d80029b619acad1c83303c6da1a قرار داشت. Workflowهای Build، Tests، Python، Secret scanning و Deploy آن revision در بررسی قبلی موفق بودند. این نتیجه تنها baseline همان commit است.
 
-### آخرین revision کاملاً سبز پیش از اصلاحات Logging
+### وضعیت آخرین ادغام‌های ممیزی
 
-Commit 4521b6c09765f897e3f0862fb7ebe0142876d1cd:
+PR #31 در commit `c1838ba42e1dbf6b4df1a969c6bf241cfd2eebf5` و PR #32 در commit `42c2eb898765212b06ad67ad4a1fd87e5ab8c103` با موفقیت در main ادغام شدند. شواهد CI برای head PR #32:
 
-- Tests workflow: موفق؛ شامل Migration روی PostgreSQL، pytest، frontend typecheck/build، Playwright و Docker image build.
-- Python application workflow: موفق؛ شامل Flake8 و pytest.
+- Unit/Integration: **136 passed, 1 skipped**؛ شامل Migration PostgreSQL و تست‌های بک‌اند.
+- Frontend E2E: **9 passed**؛ شامل ماتریس واکنش‌گرایی، تست‌های مسیر مشتری، قوانین، پنل‌ها و رقابت پاسخ جست‌وجو.
+- Redis integration: **9 passed**؛ Lua script روی Redis 7 واقعی، TTL و رفتار 429 را آزمایش کرد.
+- TypeScript و production build: موفق.
+- Docker imageهای API و Frontend: موفق.
+- Python pytest/Flake8 workflow: موفق.
 - Secret scanning: موفق.
+- Deploy GitHub Pages: موفق.
 
-[Tests workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41250373271) · [Python workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41250373238) · [Secret scan](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41250373298)
+[Tests workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41250999299) · [Python workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41250999266) · [Secret scan](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41250999321)
 
-**تاریخچهٔ شکست و اصلاح:** commit 2cb0419 در تست واحد تنظیمات Nginx یک assertion شکست‌خورده داشت؛ تست، نام متغیرهای ممنوع را در comment توضیحی هم جست‌وجو می‌کرد، نه فقط directiveهای اجرایی را. این تست اصلاح شده تا commentها را از directiveها جدا کند. PR #30 در همین فاصله در main ادغام شد؛ اصلاح تست، آزمون Redis واقعی و Audit پروفایل فروشنده در commitهای بعدی شاخه مانده‌اند و در PR پیگیری جداگانه بررسی می‌شوند. CI آن revisionها باید پیش از تأیید نهایی سبز شود.
+**تاریخچهٔ شکست و اصلاح:** commit `2cb0419` در تست واحد تنظیمات Nginx یک assertion شکست‌خورده داشت؛ تست، نام متغیرهای ممنوع را در comment توضیحی هم جست‌وجو می‌کرد، نه فقط directiveهای اجرایی را. تست اصلاح شد تا commentها از directiveها جدا شوند. PR #30 و PR #31 در main ادغام شدند؛ PR #32 نیز اصلاح تراکنشی Audit برای Register/Login را با CI موفق به main رساند.
 
 ### آزمون‌هایی که در این شاخه اضافه شدند
 
@@ -178,6 +183,9 @@ Commit 4521b6c09765f897e3f0862fb7ebe0142876d1cd:
 | docker/nginx/nginx.conf | بازنویسی XFF و access log بدون URL/query |
 | docker-compose.yml, Dockerfile.production | خاموش‌کردن access log خام Uvicorn |
 | tests/*, frontend/e2e/* | regression tests برای تغییرات بالا |
+| app/services/auth.py, app/api/routes/auth.py | اتمیک‌کردن ثبت‌نام با Audit و ثبت Audit در endpoint واقعی Login |
+| tests/test_auth.py | تست تعداد/مالکیت رخدادهای ثبت‌نام و Login |
+| frontend/package.json | ارتقای React Router به v7.18.5؛ منتظر CI مستقل در PR بعدی |
 
 ## ۹. دروازهٔ انتشار و بدهی فنی باقی‌مانده
 
@@ -193,6 +201,7 @@ Commit 4521b6c09765f897e3f0862fb7ebe0142876d1cd:
 - سیاست revoke/session invalidation و بررسی کامل OTP concurrency.
 - pagination و performance baseline با dataset و بار شبیه Production.
 - قفل‌کردن dependencyها و تکرارپذیری نصب.
+- رفع دو هشدار Moderate در React Router: گزارش `npm audit` روی v6.30.6 دو advisory با نسخهٔ اصلاح‌شدهٔ v7.18.0+ نشان داد؛ این پروژه در شاخهٔ ممیزی به v7.18.5 ارتقا داده شده اما CI این ارتقا باید جداگانه سبز شود.
 - بازبینی accessibility به‌صورت کامل (keyboard، screen-reader، focus، error announcement)، نه صرفاً تست contrast.
 - بازبینی حقوقی/حریم خصوصی در حوزهٔ پایلوت توسط مسئول واجد صلاحیت.
 

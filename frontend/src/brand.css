@@ -1,57 +1,335 @@
-/* Sahmino brand system — single source of truth for the customer-facing UI. */
+/* Sahmino visual system — loaded after every legacy stylesheet as the final source of truth. */
 :root {
+  color-scheme: light;
+
   --brand-forest: #31583B;
   --brand-forest-hover: #25472F;
+  --brand-forest-deep: #203F2A;
   --brand-cream: #F4EEDC;
   --brand-orange: #E9A44B;
+  --brand-orange-soft: #FBF0DF;
   --brand-sage: #647D59;
+  --brand-sage-ink: #4F6547;
   --brand-charcoal: #292F29;
+  --brand-secondary: #596458;
   --brand-white: #FFFFFF;
 
+  /* Compatibility tokens consumed by the existing page styles. */
   --primary: var(--brand-forest);
   --primary-hover: var(--brand-forest-hover);
   --primary-soft: #E8F0E5;
   --primary-container: var(--brand-forest);
   --mint: var(--brand-sage);
-  --mint-soft: #EAF0E5;
+  --mint-soft: #E8F0E5;
   --amber: var(--brand-orange);
-  --amber-soft: #FBF0DF;
+  --amber-soft: var(--brand-orange-soft);
+  --terracotta: #A64B3A;
   --canvas: var(--brand-cream);
   --surface: var(--brand-white);
   --surface-soft: #FBF9F2;
   --surface-subtle: #EEE8D8;
   --text: var(--brand-charcoal);
-  --text-secondary: #596458;
-  --muted: #778174;
+  --text-secondary: var(--brand-secondary);
+  --muted: var(--brand-secondary);
+  --muted-text: var(--brand-secondary);
+  --text-muted: var(--brand-secondary);
   --border: #E3DDCE;
   --border-strong: #D1C9B8;
   --success: #426B47;
-  --warning: #B9782F;
+  --warning: #85591E;
+  --danger: #A13F30;
+  --danger-surface: #FFF4F1;
+  --focus-ring: rgba(233, 164, 75, .55);
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 26px;
   --shadow-card: 0 2px 8px rgba(49, 88, 59, .055);
   --shadow-hover: 0 10px 28px rgba(49, 88, 59, .10);
+  --shadow-float: 0 14px 34px rgba(41, 47, 41, .14);
 }
 
-html, body { background: var(--brand-cream); color: var(--brand-charcoal); }
-.nav-links a:hover, .text-link:hover { color: var(--brand-forest); }
-.brand { display: inline-flex; align-items: center; gap: 10px; color: var(--brand-forest); text-decoration: none; }
-.brand-mark { display: block; width: 42px; height: 42px; flex: 0 0 42px; color: var(--brand-forest); }
-.brand-copy { display: grid; gap: 0; line-height: 1.35; }
-.brand-copy strong { color: var(--brand-forest); font-size: 1.2rem; font-weight: 850; }
-.brand-copy small { color: var(--text-secondary); font-size: .69rem; font-weight: 500; }
-.announcement-bar { background: var(--brand-forest); }
-.announcement-mark { color: var(--brand-orange); }
-.primary-button, .login-button { background: var(--brand-forest); }
-.primary-button:hover, .login-button:hover { background: var(--brand-forest-hover); }
-.discount-badge, .hero-photo-badge { background: var(--brand-forest); }
-.hero-panel { background: var(--brand-cream); }
-.hero-panel-orb { background: rgba(100, 125, 89, .16); }
-.hero-kicker, .eyebrow { color: var(--brand-sage); }
-.hero-copy-block h1 em { color: var(--brand-forest); }
-.category-pill-active { background: var(--brand-forest); border-color: var(--brand-forest); color: white; }
-.category-pill:hover, .secondary-button:hover { border-color: var(--brand-sage); }
-.hero-floating-note .floating-note-icon { color: var(--brand-forest); background: var(--brand-cream); }
-.site-footer { background: var(--brand-forest); }
-.site-footer .brand-mark, .site-footer .brand-copy strong { color: var(--brand-cream); }
-.site-footer .brand-copy small, .site-footer p, .site-footer-note p { color: #E1E8DC; }
-.site-footer-status { color: var(--brand-orange); }
-:focus-visible { outline-color: var(--brand-orange); }
+html,
+body,
+#root,
+.app {
+  background: var(--brand-cream);
+  color: var(--brand-charcoal);
+}
+
+body {
+  font-family: "Vazirmatn", Tahoma, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+:lang(en),
+.latin-text,
+input[type="email"],
+input[type="url"] {
+  font-family: "Inter", "Manrope", sans-serif;
+}
+
+::selection {
+  color: var(--brand-charcoal);
+  background: #F4D7A8;
+}
+
+/* Text roles: avoid using the lighter sage or orange as small text on cream. */
+.eyebrow,
+.hero-kicker,
+.hero-copy-block .hero-kicker {
+  color: var(--brand-sage-ink);
+}
+
+.page-header > p:not(.eyebrow),
+.section-subtitle,
+.muted,
+.description,
+.offer-meta,
+.offer-merchant-meta small,
+.offer-pickup-chip,
+.header-location small,
+.header-search input::placeholder,
+input::placeholder,
+textarea::placeholder,
+select,
+.site-footer-note p {
+  color: var(--brand-secondary);
+}
+
+.brand {
+  color: var(--brand-forest);
+}
+
+.brand-copy strong {
+  color: var(--brand-forest);
+  font-weight: 800;
+}
+
+.brand-copy small {
+  color: var(--brand-secondary);
+}
+
+.announcement-bar {
+  color: #FFFFFF;
+  background: var(--brand-forest);
+}
+
+.announcement-mark,
+.announcement-bar .announcement-mark {
+  color: #F7D29D;
+}
+
+.primary-button,
+.login-button,
+.signup-button,
+.orders-button:hover,
+.cart-button:hover {
+  background: var(--brand-forest);
+  border-color: var(--brand-forest);
+  color: #FFFFFF;
+}
+
+.primary-button:hover,
+.login-button:hover,
+.signup-button:hover {
+  background: var(--brand-forest-hover);
+  border-color: var(--brand-forest-hover);
+  color: #FFFFFF;
+}
+
+.secondary-button,
+.cart-button,
+.orders-button {
+  color: var(--brand-forest);
+  border-color: var(--border);
+  background: #FFFFFF;
+}
+
+.secondary-button:hover {
+  color: var(--brand-forest);
+  border-color: var(--brand-sage);
+  background: #E8F0E5;
+}
+
+/* Orange is an accent surface, not a white-text CTA colour. */
+.offer-savings {
+  color: var(--brand-charcoal);
+  background: var(--brand-orange);
+}
+
+.offer-reserve-button,
+.reserve-cta {
+  color: #FFFFFF;
+  background: var(--brand-forest);
+  border-color: var(--brand-forest);
+}
+
+.offer-reserve-button:hover,
+.reserve-cta:hover {
+  color: #FFFFFF;
+  background: var(--brand-forest-hover);
+  border-color: var(--brand-forest-hover);
+}
+
+.hero-preview-top b {
+  color: #704A15;
+  background: var(--brand-orange-soft);
+}
+
+.hero-photo-badge,
+.discount-badge {
+  color: #FFFFFF;
+  background: var(--brand-forest);
+}
+
+.stock-badge {
+  color: #704A15;
+  background: #FFF1D8;
+  border: 1px solid #E9C98D;
+}
+
+.site-footer {
+  color: #FFFFFF;
+  background: var(--brand-forest);
+}
+
+.site-footer .brand-mark,
+.site-footer .brand-copy strong {
+  color: var(--brand-cream);
+}
+
+.site-footer .brand-copy small,
+.site-footer p,
+.site-footer-note p,
+.site-footer-links a,
+.site-footer-bottom {
+  color: #E1E8DC;
+}
+
+.site-footer-status {
+  color: #F7D29D;
+}
+
+.site-footer a:hover {
+  color: #FFFFFF;
+}
+
+/* Forms and focus states. */
+input,
+select,
+textarea {
+  color: var(--brand-charcoal);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--brand-sage-ink);
+}
+
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--brand-orange);
+  outline-offset: 3px;
+}
+
+/* Consistent image cropping; fallbacks remain visible when a merchant URL fails. */
+.hero-photo-image,
+.offer-image img,
+.detail-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-photo-frame {
+  background: #EEE8D8;
+}
+
+.hero-placeholder-food,
+.offer-image-fallback,
+.detail-image-fallback {
+  color: var(--brand-forest);
+}
+
+.offer-image,
+.detail-image {
+  background: #EEE8D8;
+}
+
+img {
+  max-width: 100%;
+}
+
+/* Small annotations remain readable on narrow phones. */
+.hero-trust-row,
+.hero-floating-note small,
+.hero-preview-merchant,
+.hero-preview-bottom small,
+.offer-merchant-meta small,
+.offer-pickup-chip,
+.offer-meta,
+.stock-badge,
+.discount-badge,
+.detail-gallery-caption,
+.detail-status-chip,
+.booking-disclaimer,
+.sidebar-caption,
+.sidebar-help-card p,
+.console-overline,
+.console-status,
+.merchant-stats span,
+.admin-summary-grid span,
+.mobile-bottom-nav span,
+.site-footer-status,
+.site-footer-bottom {
+  font-size: max(.72rem, 11px);
+}
+
+@media (max-width: 700px) {
+  .nav {
+    gap: 8px;
+  }
+
+  .header-search {
+    min-width: 0;
+  }
+
+  .site-footer {
+    padding-bottom: max(92px, calc(82px + env(safe-area-inset-bottom)));
+  }
+
+  .hero-photo-frame {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 380px) {
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+
+  .header-actions {
+    min-width: 0;
+  }
+
+  .header-cart-label {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

@@ -70,7 +70,7 @@ export function CustomerDashboardPage(props: Props) {
           </div>
 
           {loading && <div className="state-card"><div className="spinner" />در حال دریافت...</div>}
-          {!loading && orders.length === 0 && <div className="state-card"><div className="state-icon">📦</div><h3>هنوز سفارشی نداری</h3><p>از بازار نجات غذا اولین خریدت را انجام بده.</p></div>}
+          {!loading && orders.length === 0 && <div className="state-card"><div className="state-icon">📦</div><h3>هنوز سفارشی نداری</h3><p>از بازار سهمینو اولین خریدت را انجام بده.</p></div>}
           {!loading && orders.length > 0 && (
             <div className="dashboard-order-list">
               {orders.slice(0, 3).map((order) => (

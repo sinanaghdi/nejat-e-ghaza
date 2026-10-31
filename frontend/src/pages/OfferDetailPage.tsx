@@ -33,7 +33,7 @@ export function OfferDetailPage({ offer, loading, error, user, cartCount, quanti
     <>
       <main className="page-shell offer-detail-page reference-detail-page">
         <nav className="marketplace-breadcrumb" aria-label="مسیر صفحه">
-          <Link to="/">نجات غذا</Link><span aria-hidden="true">‹</span><Link to="/offers">کاوش پیشنهادها</Link><span aria-hidden="true">‹</span><strong>{offer.title}</strong>
+          <Link to="/">سهمینو</Link><span aria-hidden="true">‹</span><Link to="/offers">کاوش پیشنهادها</Link><span aria-hidden="true">‹</span><strong>{offer.title}</strong>
         </nav>
         <button className="back-button" type="button" onClick={onBack}><span aria-hidden="true">→</span> بازگشت به پیشنهادها</button>
 
@@ -49,7 +49,7 @@ export function OfferDetailPage({ offer, loading, error, user, cartCount, quanti
             </div>
 
             <section className="detail-info-card">
-              <div className="detail-label-row"><span className="offer-detail-kicker">بستهٔ نجات روزانه</span><span className="detail-status-chip"><span aria-hidden="true">●</span> {offer.available_quantity > 0 && offer.is_active ? "قابل‌بررسی برای رزرو" : "در دسترس نیست"}</span></div>
+              <div className="detail-label-row"><span className="offer-detail-kicker">بستهٔ روزانهٔ سهمینو</span><span className="detail-status-chip"><span aria-hidden="true">●</span> {offer.available_quantity > 0 && offer.is_active ? "قابل‌بررسی برای رزرو" : "در دسترس نیست"}</span></div>
               <h1>{offer.title}</h1>
               <Link className="detail-merchant-link" to={`/merchants/${offer.merchant_id}`}>
                 <span className="offer-merchant-avatar" aria-hidden="true">{offer.merchant.business_name.trim().slice(0, 1) || "ن"}</span>

@@ -99,7 +99,7 @@ def create_order(db: Session, user: User, payload: OrderCreate) -> Order:
             total += subtotal
             offer.available_quantity -= requested.quantity
             items.append(OrderItem(food_offer_id=offer.id, quantity=requested.quantity, unit_price=offer.sale_price, subtotal=subtotal))
-        order = Order(customer_id=user.id, merchant_id=merchant_id, total_amount=total, status=OrderStatus.PENDING, pickup_code=secrets.token_hex(4).upper(), items=items)
+        order = Order(customer_id=user.id, merchant_id=merchant_id, total_amount=total, status=OrderStatus.PENDING, pickup_code=secrets.token_hex(8).upper(), items=items)
         db.add(order)
         db.flush()
         create_notification(

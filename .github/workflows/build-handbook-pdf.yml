@@ -21,7 +21,7 @@ jobs:
           sudo apt-get install -y pandoc texlive-xetex texlive-lang-arabic fonts-noto-core
       - name: Render PDF
         run: |
-          pandoc docs/technical-handbook.fa.md             --from markdown+pipe_tables             --pdf-engine=xelatex             -V lang=fa             -V dir=rtl             -V mainfont="Noto Naskh Arabic"             -V monofont="DejaVu Sans Mono"             -V geometry:margin=18mm             -V colorlinks=true             -V title="هندبوک فنی نجات غذا"             -o docs/Nejat-e-Ghaza-Technical-Handbook-FA.pdf
+          pandoc docs/technical-handbook.fa.md             --from markdown+pipe_tables             --pdf-engine=xelatex             -V lang=fa             -V dir=rtl             -V mainfont="Noto Naskh Arabic"             -V monofont="DejaVu Sans Mono"             -V geometry:margin=18mm             -V colorlinks=true             -V title="هندبوک فنی سهمینو"             -o docs/Nejat-e-Ghaza-Technical-Handbook-FA.pdf
       - name: Commit generated PDF
         run: |
           git config user.name "github-actions[bot]"

@@ -62,6 +62,7 @@
 | P2 | ORM metadata همهٔ CHECK constraintهای تعریف‌شده در Migration اولیه را منعکس نمی‌کرد | همگام‌سازی Constraintهای موجود Offer و OrderItem در ORM؛ Migration جدید یا Constraint جدید ساخته نشد | تست قرارداد Schema اضافه شده |
 | P2 | پاسخ قدیمی جست‌وجو می‌توانست بعد از پاسخ جدیدتر روی UI بنشیند؛ خطای بارگذاری جزئیات هم در یک مسیر fire-and-forget دوباره throw می‌شد | کنترل نسخهٔ درخواست و نگهداری خطا در state خود Hook؛ Promise ردشدهٔ بدون مصرف حذف شد | تست E2E پاسخ‌های out-of-order اضافه شده |
 | P2 | X-Request-ID ورودی بدون محدودیت طول/کاراکتر در log و audit context پذیرفته می‌شد | پذیرش فقط حروف/اعداد و . _ : - در محدودهٔ ۱ تا ۶۴ کاراکتر؛ در غیر این صورت تولید UUID | تست ورودی معتبر و نامعتبر اضافه شده |
+| P2 | ایجاد/ویرایش پروفایل فروشنده Audit Trail نداشت و create race می‌توانست IntegrityError خام بدهد | قفل ویرایش، ثبت رویدادهای ساخت/ویرایش و تبدیل رقابت ساخت پروفایل به 409 | تست ایجاد و ویرایش پروفایل اضافه شده |
 | P1 | Nginx مقدار X-Forwarded-For ورودی را append می‌کرد و Uvicorn همهٔ Forwarded senderها را trusted می‌دانست | بازنویسی X-Forwarded-For با IP اتصال در Nginx edge | تست پیکربندی اضافه شده |
 | P1 | لاگ دسترسی پیش‌فرض می‌توانست URL کامل callback و query string حامل Authority را ثبت کند | access log سفارشی بدون URL/path/query؛ خاموش‌کردن access log خام Uvicorn در Docker/Compose | تست پیکربندی اضافه شده؛ CI نسخهٔ نهایی باید تأیید شود |
 
@@ -142,7 +143,7 @@ Commit 4521b6c09765f897e3f0862fb7ebe0142876d1cd:
 
 [Tests workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41250373271) · [Python workflow](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41250373238) · [Secret scan](https://github.com/sinanaghdi/nejat-e-ghaza/actions/runs/41250373298)
 
-**مهم:** پس از آن اصلاح Nginx forwarded IP و logging، Docker commands و تست‌های پیکربندی اضافه شدند. CI revision جدید باید قبل از اعلام موفقیت نهایی همین تغییرات نیز سبز شود. وضعیت دقیق را از [PR #30](https://github.com/sinanaghdi/nejat-e-ghaza/pull/30) و Checks همان head دنبال کنید.
+**تاریخچهٔ شکست و اصلاح:** commit 2cb0419 در تست واحد تنظیمات Nginx یک assertion شکست‌خورده داشت؛ تست، نام متغیرهای ممنوع را در comment توضیحی هم جست‌وجو می‌کرد، نه فقط directiveهای اجرایی را. این تست اصلاح شده تا commentها را از directiveها جدا کند. PR #30 در همین فاصله در main ادغام شد؛ اصلاح تست، آزمون Redis واقعی و Audit پروفایل فروشنده در commitهای بعدی شاخه مانده‌اند و در PR پیگیری جداگانه بررسی می‌شوند. CI آن revisionها باید پیش از تأیید نهایی سبز شود.
 
 ### آزمون‌هایی که در این شاخه اضافه شدند
 
@@ -156,6 +157,7 @@ Commit 4521b6c09765f897e3f0862fb7ebe0142876d1cd:
 - out-of-order marketplace request response.
 - request ID ورودی و Nginx Forwarded-For sanitization.
 - کنترل access logging برای جلوگیری از ثبت callback query values.
+- اجرای Lua rate limiter با Redis واقعی در job مستقل CI.
 
 ## ۸. Change log شاخهٔ ممیزی
 
@@ -170,6 +172,8 @@ Commit 4521b6c09765f897e3f0862fb7ebe0142876d1cd:
 | app/db/models/food_offer.py | همگام‌سازی CHECKهای موجود با ORM metadata |
 | app/db/models/order_item.py | همگام‌سازی CHECK موجود با ORM metadata |
 | app/middleware/request_context.py | اعتبارسنجی X-Request-ID |
+| app/services/merchant.py | قفل و Audit Trail برای ایجاد/ویرایش پروفایل فروشنده |
+| .github/workflows/tests.yml | job مستقل Redis-backed برای تست Lua Rate Limiter |
 | frontend/src/hooks/useMarketplace.ts | جلوگیری از اعمال پاسخ قدیمی و unhandled rejection |
 | docker/nginx/nginx.conf | بازنویسی XFF و access log بدون URL/query |
 | docker-compose.yml, Dockerfile.production | خاموش‌کردن access log خام Uvicorn |

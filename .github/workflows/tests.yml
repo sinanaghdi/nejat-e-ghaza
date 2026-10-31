@@ -102,3 +102,37 @@ jobs:
 
       - name: Build frontend image
         run: docker build -f Dockerfile.web.production --build-arg VITE_API_BASE_URL=/ -t nejat-e-ghaza-web:test .
+
+  redis-rate-limit-integration:
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      REDIS_TEST_URL: redis://localhost:6379/15
+      DATABASE_URL: sqlite:///./test.db
+      JWT_SECRET_KEY: test-secret
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Test atomic rate limiting against Redis
+        run: pytest -q tests/test_rate_limit.py

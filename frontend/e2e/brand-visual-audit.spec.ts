@@ -61,6 +61,9 @@ test("Sahmino public pages stay legible and overflow-free across the viewport ma
         body: document.body.scrollWidth,
         header: document.querySelector(".site-header")?.getBoundingClientRect().height ?? 0,
         logo: document.querySelector(".brand-mark")?.getBoundingClientRect().width ?? 0,
+        logoBackground: document.querySelector(".brand-mark") ? getComputedStyle(document.querySelector(".brand-mark")!).backgroundColor : "",
+        logoRadius: document.querySelector(".brand-mark") ? getComputedStyle(document.querySelector(".brand-mark")!).borderRadius : "",
+        logoShadow: document.querySelector(".brand-mark") ? getComputedStyle(document.querySelector(".brand-mark")!).boxShadow : "",
       }));
 
       expect(
@@ -73,6 +76,9 @@ test("Sahmino public pages stay legible and overflow-free across the viewport ma
       ).toBeLessThanOrEqual(layout.viewport + 1);
       expect(layout.header, `Header collapsed at ${viewport.width}px on ${route.path}`).toBeGreaterThan(40);
       expect(layout.logo, `Brand mark too small at ${viewport.width}px on ${route.path}`).toBeGreaterThanOrEqual(30);
+      expect(layout.logoBackground, `Unexpected logo tile at ${viewport.width}px on ${route.path}`).toBe("rgba(0, 0, 0, 0)");
+      expect(layout.logoRadius, `Unexpected logo rounding at ${viewport.width}px on ${route.path}`).toBe("0px");
+      expect(layout.logoShadow, `Unexpected logo shadow at ${viewport.width}px on ${route.path}`).toBe("none");
     }
   }
 

@@ -2,7 +2,7 @@
 
 ## Typography standard
 
-Nejat-e-Ghaza is a Persian-first product. Typography is treated as a product system, not a decorative detail.
+Sahmino is a Persian-first product. Typography is treated as a product system, not a decorative detail.
 
 ### Font
 

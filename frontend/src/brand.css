@@ -106,6 +106,17 @@ select,
   color: var(--brand-forest);
 }
 
+.brand-mark {
+  display: block;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  color: var(--brand-forest);
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
 .brand-copy strong {
   color: var(--brand-forest);
   font-weight: 800;
@@ -204,6 +215,10 @@ select,
   color: var(--brand-cream);
 }
 
+.site-footer .brand-mark {
+  background: transparent !important;
+}
+
 .site-footer .brand-copy small,
 .site-footer p,
 .site-footer-note p,
@@ -297,6 +312,12 @@ img {
     gap: 8px;
   }
 
+  .brand-mark {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+
   .header-search {
     min-width: 0;
   }
@@ -338,3 +359,8 @@ img {
 }
 
 .mobile-bottom-nav b { color: var(--brand-charcoal); background: var(--brand-orange); }
+
+.legal-lead,
+.legal-notice p {
+  color: var(--brand-secondary);
+}

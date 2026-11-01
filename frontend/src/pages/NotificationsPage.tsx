@@ -97,7 +97,7 @@ export function NotificationsPage(props: Props) {
   }
 
   return (
-    <main className="app">
+    <main className="app stitch-app">
       <Header user={props.user} cartCount={props.cartCount} onCart={props.onCart} onOrders={props.onOrders} onMerchant={props.onMerchant} onLogin={props.onLogin} onLogout={props.onLogout} />
       <section className="page-shell notifications-page">
         <header className="page-header notifications-header">

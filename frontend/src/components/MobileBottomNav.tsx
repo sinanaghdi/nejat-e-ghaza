@@ -8,18 +8,38 @@ type Props = {
 };
 
 export function MobileBottomNav({ cartCount, userRole, onCart }: Props) {
+  if (userRole === "MERCHANT") {
+    return (
+      <nav className="stitch-bottom-nav" aria-label="ناوبری فروشنده">
+        <NavLink to="/merchant" end className={({ isActive }) => isActive ? "active" : ""}><UiIcon name="home" size={19} /><span>پیشخوان</span></NavLink>
+        <NavLink to="/merchant#merchant-offers"><UiIcon name="package" size={19} /><span>بسته‌ها</span></NavLink>
+        <NavLink to="/merchant#merchant-orders"><UiIcon name="check" size={19} /><span>تحویل</span></NavLink>
+        <NavLink to="/merchant#merchant-finance"><UiIcon name="wallet" size={19} /><span>مالی</span></NavLink>
+        <NavLink to="/profile"><UiIcon name="user" size={19} /><span>حساب</span></NavLink>
+      </nav>
+    );
+  }
+
+  if (userRole === "ADMIN") {
+    return (
+      <nav className="stitch-bottom-nav" aria-label="ناوبری مدیریت">
+        <NavLink to="/admin"><UiIcon name="home" size={19} /><span>نمای کلی</span></NavLink>
+        <NavLink to="/admin#admin-merchants"><UiIcon name="store" size={19} /><span>فروشگاه‌ها</span></NavLink>
+        <NavLink to="/admin#admin-offers"><UiIcon name="package" size={19} /><span>بسته‌ها</span></NavLink>
+        <NavLink to="/admin#admin-settlements"><UiIcon name="wallet" size={19} /><span>تسویه</span></NavLink>
+        <NavLink to="/profile"><UiIcon name="user" size={19} /><span>حساب</span></NavLink>
+      </nav>
+    );
+  }
+
   return (
-    <nav className="mobile-bottom-nav" aria-label="ناوبری اصلی">
-      <NavLink to="/" end aria-label="خانه" className={({isActive}) => isActive ? "active" : ""}><UiIcon name="home" size={21} /><span>خانه</span></NavLink>
-      <NavLink to="/offers" aria-label="پیشنهادها" className={({isActive}) => isActive ? "active" : ""}><UiIcon name="food" size={21} /><span>پیشنهادها</span></NavLink>
-      <button type="button" onClick={onCart} aria-label={cartCount > 0 ? `سبد خرید، ${cartCount.toLocaleString("fa-IR")} قلم` : "سبد خرید"}><UiIcon name="bag" size={21} />{cartCount > 0 && <b>{cartCount.toLocaleString("fa-IR")}</b>}<span>سبد خرید</span></button>
-      {userRole === "MERCHANT"
-        ? <NavLink to="/merchant" className={({isActive}) => isActive ? "active" : ""}><UiIcon name="store" size={21} /><span>فروشگاه</span></NavLink>
-        : userRole === "ADMIN"
-          ? <NavLink to="/admin" className={({isActive}) => isActive ? "active" : ""}><UiIcon name="shield-check" size={21} /><span>مدیریت</span></NavLink>
-          : userRole === "CUSTOMER"
-            ? <NavLink to="/orders" className={({isActive}) => isActive ? "active" : ""}><UiIcon name="package" size={21} /><span>سفارش‌ها</span></NavLink>
-            : <NavLink to="/login" className={({isActive}) => isActive ? "active" : ""}><UiIcon name="user" size={21} /><span>ورود</span></NavLink>}
+    <nav className="stitch-bottom-nav" aria-label="ناوبری اصلی">
+      <NavLink to="/" end className={({ isActive }) => isActive ? "active" : ""}><UiIcon name="home" size={19} /><span>خانه</span></NavLink>
+      <NavLink to="/offers" className={({ isActive }) => isActive ? "active" : ""}><UiIcon name="food" size={19} /><span>بسته‌ها</span></NavLink>
+      <NavLink to="/club" className={({ isActive }) => isActive ? "active" : ""}><UiIcon name="leaf" size={19} /><span>باشگاه</span></NavLink>
+      <NavLink to="/orders" className={({ isActive }) => isActive ? "active" : ""}><UiIcon name="package" size={19} /><span>سفارش‌ها</span></NavLink>
+      <NavLink to="/profile" className={({ isActive }) => isActive ? "active" : ""}><UiIcon name="user" size={19} /><span>حساب</span></NavLink>
+      {cartCount > 0 && <button className="stitch-bottom-cart" type="button" onClick={onCart} aria-label={`سبد خرید، ${cartCount} قلم`}><UiIcon name="bag" size={19} /><b>{cartCount.toLocaleString("fa-IR")}</b></button>}
     </nav>
   );
 }

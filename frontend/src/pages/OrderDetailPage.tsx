@@ -6,14 +6,15 @@ import { getToken } from "../lib/auth";
 import { formatOrderDate, formatToman } from "../lib/formatters";
 import { Header } from "../components/Header";
 import { MobileBottomNav } from "../components/MobileBottomNav";
+import { UiIcon } from "../components/UiIcon";
 
 const statusLabels: Record<Order["status"], string> = {
   PENDING: "در انتظار پرداخت",
-  PAID: "پرداخت شده",
-  READY_FOR_PICKUP: "آماده دریافت",
-  COMPLETED: "تکمیل شده",
-  CANCELLED: "لغو شده",
-  EXPIRED: "منقضی شده",
+  PAID: "پرداخت‌شده",
+  READY_FOR_PICKUP: "آمادهٔ دریافت",
+  COMPLETED: "تحویل‌شده",
+  CANCELLED: "لغوشده",
+  EXPIRED: "منقضی‌شده",
 };
 
 type Props = {
@@ -52,24 +53,16 @@ export function OrderDetailPage({
     }
     let active = true;
     setLoading(true);
+    setError("");
     getOrder(getToken(), orderId)
-      .then((value) => {
-        if (active) setOrder(value);
-      })
-      .catch((err) => {
-        if (active) setError(err instanceof Error ? err.message : "سفارش پیدا نشد.");
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
+      .then((value) => { if (active) setOrder(value); })
+      .catch((err) => { if (active) setError(err instanceof Error ? err.message : "سفارش پیدا نشد."); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
   }, [orderId]);
 
   async function handleRetryPayment() {
     if (!order || order.status !== "PENDING") return;
-
     setPaymentLoading(true);
     setPaymentMessage("");
     setCancelError("");
@@ -79,8 +72,7 @@ export function OrderDetailPage({
         window.location.assign(payment.checkout_url);
         return;
       }
-      setOrder((current) => current ? { ...current, status: "PAID" } : current);
-      setPaymentMessage("پرداخت دمو با موفقیت ثبت شد. سفارش آماده پردازش فروشنده است.");
+      setPaymentMessage("درخواست پرداخت آزمایشی ساخته شد، اما پرداخت نهایی از این مسیر تأیید نمی‌شود. وضعیت سفارش تا دریافت تأیید معتبر در حالت انتظار می‌ماند.");
     } catch (err) {
       setCancelError(err instanceof Error ? err.message : "شروع پرداخت انجام نشد.");
     } finally {
@@ -90,8 +82,7 @@ export function OrderDetailPage({
 
   async function handleCancelOrder() {
     if (!order || order.status !== "PENDING") return;
-    if (!window.confirm("سفارش در حال انتظار پرداخت لغو شود؟")) return;
-
+    if (!window.confirm("سفارش در انتظار پرداخت لغو شود؟")) return;
     setCancelLoading(true);
     setCancelError("");
     try {
@@ -105,102 +96,61 @@ export function OrderDetailPage({
   }
 
   return (
-    <main className="app">
-      <Header
-        user={user}
-        cartCount={cartCount}
-        onCart={onCart}
-        onOrders={onOrders}
-        onMerchant={onMerchant}
-        onLogin={onLogin}
-        onLogout={onLogout}
-      />
-      <section className="page-shell">
-        <button className="back-button" type="button" onClick={onOrders}>→ بازگشت به سفارش‌ها</button>
+    <main className="stitch-app">
+      <Header user={user} cartCount={cartCount} onCart={onCart} onOrders={onOrders} onMerchant={onMerchant} onLogin={onLogin} onLogout={onLogout} />
+      <section className="stitch-content stitch-account-page">
+        <div className="stitch-breadcrumb"><Link to="/orders">سفارش‌های من</Link><span>←</span><strong>سفارش #{orderId}</strong></div>
 
         {!user && !loading && (
-          <section className="state-card">
-            <div className="state-icon">🔐</div>
-            <h3>ابتدا وارد حساب شو</h3>
-            <p>برای مشاهده جزئیات سفارش باید وارد حساب کاربری باشی.</p>
-            <button className="primary-button" type="button" onClick={onLogin}>ورود</button>
-          </section>
+          <section className="stitch-empty-card"><UiIcon name="user" size={30} /><h2>ابتدا وارد حساب شو</h2><p>برای دیدن جزئیات و کد دریافت باید وارد حساب سفارش‌دهنده شوی.</p><button className="stitch-button stitch-button-primary" onClick={onLogin}>ورود</button></section>
         )}
-
-        {loading && <div className="state-card"><div className="spinner" />در حال دریافت سفارش...</div>}
-
-        {!loading && error && (
-          <div className="state-card error-state">
-            <div className="state-icon">!</div>
-            <h3>سفارش پیدا نشد</h3>
-            <p>{error}</p>
-            <Link className="secondary-button compact" to="/orders">بازگشت به سفارش‌ها</Link>
-          </div>
-        )}
+        {loading && <section className="stitch-state-card" role="status">در حال دریافت جزئیات سفارش...</section>}
+        {!loading && error && <section className="stitch-state-card stitch-error-card" role="alert"><h2>جزئیات سفارش دریافت نشد</h2><p>{error}</p><Link className="stitch-button stitch-button-outline" to="/orders">بازگشت به سفارش‌ها</Link></section>}
 
         {!loading && !error && order && (
-          <section className="order-detail-card">
-            <header className="page-header">
-              <p className="eyebrow">جزئیات سفارش</p>
+          <section style={{ maxWidth: 740, marginInline: "auto" }}>
+            <header className="stitch-account-hero">
+              <p className="stitch-kicker">رسید سفارش</p>
               <h1>سفارش #{order.id}</h1>
-              <span className={`profile-role status-${order.status.toLowerCase()}`}>
-                {statusLabels[order.status]}
-              </span>
+              <p>وضعیت: {statusLabels[order.status]}</p>
             </header>
 
-            <div className="pickup-code large-pickup-code">
-              <span>کد دریافت</span>
-              <strong>{order.pickup_code}</strong>
-            </div>
+            {order.status !== "CANCELLED" && order.status !== "EXPIRED" && (
+              <section className="stitch-pickup-ticket" style={{ marginTop: 15, padding: 25 }}>
+                <span className="stitch-kicker">کد دریافت اختصاصی</span>
+                <strong style={{ fontSize: "2rem" }}>{order.pickup_code}</strong>
+                <p className="stitch-copy-hint">این کد را هنگام مراجعه به فروشگاه به فروشنده اعلام کن. کد را پیش از حضور در فروشگاه در اختیار دیگران قرار نده.</p>
+                <p className="stitch-copy-hint">QR خودکار در نسخهٔ فعلی فعال نیست؛ فروشنده کد را دستی بررسی می‌کند.</p>
+                <button type="button" className="stitch-button stitch-button-secondary" onClick={() => {
+                  void navigator.clipboard?.writeText(order.pickup_code).catch(() => undefined);
+                }}>کپی کد دریافت</button>
+              </section>
+            )}
 
-            <div className="order-detail-items">
+            <section className="stitch-checkout-panel" style={{ marginTop: 15 }}>
+              <h2>اقلام سفارش</h2>
               {order.items.map((item) => (
-                <div className="order-item-row" key={item.id}>
-                  <span>غذا #{item.food_offer_id} × {item.quantity}</span>
+                <div className="stitch-checkout-item" key={item.id}>
+                  <span><strong>بستهٔ #{item.food_offer_id}</strong><small>تعداد: {item.quantity.toLocaleString("fa-IR")}</small></span>
                   <strong>{formatToman(item.subtotal)}</strong>
                 </div>
               ))}
-            </div>
-
-            <div className="order-total">
-              <span>مبلغ کل</span>
-              <strong>{formatToman(order.total_amount)}</strong>
-            </div>
-
-            {cancelError && <p className="form-message error-message">{cancelError}</p>}
-            {paymentMessage && <p className="form-message success-message">{paymentMessage}</p>}
-            {order.status === "PENDING" && (
-              <div className="order-action-stack">
-                <button
-                  className="primary-button"
-                  type="button"
-                  disabled={paymentLoading}
-                  onClick={() => void handleRetryPayment()}
-                >
-                  {paymentLoading ? "در حال آماده‌سازی پرداخت..." : "ادامه پرداخت"}
-                </button>
-                <button
-                  className="secondary-button danger-action"
-                  type="button"
-                  disabled={cancelLoading || paymentLoading}
-                  onClick={() => void handleCancelOrder()}
-                >
-                  {cancelLoading ? "در حال لغو..." : "لغو سفارش"}
-                </button>
-              </div>
-            )}
-
-            <time className="order-date" dateTime={order.created_at}>
-              ثبت شده در {formatOrderDate(order.created_at)}
-            </time>
+              <div className="stitch-checkout-total stitch-checkout-grand"><span>مبلغ کل</span><strong>{formatToman(order.total_amount)}</strong></div>
+              {cancelError && <p className="form-message error-message" role="alert">{cancelError}</p>}
+              {paymentMessage && <p className="form-message success-message" role="status">{paymentMessage}</p>}
+              {order.status === "PENDING" && (
+                <div className="stitch-order-actions" style={{ marginTop: 16 }}>
+                  <button className="stitch-button stitch-button-primary" type="button" disabled={paymentLoading} onClick={() => void handleRetryPayment()}>{paymentLoading ? "در حال آماده‌سازی..." : "ادامهٔ پرداخت"}</button>
+                  <button className="stitch-button stitch-button-outline" type="button" disabled={cancelLoading || paymentLoading} onClick={() => void handleCancelOrder()}>{cancelLoading ? "در حال لغو..." : "لغو سفارش"}</button>
+                </div>
+              )}
+              <p className="stitch-legal-hint">ثبت این رسید به معنی تکمیل تحویل نیست؛ وضعیت نهایی با تأیید سرور به‌روزرسانی می‌شود.</p>
+            </section>
+            <Link to="/orders" className="stitch-text-link" style={{ marginTop: 18 }}>بازگشت به همهٔ سفارش‌ها ←</Link>
           </section>
         )}
       </section>
-      <MobileBottomNav
-        cartCount={cartCount}
-        userRole={user?.role || null}
-        onCart={onCart}
-      />
+      <MobileBottomNav cartCount={cartCount} userRole={user?.role ?? null} onCart={onCart} />
     </main>
   );
 }

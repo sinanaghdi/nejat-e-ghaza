@@ -32,6 +32,7 @@ import { LegalPage, type LegalPageKind } from "./pages/LegalPage";
 import { SiteFooter } from "./components/SiteFooter";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 import { MerchantIntroPage } from "./pages/MerchantIntroPage";
+import { EcoClubPage } from "./pages/EcoClubPage";
 
 const legalRoutes: Record<string, LegalPageKind> = {
   "/privacy": "privacy",
@@ -184,7 +185,7 @@ function App() {
       cartCount={cartCount}
       onCart={() => setCartOpen(true)}
       onOrders={() => navigate("/orders")}
-      onMerchant={() => void merchantState.openMerchantDashboard()}
+      onMerchant={() => navigate("/merchant")}
       onLogin={() => openAuth("login")}
       onLogout={() => void handleLogout()}
     />
@@ -277,6 +278,8 @@ function App() {
         onLogout={() => void handleLogout()}
       />
     );
+  } else if (location.pathname === "/club") {
+    page = <EcoClubPage user={user} cartCount={cartCount} onCart={() => setCartOpen(true)} onLogin={() => navigate("/login")} />;
   } else if (location.pathname === "/offers") {
     page = (
       <OffersPage
@@ -470,7 +473,7 @@ function App() {
         <MobileBottomNav cartCount={cartCount} userRole={user?.role ?? null} onCart={() => setCartOpen(true)} />
       )}
 
-      {(location.pathname === "/" || location.pathname === "/merchant") && (
+      {(location.pathname === "/merchant") && (
         <>
           <MerchantDashboard
             open={merchantState.merchantOpen}

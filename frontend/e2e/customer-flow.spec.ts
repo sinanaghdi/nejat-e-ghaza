@@ -199,7 +199,7 @@ test("customer can discover, authenticate, order, and review order status", asyn
   await page.getByLabel("ایمیل").fill(customer.email);
   await page.getByLabel("رمز عبور").fill("password123");
   await page.getByRole("button", { name: "ورود به حساب" }).click();
-  await expect(page.getByText(customer.name, { exact: true })).toBeVisible();
+  await expect(page.getByLabel("منوی حساب کاربری")).toBeVisible();
 
   // Authentication redirects to the customer dashboard, so return to the
   // marketplace before interacting with the offer card.

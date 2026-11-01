@@ -67,7 +67,7 @@ test("older marketplace search response cannot overwrite a newer result", async 
   });
 
   await page.goto("/#/offers");
-  await expect(page.getByRole("heading", { level: 1, name: "غذاهای خوب را، هوشمندانه‌تر پیدا کن." })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "بسته‌های شانس نزدیک شما" })).toBeVisible();
 
   const search = page.getByLabel("جست‌وجوی غذا یا فروشگاه");
   const searchButton = page.getByRole("button", { name: "جست‌وجو" });

@@ -407,7 +407,7 @@ button.stitch-hero-offer-float { cursor: pointer; color: inherit; font: inherit;
 /* Footer and navigation */
 .stitch-app .site-footer { margin-top: 50px; background: var(--stitch-pine); color: white; }
 .stitch-app .site-footer-inner { max-width: 1180px; }
-.stitch-bottom-nav { position: fixed; z-index: 40; inset-inline: 50% auto; bottom: max(8px, env(safe-area-inset-bottom)); transform: translateX(50%); width: min(620px, calc(100% - 20px)); min-height: 67px; display: flex; align-items: stretch; justify-content: space-around; gap: 3px; padding: 7px; border: 1px solid rgba(220,225,215,.9); border-radius: 19px; background: rgba(255,255,255,.96); box-shadow: 0 9px 30px rgba(24,59,42,.16); backdrop-filter: blur(15px); }
+.stitch-bottom-nav { position: fixed; z-index: 40; left: 50%; right: auto; bottom: max(8px, env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(620px, calc(100% - 20px)); min-height: 67px; display: flex; align-items: stretch; justify-content: space-around; gap: 3px; padding: 7px; border: 1px solid rgba(220,225,215,.9); border-radius: 19px; background: rgba(255,255,255,.96); box-shadow: 0 9px 30px rgba(24,59,42,.16); backdrop-filter: blur(15px); }
 .stitch-bottom-nav a, .stitch-bottom-nav button { position: relative; flex: 1; min-width: 0; min-height: 51px; display: grid; align-content: center; justify-items: center; gap: 2px; border: 0; border-radius: 13px; background: transparent; color: #7C857A; font-size: .62rem; font-weight: 700; }
 .stitch-bottom-nav a.active { background: var(--stitch-mint); color: var(--stitch-forest); font-weight: 900; }
 .stitch-bottom-nav svg { width: 20px; height: 20px; }
@@ -728,4 +728,8 @@ button.stitch-hero-offer-float { cursor: pointer; color: inherit; font: inherit;
   .stitch-runtime .merchant-intro-benefits, .stitch-runtime .merchant-intro-step-grid { grid-template-columns: 1fr; }
   .stitch-runtime .merchant-intro-responsibilities { grid-template-columns: 1fr; padding: 19px; }
   .stitch-runtime .merchant-intro-final-cta { align-items: flex-start; flex-direction: column; padding: 20px; }
+}
+
+@media (max-width: 740px) {
+  .stitch-bottom-nav { left: 50%; right: auto; transform: translateX(-50%); }
 }

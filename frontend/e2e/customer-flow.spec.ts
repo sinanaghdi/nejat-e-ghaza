@@ -178,16 +178,16 @@ test("customer can discover, authenticate, order, and review order status", asyn
 
   await page.goto("/#/offers");
   expect(pageErrors, `Unexpected browser errors: ${pageErrors.join(" | ")}`).toEqual([]);
-  await expect(page.getByRole("heading", { name: "همه پیشنهادهای فعال" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "همهٔ پیشنهادهای فعال" })).toBeVisible();
 
   await page.getByLabel("جست‌وجوی غذا یا فروشگاه").fill("باکس شام");
   await page.getByRole("button", { name: "جست‌وجو" }).click();
   await expect(page.getByRole("heading", { name: "باکس شام نجات" })).toBeVisible();
 
   await page.locator(".nav").getByRole("link", { name: "ورود" }).click();
-  await expect(page.getByRole("heading", { name: "خوش آمدی" })).toBeVisible();
-  await page.locator(".auth-tabs").getByRole("button", { name: "ثبت‌نام" }).click();
-  await expect(page.getByRole("heading", { name: "حساب کاربری بساز" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "ورود به حساب" })).toBeVisible();
+  await page.locator(".stitch-auth-tabs").getByRole("button", { name: "ثبت‌نام" }).click();
+  await expect(page.getByRole("heading", { name: "ساخت حساب کاربری" })).toBeVisible();
   await expect(page.getByText("نام و نام خانوادگی", { exact: true })).toBeVisible();
   await page.getByRole("textbox", { name: "نام و نام خانوادگی" }).fill(customer.name);
   await page.getByRole("textbox", { name: "ایمیل" }).fill(customer.email);
@@ -195,10 +195,11 @@ test("customer can discover, authenticate, order, and review order status", asyn
   await page.getByRole("button", { name: "ساخت حساب" }).click();
   await expect(page.getByText("حساب شما ساخته شد. حالا با ایمیل و رمز عبور وارد شوید.")).toBeVisible();
 
+  await page.locator(".stitch-auth-methods").getByRole("button", { name: "ایمیل و رمز" }).click();
   await page.getByLabel("ایمیل").fill(customer.email);
   await page.getByLabel("رمز عبور").fill("password123");
   await page.getByRole("button", { name: "ورود به حساب" }).click();
-  await expect(page.getByRole("button", { name: "خروج" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "خروج از حساب" })).toBeVisible();
 
   // Authentication redirects to the customer dashboard, so return to the
   // marketplace before interacting with the offer card.
@@ -211,8 +212,8 @@ test("customer can discover, authenticate, order, and review order status", asyn
   await page.getByRole("button", { name: "ثبت سفارش" }).click();
   await expect(page.getByText("سفارش #1 ثبت شد")).toBeVisible();
 
-  await page.locator(".nav").getByRole("link", { name: "سفارش‌های من" }).click();
-  await expect(page.getByRole("heading", { name: "سفارش‌های من" })).toBeVisible();
-  await expect(page.getByText("پرداخت شده")).toBeVisible();
+  await page.goto("/#/orders");
+  await expect(page.getByRole("heading", { name: "سفارش‌های تو" })).toBeVisible();
+  await expect(page.getByText("پرداخت‌شده")).toBeVisible();
   await expect(page.getByText("#1", { exact: true })).toBeVisible();
 });

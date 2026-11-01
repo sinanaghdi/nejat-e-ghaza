@@ -42,7 +42,7 @@ const faqs = [
 
 export function MerchantIntroPage({ cartCount, userRole, onCart }: Props) {
   return (
-    <main className="merchant-intro-page page-content">
+    <main className="merchant-intro-page page-content stitch-app">
       <nav className="merchant-intro-breadcrumb" aria-label="مسیر صفحه">
         <Link to="/">خانه</Link>
         <span aria-hidden="true">/</span>

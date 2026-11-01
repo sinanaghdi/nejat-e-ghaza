@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import DateTime, Index, Integer, String
+from sqlalchemy import DateTime, Index, Integer, String, text
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.database import Base
 
@@ -8,6 +8,13 @@ class PhoneOTP(Base):
     __tablename__ = "phone_otps"
     __table_args__ = (
         Index("ix_phone_otps_phone_created", "phone_number", "created_at"),
+        Index(
+            "uq_phone_otps_active_phone",
+            "phone_number",
+            unique=True,
+            postgresql_where=text("consumed_at IS NULL"),
+            sqlite_where=text("consumed_at IS NULL"),
+        ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)

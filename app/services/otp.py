@@ -5,7 +5,8 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -44,9 +45,18 @@ def _as_utc(value: datetime) -> datetime:
     return value.astimezone(timezone.utc)
 
 
-def request_phone_otp(db: Session, phone_input: str, name: str | None) -> tuple[str, bool]:
+def request_phone_otp(db: Session, phone_input: str, name: str | None) -> tuple[str, str]:
     phone_number = normalize_iran_mobile(phone_input)
     now = datetime.now(timezone.utc)
+
+    # Serialize issuance by phone on PostgreSQL, including first-time requests
+    # where no PhoneOTP row exists yet. The partial unique index below remains
+    # the final integrity guard for all supported databases.
+    if db.get_bind().dialect.name == "postgresql":
+        db.execute(
+            select(func.pg_advisory_xact_lock(func.hashtextextended(phone_number, 0)))
+        )
+
     latest = db.scalar(
         select(PhoneOTP)
         .where(PhoneOTP.phone_number == phone_number)
@@ -58,10 +68,12 @@ def request_phone_otp(db: Session, phone_input: str, name: str | None) -> tuple[
 
     # Invalidate previous codes before creating a new one.
     active_codes = list(db.scalars(
-        select(PhoneOTP).where(
+        select(PhoneOTP)
+        .where(
             PhoneOTP.phone_number == phone_number,
             PhoneOTP.consumed_at.is_(None),
         )
+        .with_for_update()
     ).all())
     for item in active_codes:
         item.consumed_at = now
@@ -76,7 +88,17 @@ def request_phone_otp(db: Session, phone_input: str, name: str | None) -> tuple[
         created_at=now,
     )
     db.add(otp)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        # A concurrent issuer on a non-PostgreSQL backend may still race
+        # between the active-code read and insert; normalize the unique-index
+        # conflict into the same cooldown response instead of leaking a 500.
+        raise HTTPException(
+            status_code=429,
+            detail="برای دریافت کد جدید، ۶۰ ثانیه صبر کنید.",
+        ) from exc
 
     try:
         get_sms_provider().send_otp(phone_number, code)

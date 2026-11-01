@@ -468,7 +468,7 @@ function App() {
   }
 
   return (
-    <>
+    <div className="stitch-runtime">
       {page}
       {location.pathname !== "/merchant" && location.pathname !== "/admin" && <SiteFooter />}
       {(location.pathname === "/profile") && (
@@ -542,7 +542,7 @@ function App() {
         onPasswordChange={setPassword}
         onSubmit={handleAuthSubmit}
       />
-    </>
+    </div>
   );
 }
 

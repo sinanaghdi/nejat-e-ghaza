@@ -199,7 +199,7 @@ test("customer can discover, authenticate, order, and review order status", asyn
   await page.getByLabel("ایمیل").fill(customer.email);
   await page.getByLabel("رمز عبور").fill("password123");
   await page.getByRole("button", { name: "ورود به حساب" }).click();
-  await expect(page.getByRole("button", { name: "خروج از حساب" })).toBeVisible();
+  await expect(page.getByText(customer.name, { exact: true })).toBeVisible();
 
   // Authentication redirects to the customer dashboard, so return to the
   // marketplace before interacting with the offer card.
@@ -215,5 +215,5 @@ test("customer can discover, authenticate, order, and review order status", asyn
   await page.goto("/#/orders");
   await expect(page.getByRole("heading", { name: "سفارش‌های تو" })).toBeVisible();
   await expect(page.getByText("پرداخت‌شده")).toBeVisible();
-  await expect(page.getByText("#1", { exact: true })).toBeVisible();
+  await expect(page.getByText("سفارش #1", { exact: true })).toBeVisible();
 });

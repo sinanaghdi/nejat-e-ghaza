@@ -7,6 +7,7 @@ export function AppRouter() {
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/offers" element={<App />} />
+        <Route path="/club" element={<App />} />
         <Route path="/offers/:offerId" element={<App />} />
         <Route path="/merchants/:merchantId" element={<App />} />
         <Route path="/cart" element={<App />} />

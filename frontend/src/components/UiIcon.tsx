@@ -14,7 +14,12 @@ export type UiIconName =
   | "shield-check"
   | "check"
   | "calendar"
-  | "user";
+  | "user"
+  | "wallet"
+  | "bell"
+  | "ticket"
+  | "star"
+  | "close";
 
 const paths: Record<UiIconName, ReactNode> = {
   search: <><circle cx="10.8" cy="10.8" r="6.6" /><path d="m16 16 4.2 4.2" /></>,
@@ -31,6 +36,11 @@ const paths: Record<UiIconName, ReactNode> = {
   check: <><path d="m5 12 4 4L19 6" /></>,
   calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></>,
   user: <><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></>,
+  wallet: <><rect x="3" y="6" width="18" height="15" rx="2" /><path d="M3 9h18M16 15h2" /><path d="M3 6V4a1 1 0 0 1 1-1h14" /></>,
+  bell: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" /><path d="M10 21h4" /></>,
+  ticket: <><path d="M4 5h16v4a3 3 0 0 0 0 6v4H4v-4a3 3 0 0 0 0-6V5Z" /><path d="M12 7v2m0 2v2m0 2v2" /></>,
+  star: <><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" /></>,
+  close: <><path d="m6 6 12 12M18 6 6 18" /></>,
 };
 
 type Props = {

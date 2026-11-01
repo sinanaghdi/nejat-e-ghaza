@@ -4,6 +4,8 @@ import type { FoodOffer, User } from "../lib/api";
 import { QuantityControl } from "../components/QuantityControl";
 import { MobileBottomNav } from "../components/MobileBottomNav";
 import { formatPickupTime, formatToman } from "../lib/formatters";
+import { getStitchFoodImage } from "../lib/stitchAssets";
+import { UiIcon } from "../components/UiIcon";
 
 type Props = {
   offer: FoodOffer | null;
@@ -23,88 +25,110 @@ function discountPercent(offer: FoodOffer) {
   return Math.max(0, Math.round((1 - Number(offer.sale_price) / Number(offer.original_price)) * 100));
 }
 
-export function OfferDetailPage({ offer, loading, error, user, cartCount, quantity, onQuantityChange, onAddToCart, onBack, onCart }: Props) {
-  if (loading) return <main className="page-shell"><div className="state-card"><div className="spinner" />در حال دریافت پیشنهاد...</div></main>;
-  if (error || !offer) return <main className="page-shell"><div className="state-card error-state"><div className="state-icon">!</div><h3>{error || "این پیشنهاد پیدا نشد."}</h3><p>ممکن است پیشنهاد غیرفعال شده یا دیگر موجود نباشد.</p><button className="secondary-button compact" type="button" onClick={onBack}>بازگشت به پیشنهادها</button></div></main>;
+export function OfferDetailPage({
+  offer, loading, error, user, cartCount, quantity,
+  onQuantityChange, onAddToCart, onBack, onCart,
+}: Props) {
+  if (loading) {
+    return <main className="stitch-app"><div className="stitch-content stitch-detail-page"><section className="stitch-state-card" role="status">در حال دریافت جزئیات بسته...</section></div></main>;
+  }
+  if (error || !offer) {
+    return (
+      <main className="stitch-app">
+        <div className="stitch-content stitch-detail-page">
+          <section className="stitch-state-card stitch-error-card" role="alert">
+            <h3>{error || "این بسته پیدا نشد."}</h3>
+            <p>ممکن است فروشنده آن را غیرفعال کرده یا موجودی آن تمام شده باشد.</p>
+            <button className="stitch-button stitch-button-secondary" onClick={onBack}>بازگشت به بسته‌ها</button>
+          </section>
+        </div>
+      </main>
+    );
+  }
 
   const discount = discountPercent(offer);
-  const lowStock = offer.available_quantity > 0 && offer.available_quantity <= 3;
+  const available = offer.is_active && offer.available_quantity > 0 && new Date(offer.pickup_end).getTime() > Date.now();
+  const total = offer.sale_price * quantity;
 
   return (
-    <>
-      <main className="page-shell offer-detail-page reference-detail-page">
-        <nav className="marketplace-breadcrumb" aria-label="مسیر صفحه">
-          <Link to="/">سهمینو</Link><span aria-hidden="true">‹</span><Link to="/offers">کاوش پیشنهادها</Link><span aria-hidden="true">‹</span><strong>{offer.title}</strong>
+    <main className="stitch-app">
+      <section className="stitch-content stitch-detail-page">
+        <nav className="stitch-breadcrumb" aria-label="مسیر صفحه">
+          <Link to="/">سهمینو</Link><span>←</span><Link to="/offers">بسته‌ها</Link><span>←</span><strong>{offer.title}</strong>
         </nav>
-        <button className="back-button" type="button" onClick={onBack}><span aria-hidden="true">→</span> بازگشت به پیشنهادها</button>
 
-        <div className="detail-layout-grid">
-          <section className="offer-detail-main">
-            <div className="detail-gallery-card">
-              <div className="detail-image detail-image-page">
-                <SafeImage src={offer.image_url} alt={offer.title} loading="eager" fallback={<span className="detail-image-fallback" aria-hidden="true">🍱</span>} />
-                {discount > 0 && <span className="discount-badge">{discount.toLocaleString("fa-IR")}٪ تخفیف</span>}
-                {lowStock && <span className="stock-badge">فقط {offer.available_quantity.toLocaleString("fa-IR")} عدد باقی مانده</span>}
-              </div>
-              <div className="detail-gallery-caption"><span>تصویر بستهٔ پیشنهادی</span><span>جزئیات نهایی در محل فروشنده قابل بررسی است</span></div>
+        <div className="stitch-detail-layout" style={{ marginTop: 18 }}>
+          <div className="stitch-detail-main">
+            <div className="stitch-detail-photo">
+              <SafeImage
+                src={offer.image_url || getStitchFoodImage(offer.title, offer.description || "")}
+                alt={offer.image_url ? offer.title : `تصویر نمونه ${offer.title}`}
+                loading="eager"
+                fallback={<span className="stitch-food-placeholder">🍱</span>}
+              />
+              {discount > 0 && <span className="stitch-discount-badge" style={{ position: "absolute", top: 14, insetInlineStart: 14 }}>{discount.toLocaleString("fa-IR")}٪ تخفیف</span>}
             </div>
 
-            <section className="detail-info-card">
-              <div className="detail-label-row"><span className="offer-detail-kicker">بستهٔ روزانهٔ سهمینو</span><span className="detail-status-chip"><span aria-hidden="true">●</span> {offer.available_quantity > 0 && offer.is_active ? "قابل‌بررسی برای رزرو" : "در دسترس نیست"}</span></div>
-              <h1>{offer.title}</h1>
-              <Link className="detail-merchant-link" to={`/merchants/${offer.merchant_id}`}>
-                <span className="offer-merchant-avatar" aria-hidden="true">{offer.merchant.business_name.trim().slice(0, 1) || "ن"}</span>
-                <span><strong>{offer.merchant.business_name}</strong><small><span aria-hidden="true">⌖</span> {offer.merchant.city} · {offer.merchant.address}</small></span>
-                <span className="detail-link-chevron" aria-hidden="true">←</span>
+            <section className="stitch-detail-info">
+              <div className="stitch-section-heading">
+                <div><p className="stitch-kicker">بستهٔ مازادِ قابل‌مصرف</p><h1>{offer.title}</h1></div>
+                <span className={available ? "stitch-status-pill" : "stitch-status-pill is-danger"}>{available ? "قابل رزرو" : "در دسترس نیست"}</span>
+              </div>
+              {offer.description && <p>{offer.description}</p>}
+
+              <Link className="stitch-detail-seller" to={`/merchants/${offer.merchant_id}`}>
+                <span className="stitch-merchant-avatar">{offer.merchant.business_name.trim().slice(0, 1) || "س"}</span>
+                <span><strong>{offer.merchant.business_name}</strong><small><UiIcon name="pin" size={13} /> {offer.merchant.city} · {offer.merchant.address}</small></span>
+                <UiIcon name="arrow-left" size={18} />
               </Link>
-              {offer.description && <div className="detail-description-block"><h2>دربارهٔ این بسته</h2><p>{offer.description}</p></div>}
             </section>
 
-            <section className="detail-info-card detail-attributes-card">
-              <div className="section-heading"><div><p className="eyebrow">پیش از رزرو</p><h2>زمان‌بندی، آدرس و قوانین تحویل حضوری</h2></div></div>
-              <div className="pickup-detail-grid">
-                <div className="pickup-detail-item"><span aria-hidden="true">◷</span><div><small>شروع بازهٔ دریافت</small><strong>{formatPickupTime(offer.pickup_start)}</strong></div></div>
-                <div className="pickup-detail-item"><span aria-hidden="true">◴</span><div><small>پایان بازهٔ دریافت</small><strong>{formatPickupTime(offer.pickup_end)}</strong></div></div>
-                <div className="pickup-detail-item"><span aria-hidden="true">⌖</span><div><small>نشانی فروشگاه</small><strong>{offer.merchant.address}</strong></div></div>
-                <div className="pickup-detail-item"><span aria-hidden="true">▣</span><div><small>موجودی اعلام‌شده</small><strong>{offer.available_quantity.toLocaleString("fa-IR")} بسته</strong></div></div>
+            <section className="stitch-detail-info">
+              <p className="stitch-kicker">پیش از رزرو بررسی کن</p>
+              <h2 style={{ margin: "0 0 14px", color: "var(--stitch-pine)", fontSize: "1.08rem" }}>زمان و شیوهٔ دریافت</h2>
+              <div className="stitch-detail-timing">
+                <div><small>شروع دریافت</small><strong>{formatPickupTime(offer.pickup_start)}</strong></div>
+                <div><small>پایان دریافت</small><strong>{formatPickupTime(offer.pickup_end)}</strong></div>
+                <div><small>نشانی فروشگاه</small><strong>{offer.merchant.address}</strong></div>
+                <div><small>موجودی اعلام‌شده</small><strong>{offer.available_quantity.toLocaleString("fa-IR")} بسته</strong></div>
               </div>
-              <p className="detail-note">تحویل به‌صورت حضوری در نشانی فروشنده انجام می‌شود. برای جلوگیری از از دست رفتن بازهٔ دریافت، زمان شروع و پایان را پیش از ثبت سفارش بررسی کن.</p>
+              <p style={{ margin: "15px 0 0", fontSize: ".75rem" }}>تحویل در محل فروشنده و در بازهٔ درج‌شده انجام می‌شود. هزینهٔ ارسال یا پیک در این نسخه ارائه نمی‌شود.</p>
             </section>
 
-            <section className="detail-info-card safety-detail-card">
-              <div className="safety-symbol" aria-hidden="true">✓</div>
-              <div><p className="eyebrow">شفافیت ترکیبات و سلامت غذا</p><h2>حساسیت غذایی داری؟ قبل از رزرو سؤال کن.</h2><p>اطلاعات حساسیت‌زاها، مواد اولیه و شرایط نگهداری فقط زمانی قابل اتکاست که فروشنده آن را مشخص کرده باشد. اگر در توضیحات این بسته ثبت نشده، پیش از رزرو با فروشنده هماهنگ کن.</p><Link to="/safety" className="text-link">راهنمای ایمنی غذا <span aria-hidden="true">←</span></Link></div>
-            </section>
-          </section>
-
-          <aside className="detail-booking-aside" aria-label="خلاصه رزرو">
-            <div className="booking-card">
-              <div className="booking-card-heading"><span className="eyebrow">قیمت بسته</span>{discount > 0 && <span className="discount-pill">{discount.toLocaleString("fa-IR")}٪ تخفیف</span>}</div>
-              <div className="detail-price"><strong>{formatToman(offer.sale_price)}</strong>{offer.original_price > offer.sale_price && <del>{formatToman(offer.original_price)}</del>}</div>
-              {discount > 0 && <p className="savings-copy">صرفه‌جویی نسبت به قیمت اصلی: <strong>{formatToman(offer.original_price - offer.sale_price)}</strong></p>}
-              <div className="booking-divider" />
-              <div className="booking-meta-line"><span>موجودی فعلی</span><strong>{offer.available_quantity.toLocaleString("fa-IR")} بسته</strong></div>
-              <div className="booking-meta-line"><span>بازهٔ دریافت</span><strong>{formatPickupTime(offer.pickup_start)} تا {formatPickupTime(offer.pickup_end)}</strong></div>
-              <div className="booking-quantity">
-                <span>تعداد بسته</span>
-                <QuantityControl value={quantity} max={offer.available_quantity} onChange={onQuantityChange} />
+            <section className="stitch-note-card">
+              <div className="stitch-note-icon"><UiIcon name="shield-check" size={20} /></div>
+              <div>
+                <strong>اطلاعات غذا و حساسیت‌ها</strong>
+                <p>اطلاعات مواد اولیه، آلرژن‌ها و شرایط نگهداری فقط در صورتی قابل اتکاست که فروشنده آن را ثبت کرده باشد. موارد ثبت‌نشده را پیش از رزرو از فروشنده بپرس.</p>
+                <Link to="/safety" className="stitch-text-link">راهنمای ایمنی غذا ←</Link>
               </div>
-              <div className="booking-total"><span>جمع این انتخاب</span><strong>{formatToman(offer.sale_price * quantity)}</strong></div>
-              <button className="primary-button full-button reserve-cta" type="button" onClick={onAddToCart} disabled={!offer.is_active || offer.available_quantity < 1}>
-                <span aria-hidden="true">▱</span> افزودن به سبد خرید
-              </button>
-              <p className="booking-disclaimer"><span aria-hidden="true">ⓘ</span> این مرحله فقط بسته را به سبد خرید اضافه می‌کند؛ سفارش و پرداخت هنوز نهایی نشده‌اند.</p>
+            </section>
+          </div>
+
+          <aside className="stitch-booking-card">
+            <p className="stitch-kicker">قیمت و رزرو</p>
+            <h2>این بسته را انتخاب کن</h2>
+            <div className="stitch-booking-price">
+              {formatToman(offer.sale_price)}
+              {offer.original_price > offer.sale_price && <del>{formatToman(offer.original_price)}</del>}
             </div>
-            <div className="booking-reassurance"><span aria-hidden="true">✓</span><p><strong>قیمت شفاف</strong><small>قیمت اصلی و قیمت فروش در همین صفحه نمایش داده شده‌اند.</small></p></div>
-            <div className="booking-reassurance"><span aria-hidden="true">◷</span><p><strong>تحویل حضوری</strong><small>برای دریافت، در بازهٔ تعیین‌شده به فروشگاه مراجعه کن.</small></p></div>
+            {discount > 0 && <span className="stitch-saving-chip">صرفه‌جویی {discount.toLocaleString("fa-IR")}٪ نسبت به قیمت اصلی</span>}
+            <div className="stitch-divider" />
+            <div className="stitch-booking-total"><span>موجودی فعلی</span><strong>{offer.available_quantity.toLocaleString("fa-IR")} بسته</strong></div>
+            <div className="stitch-booking-total"><span>بازهٔ دریافت</span><strong>{formatPickupTime(offer.pickup_start)} تا {formatPickupTime(offer.pickup_end)}</strong></div>
+            <div className="stitch-booking-qty">
+              <span>تعداد بسته</span>
+              <QuantityControl value={quantity} max={offer.available_quantity} onChange={onQuantityChange} />
+            </div>
+            <div className="stitch-booking-total"><span>جمع این انتخاب</span><strong>{formatToman(total)}</strong></div>
+            <button className="stitch-button stitch-button-primary" style={{ width: "100%" }} type="button" onClick={onAddToCart} disabled={!available || quantity < 1}>
+              افزودن به سبد <UiIcon name="bag" size={18} />
+            </button>
+            <p className="stitch-booking-note">افزودن به سبد به‌تنهایی سفارش یا پرداخت را نهایی نمی‌کند. موجودی هنگام ثبت سفارش در سرور دوباره بررسی می‌شود.</p>
           </aside>
         </div>
-
-        <section className="related-offers-note">
-          <span aria-hidden="true">✳</span><div><strong>به دنبال گزینه‌های بیشتری هستی؟</strong><p>پیشنهادهای دیگر را ببین و قیمت و زمان دریافتشان را مقایسه کن.</p></div><Link className="secondary-button compact" to="/offers">دیدن همه پیشنهادها <span aria-hidden="true">←</span></Link>
-        </section>
-      </main>
-      <MobileBottomNav cartCount={cartCount} userRole={user?.role || null} onCart={onCart} />
-    </>
+      </section>
+      <MobileBottomNav cartCount={cartCount} userRole={user?.role ?? null} onCart={onCart} />
+    </main>
   );
 }

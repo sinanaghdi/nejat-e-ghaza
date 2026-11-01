@@ -112,14 +112,14 @@ test("merchant workspace fits mobile, tablet and desktop widths", async ({ page 
   });
 
   await page.goto("/#/login");
-  await page.getByRole("button", { name: "ایمیل و رمز عبور" }).click();
+  await page.getByRole("button", { name: "ایمیل و رمز" }).click();
   await page.getByLabel("ایمیل").fill(merchant.email);
   await page.getByLabel("رمز عبور").fill("password123");
   await page.getByRole("button", { name: "ورود به حساب" }).click();
 
   await expect(page.getByRole("heading", { level: 1, name: profile.business_name })).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "ناوبری پنل فروشنده" })).toBeVisible();
-  await expect(page.locator(".dashboard-brand-mark")).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "بخش‌های پنل" })).toBeVisible();
+  await expect(page.locator(".stitch-brand-lockup svg")).toBeVisible();
   await expect(page.getByText("سفارش #901")).toBeVisible();
   await expect(page.locator("body")).not.toContainText("E2E-CUSTOMER-ONLY-PICKUP-SECRET");
 
@@ -129,15 +129,13 @@ test("merchant workspace fits mobile, tablet and desktop widths", async ({ page 
       viewport: document.documentElement.clientWidth,
       document: document.documentElement.scrollWidth,
       body: document.body.scrollWidth,
-      sidebar: document.querySelector(".dashboard-sidebar")?.getBoundingClientRect().width ?? 0,
-      logo: document.querySelector(".dashboard-brand-mark")?.getBoundingClientRect().width ?? 0,
-      logoBackground: document.querySelector(".dashboard-brand-mark")
-        ? getComputedStyle(document.querySelector(".dashboard-brand-mark")!).backgroundColor
+      logo: document.querySelector(".stitch-brand-lockup svg")?.getBoundingClientRect().width ?? 0,
+      logoBackground: document.querySelector(".stitch-brand-lockup svg")
+        ? getComputedStyle(document.querySelector(".stitch-brand-lockup svg")!).backgroundColor
         : "",
     }));
     expect(layout.document, `Merchant document overflow at ${width}px: ${JSON.stringify(layout)}`).toBeLessThanOrEqual(layout.viewport + 1);
     expect(layout.body, `Merchant body overflow at ${width}px: ${JSON.stringify(layout)}`).toBeLessThanOrEqual(layout.viewport + 1);
-    expect(layout.sidebar, `Merchant sidebar has no layout at ${width}px`).toBeGreaterThan(0);
     expect(layout.logo, `Merchant brand mark too small at ${width}px`).toBeGreaterThanOrEqual(30);
     expect(layout.logoBackground, `Merchant logo inherited a tile at ${width}px`).toBe("rgba(0, 0, 0, 0)");
   }

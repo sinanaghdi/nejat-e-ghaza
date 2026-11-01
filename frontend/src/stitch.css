@@ -650,3 +650,7 @@ button.stitch-hero-offer-float { cursor: pointer; color: inherit; font: inherit;
   .stitch-runtime .console-topbar-actions .console-market-link { display: none; }
   .stitch-runtime .merchant-stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
+
+.stitch-detail-photo { position: relative; }
+.stitch-cart-image img { width: 100%; height: 100%; object-fit: cover; }
+.stitch-cart-image > span, .stitch-merchant-offer-image > span { display: grid; width: 100%; height: 100%; place-items: center; font-size: 1.6rem; }

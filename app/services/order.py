@@ -7,6 +7,7 @@ from app.db.models.food_offer import FoodOffer
 from app.db.models.order import Order
 from app.db.models.order_item import OrderItem
 from app.db.models.payment import Payment
+from app.db.models.merchant import Merchant
 from app.db.models.user import User
 from app.core.request_context import get_request_id
 from app.services.audit import record_event
@@ -85,8 +86,6 @@ def create_order(db: Session, user: User, payload: OrderCreate) -> Order:
                 raise HTTPException(status_code=409, detail=f"Food offer {offer.id} is inactive")
             if offer.moderation_status != "APPROVED":
                 raise HTTPException(status_code=409, detail=f"Food offer {offer.id} is not approved")
-            if not offer.merchant or offer.merchant.verification_status != "VERIFIED":
-                raise HTTPException(status_code=409, detail=f"Merchant for food offer {offer.id} is not verified")
             if _as_utc(offer.pickup_end) <= datetime.now(timezone.utc):
                 raise HTTPException(status_code=409, detail=f"Food offer {offer.id} has expired")
             if offer.available_quantity < requested.quantity:
@@ -99,6 +98,21 @@ def create_order(db: Session, user: User, payload: OrderCreate) -> Order:
             total += subtotal
             offer.available_quantity -= requested.quantity
             items.append(OrderItem(food_offer_id=offer.id, quantity=requested.quantity, unit_price=offer.sale_price, subtotal=subtotal))
+
+        # Serialize order creation with merchant suspension/verification changes.
+        # Offers are locked first (in sorted ID order); admin verification changes
+        # lock only the merchant row, so this does not introduce a reverse lock cycle.
+        merchant = db.scalar(
+            select(Merchant)
+            .where(Merchant.id == merchant_id)
+            .with_for_update()
+        )
+        if not merchant or merchant.verification_status != "VERIFIED":
+            raise HTTPException(
+                status_code=409,
+                detail="Merchant is not verified",
+            )
+
         order = Order(customer_id=user.id, merchant_id=merchant_id, total_amount=total, status=OrderStatus.PENDING, pickup_code=secrets.token_hex(8).upper(), items=items)
         db.add(order)
         db.flush()
@@ -111,10 +125,10 @@ def create_order(db: Session, user: User, payload: OrderCreate) -> Order:
             entity_type="order",
             entity_id=order.id,
         )
-        if order.merchant:
+        if merchant:
             create_notification(
                 db,
-                user_id=order.merchant.user_id,
+                user_id=merchant.user_id,
                 title="سفارش جدید",
                 body=f"سفارش #{order.id} برای فروشگاه شما ثبت شد.",
                 notification_type="ORDER",

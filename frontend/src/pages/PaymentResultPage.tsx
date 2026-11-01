@@ -28,7 +28,7 @@ export function PaymentResultPage({ user, cartCount, onCart }: Props) {
 
   return (
     <>
-      <main className="page-shell">
+      <main className="page-shell stitch-app payment-result-page">
         <section className={`payment-result-card ${resultClass}`}>
           <div className="state-icon" aria-hidden="true">
             {success || refunded ? "✓" : cancelled ? "↩" : refundReview ? "…" : "!"}

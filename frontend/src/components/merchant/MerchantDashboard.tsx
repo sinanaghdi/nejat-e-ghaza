@@ -143,7 +143,7 @@ export function MerchantDashboard({
           <div className="stitch-empty-card"><h3>هنوز بسته‌ای ثبت نشده</h3><p>با ثبت عنوان، قیمت، تعداد و بازهٔ دریافت، اولین پیشنهاد را آمادهٔ بررسی کن.</p></div>
         ) : offers.map((offer) => (
           <article className="stitch-merchant-product-row" key={offer.id}>
-            <SafeImage src={offer.image_url || getStitchFoodImage(offer.title, offer.description || "")} alt="" fallback={<span>🍱</span>} style={{ width: 62, height: 62, objectFit: "cover", borderRadius: 12 }} />
+            <div className="stitch-merchant-offer-image"><SafeImage src={offer.image_url || getStitchFoodImage(offer.title, offer.description || "")} alt={offer.title} fallback={<span>🍱</span>} /></div>
             <div className="stitch-merchant-product-meta">
               <strong>{offer.title}</strong>
               <small>{formatToman(offer.sale_price)} · موجودی {offer.available_quantity.toLocaleString("fa-IR")} · دریافت تا {formatPickupTime(offer.pickup_end)}</small>

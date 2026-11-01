@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 
 const routes = [
-  { path: "/", heading: /غذای درجه‌یک را/ },
-  { path: "/#/offers", heading: "همه پیشنهادهای فعال" },
+  { path: "/", heading: /غذای خوب/ },
+  { path: "/#/offers", heading: "بسته‌های شانس نزدیک شما" },
   { path: "/#/for-restaurants", heading: /غذای مازادِ قابل‌مصرف/ },
   { path: "/#/privacy", heading: "سیاست حریم خصوصی" },
 ] as const;

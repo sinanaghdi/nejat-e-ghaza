@@ -246,7 +246,7 @@ export function AdminPage(props: Props) {
   }
 
   return (
-    <main className="app admin-console">
+    <main className="app admin-console stitch-app">
       <aside className="dashboard-sidebar admin-sidebar">
         <Link className="dashboard-brand" to="/">
           <SahminoMark className="dashboard-brand-mark" />

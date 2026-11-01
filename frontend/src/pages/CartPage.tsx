@@ -40,7 +40,7 @@ export function CartPage({ user, cartCount, cart, onUpdateQuantity, onOrders, on
               <div className="stitch-section-heading"><div><p className="stitch-kicker">یک فروشگاه در هر سفارش</p><h2>{merchant?.business_name}</h2><p>{merchant?.city} · {merchant?.address}</p></div></div>
               {cart.map((item) => (
                 <article className="stitch-checkout-item" key={item.offer.id}>
-                  <SafeImage src={item.offer.image_url || getStitchFoodImage(item.offer.title, item.offer.description || "")} alt="" fallback={<span>🍱</span>} style={{ width: 65, height: 65, borderRadius: 12, objectFit: "cover" }} />
+                  <div className="stitch-cart-image"><SafeImage src={item.offer.image_url || getStitchFoodImage(item.offer.title, item.offer.description || "")} alt={item.offer.title} fallback={<span>🍱</span>} /></div>
                   <span style={{ flex: 1, minWidth: 0 }}><strong>{item.offer.title}</strong><small>{formatToman(item.offer.sale_price)} · دریافت {formatPickupTime(item.offer.pickup_start)} تا {formatPickupTime(item.offer.pickup_end)}</small>
                     <span className="stitch-merchant-row-actions" style={{ marginTop: 6 }}>
                       <button type="button" aria-label="کاهش تعداد" onClick={() => onUpdateQuantity(item.offer.id, item.quantity - 1)}>−</button>

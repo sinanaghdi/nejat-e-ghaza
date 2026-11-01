@@ -27,12 +27,6 @@ export function CheckoutPage({
 }: Props) {
   const total = cart.reduce((sum, item) => sum + item.offer.sale_price * item.quantity, 0);
   const merchant = cart[0]?.offer.merchant;
-  const pickupStart = cart[0]?.offer.pickup_start;
-  const pickupEnd = cart.reduce((latest, item) => (
-    new Date(item.offer.pickup_end).getTime() < new Date(latest).getTime()
-      ? item.offer.pickup_end
-      : latest
-  ), cart[0]?.offer.pickup_end || "");
 
   return (
     <main className="stitch-app">
@@ -68,7 +62,7 @@ export function CheckoutPage({
                 <div className="stitch-divider" />
                 <div className="stitch-pickup-option">
                   <UiIcon name="clock" size={23} />
-                  <div><strong>بازهٔ مشترک قابل برنامه‌ریزی</strong><p>اولین شروع: {pickupStart ? formatPickupTime(pickupStart) : "—"} · پایان نزدیک‌ترین بسته: {pickupEnd ? formatPickupTime(pickupEnd) : "—"}</p></div>
+                  <div><strong>بازه‌های دریافت هر بسته</strong><p>زمان شروع و پایان دقیق هر پیشنهاد در فهرست بسته‌ها نمایش داده شده است؛ برای هر بسته همان بازه را رعایت کن.</p></div>
                 </div>
               </section>
 

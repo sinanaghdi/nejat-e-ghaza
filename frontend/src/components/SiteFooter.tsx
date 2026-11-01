@@ -20,7 +20,7 @@ export function SiteFooter() {
             <span className="brand-copy"><strong>سهمینو</strong><small>غذای خوب، سهم تو.</small></span>
           </Link>
           <p>راهی برای عرضهٔ غذای مازادِ قابل‌مصرف با قیمت روشن و تحویل حضوری.</p>
-          <span className="site-footer-status"><UiIcon name="leaf" size={14} /> معرفی اولیهٔ پایلوت</span>
+          <span className="site-footer-status"><UiIcon name="leaf" size={14} /> پایلوت محلی · بابلسر و آمل</span>
         </div>
 
         <nav className="site-footer-links" aria-label="قوانین و اطلاعات">
@@ -33,8 +33,7 @@ export function SiteFooter() {
         <div className="site-footer-note">
           <h2>وضعیت فعلی</h2>
           <p>
-            این نسخه برای معرفی محصول و بررسی تجربهٔ کاربری است. ثبت سفارش و پرداخت زنده تا اعلام رسمی آغاز پایلوت فعال نیست.
-            لطفاً اطلاعات بانکی یا محرمانهٔ واقعی وارد نکنید.
+            ثبت سفارش و پرداخت فقط در محیطی انجام می‌شود که سرویس و درگاه آن به‌درستی پیکربندی و پایلوت آن رسماً فعال شده باشد. سهمینو انتقال بانکی یا ارسال پیک را از این صفحه انجام نمی‌دهد.
           </p>
           <Link className="site-footer-merchant-link" to="/for-restaurants">اطلاعات همکاری فروشندگان <span aria-hidden="true">←</span></Link>
         </div>

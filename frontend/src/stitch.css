@@ -407,7 +407,7 @@ button.stitch-hero-offer-float { cursor: pointer; color: inherit; font: inherit;
 /* Footer and navigation */
 .stitch-app .site-footer { margin-top: 50px; background: var(--stitch-pine); color: white; }
 .stitch-app .site-footer-inner { max-width: 1180px; }
-.stitch-bottom-nav { position: fixed; z-index: 40; inset-inline: 50% auto; bottom: max(8px, env(safe-area-inset-bottom)); transform: translateX(50%); width: min(620px, calc(100% - 20px)); min-height: 67px; display: flex; align-items: stretch; justify-content: space-around; gap: 3px; padding: 7px; border: 1px solid rgba(220,225,215,.9); border-radius: 19px; background: rgba(255,255,255,.96); box-shadow: 0 9px 30px rgba(24,59,42,.16); backdrop-filter: blur(15px); }
+.stitch-bottom-nav { position: fixed; z-index: 40; left: 50%; right: auto; bottom: max(8px, env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(620px, calc(100% - 20px)); min-height: 67px; display: flex; align-items: stretch; justify-content: space-around; gap: 3px; padding: 7px; border: 1px solid rgba(220,225,215,.9); border-radius: 19px; background: rgba(255,255,255,.96); box-shadow: 0 9px 30px rgba(24,59,42,.16); backdrop-filter: blur(15px); }
 .stitch-bottom-nav a, .stitch-bottom-nav button { position: relative; flex: 1; min-width: 0; min-height: 51px; display: grid; align-content: center; justify-items: center; gap: 2px; border: 0; border-radius: 13px; background: transparent; color: #7C857A; font-size: .62rem; font-weight: 700; }
 .stitch-bottom-nav a.active { background: var(--stitch-mint); color: var(--stitch-forest); font-weight: 900; }
 .stitch-bottom-nav svg { width: 20px; height: 20px; }
@@ -579,4 +579,157 @@ button.stitch-hero-offer-float { cursor: pointer; color: inherit; font: inherit;
 }
 @media (prefers-reduced-motion: reduce) {
   .stitch-app *, .stitch-app *::before, .stitch-app *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+
+/* Compatibility layer: legacy business/legal pages inherit Stitch foundations. */
+.stitch-runtime { min-height: 100vh; background: var(--stitch-cream); color: var(--stitch-ink); font-family: "Vazirmatn", sans-serif; }
+.stitch-runtime .page-shell { width: min(1120px, calc(100% - 36px)); margin-inline: auto; padding-block: 28px 66px; }
+.stitch-runtime .page-header h1 { color: var(--stitch-pine); font-weight: 900; }
+.stitch-runtime .page-header > p:not(.eyebrow) { color: var(--stitch-muted); line-height: 1.95; }
+.stitch-runtime .eyebrow { color: var(--stitch-leaf); }
+.stitch-runtime .state-card, .stitch-runtime .profile-card, .stitch-runtime .order-card, .stitch-runtime .checkout-summary, .stitch-runtime .checkout-review, .stitch-runtime .legal-card, .stitch-runtime .notification-card { border-color: var(--stitch-line); border-radius: 19px; background: white; box-shadow: var(--stitch-shadow-soft); }
+.stitch-runtime .primary-button, .stitch-runtime .login-button, .stitch-runtime .signup-button { min-height: 44px; border-radius: 13px; background: var(--stitch-forest); border-color: var(--stitch-forest); color: white; font-weight: 800; }
+.stitch-runtime .primary-button:hover, .stitch-runtime .login-button:hover, .stitch-runtime .signup-button:hover { background: var(--stitch-pine); border-color: var(--stitch-pine); }
+.stitch-runtime .secondary-button { min-height: 42px; border-radius: 13px; background: white; border-color: var(--stitch-line); color: var(--stitch-forest); font-weight: 800; }
+.stitch-runtime input, .stitch-runtime select, .stitch-runtime textarea { border-color: var(--stitch-line); border-radius: 11px; }
+.stitch-runtime input:focus, .stitch-runtime select:focus, .stitch-runtime textarea:focus { border-color: var(--stitch-leaf); box-shadow: 0 0 0 3px rgba(102,132,94,.12); }
+.stitch-runtime .form-message { border-radius: 12px; }
+.stitch-runtime .modal-backdrop { background: rgba(18,36,25,.58); backdrop-filter: blur(4px); }
+.stitch-runtime .form-modal { max-height: 90dvh; overflow: auto; border: 1px solid var(--stitch-line); border-radius: 22px; background: white; box-shadow: 0 24px 70px rgba(10,30,17,.24); }
+.stitch-runtime .form-modal h2 { color: var(--stitch-pine); }
+.stitch-runtime .form-intro, .stitch-runtime .field-hint { color: var(--stitch-muted); }
+
+/* Cart / merchant media */
+.stitch-cart-image { width: 65px; height: 65px; flex: 0 0 65px; overflow: hidden; display: grid; place-items: center; border-radius: 12px; background: var(--stitch-oat); }
+.stitch-cart-image img, .stitch-merchant-offer-image img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.stitch-merchant-offer-image { width: 62px; height: 62px; flex: 0 0 62px; overflow: hidden; display: grid; place-items: center; border-radius: 12px; background: var(--stitch-oat); }
+
+/* Admin workspace uses the same light paper/forest design language. */
+.stitch-runtime .admin-console { display: grid; grid-template-columns: 248px minmax(0,1fr); min-height: 100vh; background: var(--stitch-cream); color: var(--stitch-ink); }
+.stitch-runtime .admin-sidebar, .stitch-runtime .dashboard-sidebar { border-color: #294A35; background: var(--stitch-pine); color: #F8F5EB; }
+.stitch-runtime .dashboard-brand strong, .stitch-runtime .dashboard-brand small { color: #F8F5EB; }
+.stitch-runtime .dashboard-side-nav a, .stitch-runtime .dashboard-side-nav button { color: #D9E5D7; }
+.stitch-runtime .dashboard-side-nav a.active, .stitch-runtime .dashboard-side-nav a:hover, .stitch-runtime .dashboard-side-nav button:hover { background: rgba(255,255,255,.1); color: white; }
+.stitch-runtime .console-topbar { border-color: var(--stitch-line); background: rgba(255,255,255,.94); }
+.stitch-runtime .console-topbar strong { color: var(--stitch-pine); }
+.stitch-runtime .admin-page, .stitch-runtime .merchant-page { max-width: 1180px; }
+.stitch-runtime .admin-page .page-header h1, .stitch-runtime .merchant-page .page-header h1 { color: var(--stitch-pine); }
+.stitch-runtime .admin-summary-grid, .stitch-runtime .customer-stat-grid, .stitch-runtime .merchant-stats { gap: 10px; }
+.stitch-runtime .admin-summary-grid > div, .stitch-runtime .customer-stat-grid > div, .stitch-runtime .merchant-stats > div { border: 1px solid var(--stitch-line); border-radius: 16px; background: white; box-shadow: var(--stitch-shadow-soft); }
+.stitch-runtime .admin-summary-grid strong, .stitch-runtime .customer-stat-grid strong, .stitch-runtime .merchant-stats strong { color: var(--stitch-pine); }
+.stitch-runtime .admin-region-toolbar, .stitch-runtime .admin-section, .stitch-runtime .admin-panel, .stitch-runtime .merchant-finance-card { border-color: var(--stitch-line); border-radius: 18px; background: white; box-shadow: var(--stitch-shadow-soft); }
+.stitch-runtime .admin-section h2, .stitch-runtime .admin-section h3, .stitch-runtime .admin-panel h2, .stitch-runtime .merchant-finance-card h3 { color: var(--stitch-pine); }
+.stitch-runtime .admin-region-controls .city-chip.is-selected { border-color: var(--stitch-forest); background: var(--stitch-mint); color: var(--stitch-forest); }
+.stitch-runtime .admin-table th { color: var(--stitch-muted); background: #F7F5ED; }
+.stitch-runtime .admin-table td { border-color: #F0EDE5; }
+.stitch-runtime .admin-table button, .stitch-runtime .admin-table select { border-radius: 10px; }
+
+/* Legal and information pages retain readable contrast and clear section hierarchy. */
+.stitch-runtime .legal-page h1, .stitch-runtime .legal-page h2 { color: var(--stitch-pine); }
+.stitch-runtime .legal-page p, .stitch-runtime .legal-page li { color: var(--stitch-muted); line-height: 2; }
+.stitch-runtime .legal-page section { border-color: var(--stitch-line); border-radius: 17px; background: white; }
+.stitch-runtime .merchant-intro-page .page-header h1 { color: var(--stitch-pine); }
+
+@media (max-width: 820px) {
+  .stitch-runtime .admin-console { display: block; }
+  .stitch-runtime .dashboard-sidebar { display: none; }
+  .stitch-runtime .admin-console-main { min-width: 0; }
+  .stitch-runtime .console-topbar { min-height: 58px; padding-inline: 14px; }
+  .stitch-runtime .admin-page, .stitch-runtime .merchant-page { padding-top: 18px; }
+}
+@media (max-width: 740px) {
+  .stitch-runtime .page-shell { width: calc(100% - 26px); padding-block: 22px 48px; }
+  .stitch-runtime .page-header h1 { font-size: 1.55rem; }
+  .stitch-runtime .checkout-layout { grid-template-columns: 1fr; }
+  .stitch-runtime .checkout-summary { position: static; }
+  .stitch-runtime .order-card { padding: 14px; }
+  .stitch-runtime .admin-region-toolbar { align-items: flex-start; flex-wrap: wrap; gap: 10px; }
+  .stitch-runtime .admin-summary-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .stitch-runtime .admin-page-heading, .stitch-runtime .merchant-page-heading { gap: 12px; }
+  .stitch-runtime .console-topbar-actions .console-market-link { display: none; }
+  .stitch-runtime .merchant-stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+
+.stitch-detail-photo { position: relative; }
+.stitch-cart-image img { width: 100%; height: 100%; object-fit: cover; }
+.stitch-cart-image > span, .stitch-merchant-offer-image > span { display: grid; width: 100%; height: 100%; place-items: center; font-size: 1.6rem; }
+
+
+/* Remaining Stitch surfaces */
+.stitch-runtime .site-footer { margin-top: 42px; background: var(--stitch-pine); color: #F6F4EA; }
+.stitch-runtime .site-footer h2, .stitch-runtime .site-footer .brand-copy strong { color: white; }
+.stitch-runtime .site-footer p, .stitch-runtime .site-footer a, .stitch-runtime .site-footer small { color: #D7E3D5; }
+.stitch-runtime .site-footer-status { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border: 1px solid rgba(255,255,255,.2); border-radius: 100px; color: #E8F0E4; font-size: .68rem; }
+.stitch-runtime .site-footer-bottom { border-color: rgba(255,255,255,.15); color: #CCD9C9; }
+
+.stitch-runtime .notifications-page { display: grid; gap: 17px; }
+.stitch-runtime .notifications-header { align-items: center; }
+.stitch-runtime .notifications-list { display: grid; gap: 10px; }
+.stitch-runtime .notification-card { display: flex; align-items: flex-start; gap: 12px; width: 100%; padding: 16px; border: 1px solid var(--stitch-line); border-radius: 16px; background: white; color: var(--stitch-ink); text-align: right; box-shadow: var(--stitch-shadow-soft); }
+.stitch-runtime .notification-card.unread { border-color: #D2E2CD; background: #FBFDF9; }
+.stitch-runtime .notification-icon { width: 38px; height: 38px; flex: 0 0 38px; display: grid; place-items: center; border-radius: 12px; background: var(--stitch-mint); color: var(--stitch-forest); }
+.stitch-runtime .notification-content { display: grid; flex: 1; gap: 5px; }
+.stitch-runtime .notification-content strong { color: var(--stitch-pine); font-size: .84rem; }
+.stitch-runtime .notification-content > span { color: var(--stitch-muted); font-size: .76rem; line-height: 1.9; }
+.stitch-runtime .notification-content time { color: #90988E; font-size: .66rem; }
+.stitch-runtime .notification-dot { width: 8px; height: 8px; margin-top: 5px; border-radius: 50%; background: var(--stitch-orange); }
+
+.stitch-runtime .payment-result-page { display: grid; min-height: 55vh; place-items: center; }
+.stitch-runtime .payment-result-page > * { width: min(560px,100%); }
+.stitch-runtime .payment-result-page .state-card { padding: 32px; }
+.stitch-runtime .payment-result-actions { display: flex; justify-content: center; gap: 9px; flex-wrap: wrap; margin-top: 16px; }
+
+.stitch-runtime .merchant-intro-page { padding-block: 20px 55px; }
+.stitch-runtime .merchant-intro-breadcrumb { display: flex; gap: 9px; align-items: center; color: var(--stitch-muted); font-size: .74rem; }
+.stitch-runtime .merchant-intro-breadcrumb a { color: var(--stitch-leaf); }
+.stitch-runtime .merchant-intro-hero { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(280px,.8fr); gap: 26px; align-items: center; padding-block: 38px; }
+.stitch-runtime .merchant-intro-copy h1 { margin: 10px 0 14px; color: var(--stitch-pine); font-size: clamp(2rem,4vw,3.3rem); line-height: 1.4; }
+.stitch-runtime .merchant-intro-lead { color: var(--stitch-muted); font-size: .92rem; line-height: 2; }
+.stitch-runtime .merchant-intro-summary { padding: 25px; border: 1px solid #D8E4D2; border-radius: 22px; background: var(--stitch-mint); }
+.stitch-runtime .merchant-intro-summary h2 { color: var(--stitch-pine); font-size: 1.25rem; }
+.stitch-runtime .merchant-intro-summary ul { display: grid; gap: 12px; padding: 0; list-style: none; }
+.stitch-runtime .merchant-intro-summary li { display: flex; gap: 8px; align-items: center; color: var(--stitch-muted); font-size: .77rem; }
+.stitch-runtime .merchant-intro-summary li svg { color: var(--stitch-forest); }
+.stitch-runtime .merchant-intro-summary-icon { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 15px; background: var(--stitch-forest); color: white; }
+.stitch-runtime .merchant-intro-benefits, .stitch-runtime .merchant-intro-step-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 13px; }
+.stitch-runtime .merchant-intro-benefits article, .stitch-runtime .merchant-intro-step-grid article { padding: 19px; border: 1px solid var(--stitch-line); border-radius: 17px; background: white; box-shadow: var(--stitch-shadow-soft); }
+.stitch-runtime .merchant-intro-benefits h2, .stitch-runtime .merchant-intro-step-grid h3 { color: var(--stitch-pine); font-size: .95rem; }
+.stitch-runtime .merchant-intro-benefits p, .stitch-runtime .merchant-intro-step-grid p, .stitch-runtime .merchant-intro-section-heading p { color: var(--stitch-muted); font-size: .77rem; line-height: 1.9; }
+.stitch-runtime .merchant-intro-benefit-icon, .stitch-runtime .merchant-intro-step-number { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: var(--stitch-mint); color: var(--stitch-forest); font-weight: 900; }
+.stitch-runtime .merchant-intro-steps, .stitch-runtime .merchant-intro-faq { margin-top: 50px; }
+.stitch-runtime .merchant-intro-section-heading { margin-bottom: 17px; }
+.stitch-runtime .merchant-intro-section-heading h2 { margin: 0; color: var(--stitch-pine); font-size: 1.5rem; }
+.stitch-runtime .merchant-intro-step-grid article { display: grid; align-content: start; gap: 6px; }
+.stitch-runtime .merchant-intro-responsibilities { display: grid; grid-template-columns: .9fr 1.1fr; gap: 22px; margin-top: 45px; padding: 25px; border-radius: 21px; background: var(--stitch-pine); color: white; }
+.stitch-runtime .merchant-intro-responsibilities h2 { color: white; }
+.stitch-runtime .merchant-intro-responsibilities p { color: #D8E4D4; font-size: .8rem; line-height: 1.9; }
+.stitch-runtime .merchant-intro-responsibilities ul { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.stitch-runtime .merchant-intro-responsibilities li { display: flex; align-items: flex-start; gap: 8px; color: #E6EEE2; font-size: .76rem; line-height: 1.9; }
+.stitch-runtime .merchant-intro-responsibilities li svg { flex: 0 0 auto; color: var(--stitch-orange); margin-top: 4px; }
+.stitch-runtime .merchant-intro-faq-list { display: grid; gap: 8px; }
+.stitch-runtime .merchant-intro-faq-list details { padding: 15px 17px; border: 1px solid var(--stitch-line); border-radius: 13px; background: white; }
+.stitch-runtime .merchant-intro-faq-list summary { color: var(--stitch-pine); cursor: pointer; font-size: .82rem; font-weight: 900; }
+.stitch-runtime .merchant-intro-faq-list p { margin: 10px 0 0; color: var(--stitch-muted); font-size: .76rem; line-height: 1.9; }
+.stitch-runtime .merchant-intro-final-cta { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-top: 45px; padding: 25px; border-radius: 21px; background: var(--stitch-sage); }
+.stitch-runtime .merchant-intro-final-cta h2 { color: var(--stitch-pine); }
+.stitch-runtime .merchant-intro-final-cta p:not(.eyebrow) { color: var(--stitch-muted); font-size: .78rem; }
+.stitch-runtime .merchant-intro-demo-note { margin-top: 20px; color: var(--stitch-muted); font-size: .71rem; line-height: 1.9; }
+
+.stitch-runtime .merchant-profile-hero { display: flex; align-items: center; gap: 16px; padding: 24px; border-radius: 22px; background: var(--stitch-pine); color: white; }
+.stitch-runtime .merchant-profile-hero h1 { color: white; }
+.stitch-runtime .merchant-profile-hero p { color: #DCE7D8; font-size: .78rem; }
+.stitch-runtime .merchant-profile-avatar { width: 68px; height: 68px; display: grid; place-items: center; border-radius: 19px; background: rgba(255,255,255,.12); font-size: 1.8rem; }
+.stitch-runtime .merchant-profile-hero .eyebrow { color: #C9DCC2; }
+
+@media (max-width: 740px) {
+  .stitch-runtime .merchant-intro-hero { grid-template-columns: 1fr; padding-block: 25px; }
+  .stitch-runtime .merchant-intro-copy h1 { font-size: 1.85rem; }
+  .stitch-runtime .merchant-intro-benefits, .stitch-runtime .merchant-intro-step-grid { grid-template-columns: 1fr; }
+  .stitch-runtime .merchant-intro-responsibilities { grid-template-columns: 1fr; padding: 19px; }
+  .stitch-runtime .merchant-intro-final-cta { align-items: flex-start; flex-direction: column; padding: 20px; }
+}
+
+@media (max-width: 740px) {
+  .stitch-bottom-nav { left: 50%; right: auto; transform: translateX(-50%); }
 }

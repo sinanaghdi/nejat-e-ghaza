@@ -60,7 +60,7 @@ export function MerchantProfilePage({
   const merchant = offers[0]?.merchant;
 
   return (
-    <main className="app">
+    <main className="app stitch-app">
       <Header
         user={user}
         cartCount={cartCount}

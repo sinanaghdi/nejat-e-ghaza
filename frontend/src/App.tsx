@@ -10,7 +10,6 @@ import { Header } from "./components/Header";
 import { CartDrawer } from "./components/cart/CartDrawer";
 import { AuthModal } from "./components/auth/AuthModal";
 import { OrdersModal } from "./components/orders/OrdersModal";
-import { MerchantDashboard } from "./components/merchant/MerchantDashboard";
 import { MerchantProfileForm } from "./components/merchant/MerchantProfileForm";
 import { OfferForm } from "./components/merchant/OfferForm";
 import { HomePage } from "./pages/HomePage";
@@ -32,6 +31,7 @@ import { LegalPage, type LegalPageKind } from "./pages/LegalPage";
 import { SiteFooter } from "./components/SiteFooter";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 import { MerchantIntroPage } from "./pages/MerchantIntroPage";
+import { EcoClubPage } from "./pages/EcoClubPage";
 
 const legalRoutes: Record<string, LegalPageKind> = {
   "/privacy": "privacy",
@@ -184,7 +184,7 @@ function App() {
       cartCount={cartCount}
       onCart={() => setCartOpen(true)}
       onOrders={() => navigate("/orders")}
-      onMerchant={() => void merchantState.openMerchantDashboard()}
+      onMerchant={() => navigate("/merchant")}
       onLogin={() => openAuth("login")}
       onLogout={() => void handleLogout()}
     />
@@ -277,6 +277,8 @@ function App() {
         onLogout={() => void handleLogout()}
       />
     );
+  } else if (location.pathname === "/club") {
+    page = <EcoClubPage user={user} cartCount={cartCount} onCart={() => setCartOpen(true)} onLogin={() => navigate("/login")} />;
   } else if (location.pathname === "/offers") {
     page = (
       <OffersPage
@@ -377,6 +379,9 @@ function App() {
           loading={ordersState.ordersLoading}
           error={ordersState.ordersError}
           onRetry={() => void ordersState.loadOrders()}
+          userRole={user?.role ?? null}
+          cartCount={cartCount}
+          onCart={() => setCartOpen(true)}
         />
       </>
     );
@@ -429,7 +434,7 @@ function App() {
         onEditOffer={(id) => { const offer = merchantState.merchantOffers.find((item) => item.id === id); if (offer) merchantState.openOfferEditor(offer); }}
         onDeactivate={(id) => void merchantState.removeMerchantOffer(id)}
         onStatusChange={(id, status) => void merchantState.changeMerchantOrderStatus(id, status)}
-        onVerifyPickup={(id) => void merchantState.verifyMerchantPickup(id)}
+        onVerifyPickup={(id, code) => void merchantState.verifyMerchantPickup(id, code)}
         onLogout={() => void handleLogout()}
       />
     );
@@ -466,29 +471,12 @@ function App() {
     <>
       {page}
       {location.pathname !== "/merchant" && location.pathname !== "/admin" && <SiteFooter />}
-      {(location.pathname === "/orders" || location.pathname === "/profile") && (
+      {(location.pathname === "/profile") && (
         <MobileBottomNav cartCount={cartCount} userRole={user?.role ?? null} onCart={() => setCartOpen(true)} />
       )}
 
-      {(location.pathname === "/" || location.pathname === "/merchant") && (
+      {(location.pathname === "/merchant") && (
         <>
-          <MerchantDashboard
-            open={merchantState.merchantOpen}
-            loading={merchantState.merchantLoading}
-            error={merchantState.merchantError}
-            profile={merchantState.merchantProfile}
-            offers={merchantState.merchantOffers}
-            orders={merchantState.merchantOrders}
-            onClose={() => merchantState.setMerchantOpen(false)}
-            onCreateProfile={() => merchantState.setMerchantFormOpen(true)}
-          onEditProfile={() => merchantState.openMerchantProfileEditor()}
-            onCreateOffer={() => merchantState.startCreateOffer()}
-            onEditOffer={(id) => { const offer = merchantState.merchantOffers.find((item) => item.id === id); if (offer) merchantState.openOfferEditor(offer); }}
-            onDeactivate={(id) => void merchantState.removeMerchantOffer(id)}
-            onStatusChange={(id, status) => void merchantState.changeMerchantOrderStatus(id, status)}
-            onVerifyPickup={(id) => void merchantState.verifyMerchantPickup(id)}
-          />
-
           {merchantState.merchantFormOpen && (
             <MerchantProfileForm
               editing={Boolean(merchantState.merchantProfile)}

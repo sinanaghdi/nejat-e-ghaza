@@ -5,6 +5,7 @@ import "./typography.css";
 import "./styles.css";
 import "./reference-design.css";
 import "./brand.css";
+import "./stitch.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

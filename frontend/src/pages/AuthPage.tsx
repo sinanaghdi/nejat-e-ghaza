@@ -2,6 +2,8 @@ import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { User } from "../lib/api";
+import { SahminoMark } from "../components/SahminoMark";
+import { UiIcon } from "../components/UiIcon";
 
 type Props = {
   mode: "login" | "register";
@@ -27,185 +29,132 @@ type Props = {
   onDemoLogin: (role: User["role"]) => void;
 };
 
-export function AuthPage({
-  mode,
-  user,
-  loading,
-  error,
-  success,
-  name,
-  email,
-  password,
-  phoneNumber,
-  otpCode,
-  otpRequested,
-  onModeChange,
-  onNameChange,
-  onEmailChange,
-  onPasswordChange,
-  onPhoneChange,
-  onOtpCodeChange,
-  onRequestOtp,
-  onVerifyOtp,
-  onSubmit,
-  onDemoLogin,
-}: Props) {
+export function AuthPage(props: Props) {
   const navigate = useNavigate();
   const demoMode = import.meta.env.VITE_DEMO_MODE === "true";
   const [loginMethod, setLoginMethod] = useState<"phone" | "email">(demoMode ? "email" : "phone");
 
   useEffect(() => {
-    if (!user) return;
+    if (!props.user) return;
     const destination =
-      user.role === "MERCHANT" ? "/merchant" :
-      user.role === "ADMIN" ? "/admin" :
+      props.user.role === "MERCHANT" ? "/merchant" :
+      props.user.role === "ADMIN" ? "/admin" :
       "/dashboard";
     navigate(destination, { replace: true });
-  }, [user, navigate]);
+  }, [props.user, navigate]);
 
-  function handleModeChange(nextMode: "login" | "register") {
-    onModeChange(nextMode);
-    if (nextMode === "login" && !demoMode) setLoginMethod("phone");
-    if (nextMode === "register") setLoginMethod("email");
+  function changeMode(next: "login" | "register") {
+    props.onModeChange(next);
+    if (next === "login") setLoginMethod(demoMode ? "email" : "phone");
+  }
+
+  function normalizeDigits(value: string) {
+    return value
+      .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+      .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+      .replace(/\D/g, "")
+      .slice(0, 6);
   }
 
   return (
-    <main className="auth-page">
-      <section className="auth-page-card">
-        <Link className="brand auth-brand" to="/">سهمینو</Link>
-        <span className="eyebrow">{mode === "login" ? "ورود به بازار" : "شروع با سهمینو"}</span>
-        <h1>{mode === "login" ? "خوش آمدی" : "حساب کاربری بساز"}</h1>
-        <p>{mode === "login" ? (demoMode ? "برای ورود به محیط نمایشی از ایمیل و رمز عبور استفاده کن." : loginMethod === "phone" ? "شماره موبایلت را وارد کن تا کد یک‌بارمصرف ورود را دریافت کنی." : "با ایمیل و رمز عبورت وارد حساب کاربری شو.") : "حساب بساز تا سفارش‌ها و فعالیت‌هایت را مدیریت کنی."}</p>
+    <main className="stitch-app stitch-auth-page">
+      <section className="stitch-auth-art">
+        <div className="stitch-auth-mark"><SahminoMark /></div>
+        <p className="stitch-kicker">خوش آمدی به سهمینو</p>
+        <h1>هر بستهٔ خوب،<br />یک سهم برای تو.</h1>
+        <p>پیشنهادهای محلی را کشف کن، زمان دریافت را ببین و با خرید آگاهانه، سهم خودت را انتخاب کن.</p>
+        <div className="stitch-auth-benefits"><span>قیمت شفاف</span><span>تحویل حضوری مشخص</span><span>فروشندهٔ محلی</span></div>
+        <span className="stitch-eco-orbit" aria-hidden="true" />
+      </section>
 
-        <div className="auth-tabs">
-          <button type="button" className={mode === "login" ? "active" : ""} onClick={() => handleModeChange("login")}>ورود</button>
-          <button type="button" className={mode === "register" ? "active" : ""} onClick={() => handleModeChange("register")}>ثبت‌نام</button>
+      <section className="stitch-auth-panel">
+        <Link className="stitch-brand-lockup" to="/" aria-label="صفحه اصلی سهمینو">
+          <SahminoMark /><span><strong>سهمینو</strong><small>غذای خوب، سهم تو.</small></span>
+        </Link>
+
+        <p className="stitch-kicker">{props.mode === "login" ? "خوشحالیم که برگشتی" : "شروع همراهی"}</p>
+        <h1>{props.mode === "login" ? "ورود به حساب" : "ساخت حساب کاربری"}</h1>
+        <p>{props.mode === "login" ? "با شماره موبایل و کد یک‌بارمصرف وارد شو؛ یا با ایمیل و رمز عبور ادامه بده." : "اطلاعات اولیه را وارد کن تا بتوانی سفارش‌ها و فعالیتت را دنبال کنی."}</p>
+
+        <div className="stitch-auth-tabs">
+          <button type="button" className={props.mode === "login" ? "active" : ""} onClick={() => changeMode("login")}>ورود</button>
+          <button type="button" className={props.mode === "register" ? "active" : ""} onClick={() => changeMode("register")}>ثبت‌نام</button>
         </div>
 
-        {mode === "login" && (
-          <div className="auth-login-methods" role="group" aria-label="روش ورود">
-            <button
-              type="button"
-              className={loginMethod === "phone" ? "active" : ""}
-              onClick={() => setLoginMethod("phone")}
-              disabled={demoMode}
-            >
-              ورود با موبایل
-            </button>
-            <button
-              type="button"
-              className={loginMethod === "email" ? "active" : ""}
-              onClick={() => setLoginMethod("email")}
-            >
-              ایمیل و رمز عبور
-            </button>
+        {props.mode === "login" && (
+          <div className="stitch-auth-methods" role="group" aria-label="روش ورود">
+            <button type="button" className={loginMethod === "phone" ? "active" : ""} onClick={() => setLoginMethod("phone")} disabled={demoMode}>کد پیامکی</button>
+            <button type="button" className={loginMethod === "email" ? "active" : ""} onClick={() => setLoginMethod("email")}>ایمیل و رمز</button>
           </div>
         )}
 
-        {mode === "login" && loginMethod === "phone" && !demoMode ? (
-          <form className="auth-form" onSubmit={(event) => { event.preventDefault(); if (otpRequested) onVerifyOtp(); }}>
+        {props.mode === "login" && loginMethod === "phone" && !demoMode ? (
+          <form className="stitch-auth-form" onSubmit={(event) => { event.preventDefault(); if (props.otpRequested) props.onVerifyOtp(); }}>
             <label>
               شماره موبایل
-              <input
-                required
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                value={phoneNumber}
-                onChange={(event) => onPhoneChange(event.target.value)}
-                placeholder="0912 345 6789"
-                dir="ltr"
-              />
+              <input required type="tel" inputMode="tel" autoComplete="tel" dir="ltr" placeholder="0912 345 6789" value={props.phoneNumber} onChange={(event) => props.onPhoneChange(event.target.value)} />
             </label>
-            {!otpRequested && (
-              <label>
-                نام (برای حساب جدید، اختیاری)
-                <input value={name} onChange={(event) => onNameChange(event.target.value)} placeholder="مثلاً سارا رضایی" maxLength={100} />
+
+            {!props.otpRequested && (
+              <label>نام (برای حساب جدید، اختیاری)
+                <input maxLength={100} value={props.name} onChange={(event) => props.onNameChange(event.target.value)} placeholder="مثلاً سارا رضایی" />
               </label>
             )}
-            {otpRequested && (
-              <label>
-                کد پیامکی
-                <input
-                  required
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  pattern="[0-9]{6}"
-                  minLength={6}
-                  maxLength={6}
-                  value={otpCode}
-                  onChange={(event) => onOtpCodeChange(
-                    event.target.value
-                      .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
-                      .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
-                      .replace(/\D/g, "")
-                  )}
-                  placeholder="کد شش‌رقمی"
-                  dir="ltr"
-                />
+
+            {props.otpRequested && (
+              <label>کد یک‌بارمصرف ۶ رقمی
+                <input className="fa-number" required type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" minLength={6} maxLength={6} dir="ltr" value={props.otpCode} onChange={(event) => props.onOtpCodeChange(normalizeDigits(event.target.value))} placeholder="••••••" />
               </label>
             )}
-            {error && <p className="form-message error-message">{error}</p>}
-            {success && <p className="form-message success-message">{success}</p>}
-            <div className="auth-otp-actions">
-              <button className="primary-button auth-submit" type="button" onClick={() => void onRequestOtp()} disabled={loading || !phoneNumber.trim()}>
-                {loading ? "در حال پردازش..." : otpRequested ? "ارسال دوباره کد" : "دریافت کد پیامکی"}
+
+            {props.error && <p className="form-message error-message" role="alert">{props.error}</p>}
+            {props.success && <p className="form-message success-message" role="status">{props.success}</p>}
+
+            <button className="stitch-button stitch-button-primary" type="button" onClick={props.onRequestOtp} disabled={props.loading || !props.phoneNumber.trim()}>
+              {props.loading ? "در حال پردازش..." : props.otpRequested ? "درخواست کد دوباره" : "دریافت کد ورود"}
+              <UiIcon name="arrow-left" size={17} />
+            </button>
+            {props.otpRequested && (
+              <button className="stitch-button stitch-button-secondary" type="submit" disabled={props.loading || props.otpCode.trim().length !== 6}>
+                {props.loading ? "در حال بررسی..." : "تأیید کد و ورود"}
               </button>
-              {otpRequested && (
-                <button className="secondary-button auth-submit" type="submit" disabled={loading || otpCode.trim().length !== 6}>
-                  {loading ? "در حال بررسی..." : "تأیید و ورود"}
-                </button>
-              )}
-            </div>
-            <p className="auth-privacy-note">کد ورود پس از ۵ دقیقه منقضی می‌شود و فقط یک‌بار قابل استفاده است.</p>
+            )}
+            <p className="stitch-auth-privacy">کد ورود یک‌بارمصرف است و پس از ۵ دقیقه منقضی می‌شود. آن را در اختیار دیگران قرار نده.</p>
           </form>
         ) : (
-          <form className="auth-form" onSubmit={onSubmit}>
-            {mode === "register" && (
-              <label>
-                نام و نام خانوادگی
-                <input required minLength={2} maxLength={100} value={name} onChange={(event) => onNameChange(event.target.value)} placeholder="مثلاً سارا رضایی" />
+          <form className="stitch-auth-form" onSubmit={props.onSubmit}>
+            {props.mode === "register" && (
+              <label>نام و نام خانوادگی
+                <input required minLength={2} maxLength={100} value={props.name} onChange={(event) => props.onNameChange(event.target.value)} placeholder="مثلاً سارا رضایی" />
               </label>
             )}
-            <label>
-              ایمیل
-              <input required type="email" value={email} onChange={(event) => onEmailChange(event.target.value)} placeholder="example@email.com" dir="ltr" />
+            <label>ایمیل
+              <input required type="email" autoComplete="email" dir="ltr" value={props.email} onChange={(event) => props.onEmailChange(event.target.value)} placeholder="name@example.com" />
             </label>
-            <label>
-              رمز عبور
-              <input required type="password" minLength={8} maxLength={128} value={password} onChange={(event) => onPasswordChange(event.target.value)} placeholder="حداقل ۸ کاراکتر" dir="ltr" />
+            <label>رمز عبور
+              <input required type="password" autoComplete={props.mode === "login" ? "current-password" : "new-password"} minLength={8} maxLength={128} dir="ltr" value={props.password} onChange={(event) => props.onPasswordChange(event.target.value)} placeholder="حداقل ۸ کاراکتر" />
             </label>
-            {error && <p className="form-message error-message">{error}</p>}
-            {success && <p className="form-message success-message">{success}</p>}
-            <button className="primary-button auth-submit" type="submit" disabled={loading}>
-              {loading ? "در حال پردازش..." : mode === "login" ? "ورود به حساب" : "ساخت حساب"}
+            {props.error && <p className="form-message error-message" role="alert">{props.error}</p>}
+            {props.success && <p className="form-message success-message" role="status">{props.success}</p>}
+            <button className="stitch-button stitch-button-primary" type="submit" disabled={props.loading}>
+              {props.loading ? "در حال پردازش..." : props.mode === "login" ? "ورود به حساب" : "ساخت حساب"}
+              <UiIcon name="arrow-left" size={17} />
             </button>
           </form>
         )}
 
         {demoMode && (
-          <section className="demo-login-panel" aria-label="ورود سریع دمو">
-            <div>
-              <p className="eyebrow">حالت نمایشی</p>
-              <h2>برای دیدن پنل‌ها ورود سریع کن</h2>
-              <p>این حساب‌ها فقط برای مشاهده رابط کاربری و مسیرهای اصلی سامانه در نسخه نمایشی هستند.</p>
-            </div>
-            <div className="demo-role-grid">
-              <button type="button" className="demo-role-card" onClick={() => onDemoLogin("CUSTOMER")}>
-                <span>👤</span><strong>مشتری</strong><small>سفارش‌ها، پروفایل و خرید</small>
-              </button>
-              <button type="button" className="demo-role-card" onClick={() => onDemoLogin("MERCHANT")}>
-                <span>🏪</span><strong>فروشنده</strong><small>پیشنهادها و سفارش‌های فروشگاه</small>
-              </button>
-              <button type="button" className="demo-role-card" onClick={() => onDemoLogin("ADMIN")}>
-                <span>🛡️</span><strong>مدیر</strong><small>کاربران و نقش‌ها</small>
-              </button>
+          <section className="stitch-demo-card">
+            <p><strong>محیط نمایشی</strong> — این حساب‌ها فقط برای مشاهدهٔ جریان‌های دمو هستند.</p>
+            <div className="stitch-demo-roles">
+              <button type="button" onClick={() => props.onDemoLogin("CUSTOMER")}>ورود دمو: مشتری</button>
+              <button type="button" onClick={() => props.onDemoLogin("MERCHANT")}>ورود دمو: فروشنده</button>
+              <button type="button" onClick={() => props.onDemoLogin("ADMIN")}>ورود دمو: مدیر</button>
             </div>
           </section>
         )}
 
-        <Link className="auth-back-link" to="/offers">بازگشت به پیشنهادها</Link>
+        <Link className="stitch-text-link" style={{ marginTop: 22 }} to="/offers">بازگشت به بسته‌ها ←</Link>
       </section>
     </main>
   );

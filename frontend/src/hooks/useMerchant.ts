@@ -132,19 +132,21 @@ export function useMerchant({ isMerchantPage, openAuth }: Params) {
     }
   }
 
-  async function verifyMerchantPickup(orderId: number) {
+  async function verifyMerchantPickup(orderId: number, pickupCode: string) {
     const token = getToken();
+    const code = pickupCode.trim();
     if (!token) return;
+    if (!/^[A-Za-z0-9]{4,32}$/.test(code)) {
+      setMerchantError("کد دریافت باید بین ۴ تا ۳۲ نویسهٔ حرفی یا عددی باشد.");
+      return;
+    }
 
-    const pickupCode = window.prompt("کد دریافت ۴ تا ۳۲ رقمی را وارد کنید:");
-    if (!pickupCode?.trim()) return;
-
+    setMerchantError("");
     try {
-      const updated = await verifyPickupCode(token, orderId, pickupCode);
+      const updated = await verifyPickupCode(token, orderId, code);
       setMerchantOrders((items) =>
         items.map((item) => (item.id === orderId ? updated : item)),
       );
-      setMerchantError("");
     } catch (err) {
       setMerchantError(
         err instanceof ApiError

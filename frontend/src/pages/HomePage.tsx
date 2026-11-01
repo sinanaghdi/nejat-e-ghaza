@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
 import type { FoodOffer, User } from "../lib/api";
 import { formatToman, formatPickupTime } from "../lib/formatters";
+import { getStitchFoodImage } from "../lib/stitchAssets";
 import { Header } from "../components/Header";
-import { HowItWorks } from "../components/HowItWorks";
 import { OfferCard } from "../components/OfferCard";
 import { MobileBottomNav } from "../components/MobileBottomNav";
 import { SafeImage } from "../components/SafeImage";
+import { UiIcon } from "../components/UiIcon";
 
 type Props = {
   user: User | null;
@@ -25,152 +26,125 @@ type Props = {
 };
 
 const categories = [
-  { label: "همه پیشنهادها", query: "", glyph: "✳" },
-  { label: "غذای اصیل و محلی", query: "غذای محلی", glyph: "🍲" },
-  { label: "نان و شیرینی", query: "نان شیرینی", glyph: "🥐" },
-  { label: "فست‌فود", query: "برگر پیتزا", glyph: "🍔" },
-  { label: "کافه و دسر", query: "کافه دسر", glyph: "☕" },
-  { label: "بسته سورپرایز", query: "بسته نجات", glyph: "🎁" },
+  { label: "همه بسته‌ها", query: "", icon: "✳" },
+  { label: "نان و شیرینی", query: "نان شیرینی", icon: "🥐" },
+  { label: "غذای گرم", query: "غذای گرم", icon: "🍲" },
+  { label: "میوه و سبزی", query: "میوه سبزی", icon: "🥬" },
+  { label: "کافه و دسر", query: "کافه دسر", icon: "☕" },
 ];
 
-function discountPercent(offer?: FoodOffer) {
-  if (!offer || !offer.original_price) return 0;
-  return Math.max(0, Math.round((1 - Number(offer.sale_price) / Number(offer.original_price)) * 100));
-}
-
 export function HomePage({
-  user,
-  cartCount,
-  loading,
-  error,
-  featuredOffers,
-  onCart,
-  onOrders,
-  onMerchant,
-  onLogin,
-  onLogout,
-  onRetry,
-  onOffer,
-  onExploreCity,
-  onQuickSearch,
+  user, cartCount, loading, error, featuredOffers, onCart, onOrders,
+  onMerchant, onLogin, onLogout, onRetry, onOffer, onExploreCity, onQuickSearch,
 }: Props) {
   const spotlight = featuredOffers[0];
-  const spotlightDiscount = discountPercent(spotlight);
+  const discount = spotlight && spotlight.original_price > 0
+    ? Math.max(0, Math.round((1 - spotlight.sale_price / spotlight.original_price) * 100))
+    : 0;
 
   return (
-    <main className="app home-app">
+    <main className="app stitch-app home-app">
       <Header user={user} cartCount={cartCount} onCart={onCart} onOrders={onOrders} onMerchant={onMerchant} onLogin={onLogin} onLogout={onLogout} />
 
-      <section className="impact-strip">
-        <div className="impact-strip-inner">
-          <p><span aria-hidden="true">✳</span><strong>یک انتخاب کوچک، دورریز کمتر</strong><span className="impact-strip-copy">بسته‌های مازادِ قابل‌مصرف را از فروشگاه‌های محلی پیدا کن.</span></p>
-          <div className="city-switcher" role="group" aria-label="انتخاب شهر برای مشاهده پیشنهادها">
-            <button type="button" onClick={() => onExploreCity("")} className="city-chip city-chip-all"><span aria-hidden="true">⌖</span> همه مناطق</button>
-            <button type="button" onClick={() => onExploreCity("بابلسر")} className="city-chip">🌊 بابلسر</button>
-            <button type="button" onClick={() => onExploreCity("آمل")} className="city-chip">🏔️ آمل</button>
+      <section className="stitch-location-ribbon">
+        <div className="stitch-content stitch-ribbon-inner">
+          <span><UiIcon name="pin" size={15} /> محدوده‌های پایلوت</span>
+          <div role="group" aria-label="انتخاب شهر">
+            <button type="button" onClick={() => onExploreCity("")}>همه مناطق</button>
+            <button type="button" onClick={() => onExploreCity("بابلسر")}>بابلسر</button>
+            <button type="button" onClick={() => onExploreCity("آمل")}>آمل</button>
           </div>
         </div>
       </section>
 
-      <section className="reference-hero page-content" aria-labelledby="home-title">
-        <div className="hero-panel">
-          <div className="hero-panel-orb" aria-hidden="true" />
-          <div className="hero-copy-block">
-            <span className="hero-kicker"><span aria-hidden="true">✳</span> بازار محلی سهمینو</span>
-            <h1 id="home-title">غذای درجه‌یک را<br /><em>هوشمندانه‌تر</em> انتخاب کن.</h1>
-            <p>بسته‌های مازادِ کافه‌ها، رستوران‌ها و نانوایی‌های اطراف را با قیمت مناسب پیدا کن؛ رزرو کن و در بازهٔ تحویل مشخص، حضوری از فروشنده تحویل بگیر.</p>
-            <div className="hero-actions">
-              <Link className="primary-button hero-primary" to="/offers"><span aria-hidden="true">⌕</span> کاوش بسته‌های امروز</Link>
-              <a className="hero-secondary-link" href="#how-it-works">چطور کار می‌کند؟ <span aria-hidden="true">←</span></a>
-            </div>
-            <div className="hero-trust-row">
-              <span><b aria-hidden="true">✓</b> قیمت شفاف</span>
-              <span><b aria-hidden="true">✓</b> زمان تحویل مشخص</span>
-              <span><b aria-hidden="true">✓</b> خرید حضوری از فروشنده</span>
-            </div>
+      <section className="stitch-content stitch-home-hero">
+        <div className="stitch-hero-copy">
+          <span className="stitch-kicker"><span className="stitch-kicker-dot" /> سهم سبز محلهٔ تو</span>
+          <h1>غذای خوب،<br /><em>سهم تو.</em></h1>
+          <p>بسته‌های مازادِ قابل‌مصرف از کافه‌ها، نانوایی‌ها و رستوران‌های اطراف را با قیمت مناسب پیدا کن؛ رزرو کن و در بازهٔ مشخص از فروشنده تحویل بگیر.</p>
+          <div className="stitch-hero-actions">
+            <Link to="/offers" className="stitch-button stitch-button-accent">کشف بسته‌های امروز <UiIcon name="arrow-left" size={17} /></Link>
+            <a href="#stitch-how-it-works" className="stitch-text-link">چطور کار می‌کند؟</a>
           </div>
-          <div className="hero-showcase">
-            <div className="hero-photo-frame">
-              <SafeImage src={spotlight?.image_url} alt={spotlight?.title || "پیشنهاد غذایی سهمینو"} className="hero-photo-image" loading="eager" fetchPriority="high" fallback={<div className="hero-placeholder-food" aria-hidden="true">🍲</div>} />
-              <span className="hero-photo-badge"><span aria-hidden="true">✳</span> انتخاب امروز</span>
-              <div className="hero-floating-note">
-                <span className="floating-note-icon" aria-hidden="true">♻</span>
-                <span><strong>سهمینو، انتخاب به‌صرفه</strong><small>برای تو و کسب‌وکارهای محلی</small></span>
-              </div>
-            </div>
-            {spotlight ? (
-              <Link to={`/offers/${spotlight.id}`} className="hero-offer-preview" aria-label={`مشاهده بسته ${spotlight.title}`}>
-                <span className="hero-preview-top"><small>پیشنهاد برجسته</small>{spotlightDiscount > 0 && <b>{spotlightDiscount.toLocaleString("fa-IR")}٪ تخفیف</b>}</span>
-                <strong>{spotlight.title}</strong>
-                <span className="hero-preview-merchant">{spotlight.merchant.business_name} · {spotlight.merchant.city}</span>
-                <span className="hero-preview-bottom"><b>{formatToman(spotlight.sale_price)}</b><small>تحویل تا {formatPickupTime(spotlight.pickup_end)}</small></span>
-              </Link>
-            ) : (
-              <div className="hero-offer-preview">
-                <span className="hero-preview-top"><small>بسته‌های روزانه</small><b>بسته به موجودی فروشگاه</b></span>
-                <strong>پیشنهادهای تازه را بررسی کن</strong>
-                <span className="hero-preview-merchant">بابلسر و آمل · تحویل حضوری</span>
-                <span className="hero-preview-bottom"><Link to="/offers">دیدن پیشنهادها ←</Link><small>موجودی و قیمت در صفحهٔ هر بسته</small></span>
-              </div>
-            )}
+          <div className="stitch-hero-assurances">
+            <span><UiIcon name="check" size={14} /> قیمت روشن</span>
+            <span><UiIcon name="clock" size={14} /> زمان دریافت مشخص</span>
+            <span><UiIcon name="store" size={14} /> فروشندهٔ محلی</span>
           </div>
         </div>
 
-        <div className="hero-benefits">
-          <article><span aria-hidden="true">◇</span><div><strong>قیمت روشن</strong><small>قیمت اصلی و نجات کنار هم</small></div></article>
-          <article><span aria-hidden="true">◷</span><div><strong>تحویل زمان‌بندی‌شده</strong><small>بازهٔ دریافت پیش از رزرو</small></div></article>
-          <article><span aria-hidden="true">⌖</span><div><strong>محلی و نزدیک</strong><small>تمرکز بر بابلسر و آمل</small></div></article>
+        <div className="stitch-hero-visual">
+          <div className="stitch-hero-main-photo">
+            <SafeImage
+              src={spotlight?.image_url || getStitchFoodImage(spotlight?.title || "بسته نان و شیرینی", spotlight?.description || "")}
+              alt={spotlight ? `تصویر نمونه ${spotlight.title}` : "تصویر نمونه بسته غذایی"}
+              loading="eager"
+              fetchPriority="high"
+              fallback={<span aria-hidden="true">🥖</span>}
+            />
+            <span className="stitch-photo-label">سهم امروز تو</span>
+          </div>
+          {spotlight ? (
+            <button type="button" className="stitch-hero-offer-float" onClick={() => onOffer(spotlight)}>
+              <span className="stitch-float-kicker">پیشنهاد موجود</span>
+              <strong>{spotlight.title}</strong>
+              <small>{spotlight.merchant.business_name} · {spotlight.merchant.city}</small>
+              <span className="stitch-float-price">{formatToman(spotlight.sale_price)} {discount > 0 && <b>{discount.toLocaleString("fa-IR")}٪ تخفیف</b>}</span>
+              <span className="stitch-float-time">دریافت تا {formatPickupTime(spotlight.pickup_end)}</span>
+            </button>
+          ) : (
+            <div className="stitch-hero-offer-float">
+              <span className="stitch-float-kicker">بسته‌های روزانه</span>
+              <strong>پیشنهادهای تازه را ببین</strong>
+              <small>بابلسر و آمل · تحویل حضوری</small>
+              <Link to="/offers" className="stitch-text-link">رفتن به بازار ←</Link>
+            </div>
+          )}
+          <div className="stitch-hero-stamp" aria-hidden="true"><span>سهم</span><strong>سبز</strong><small>سهمینو</small></div>
         </div>
       </section>
 
-      <section className="category-section page-content" aria-label="دسته‌بندی پیشنهادها">
-        <div className="section-heading">
-          <div><p className="eyebrow">از کجا شروع کنیم؟</p><h2>امروز دنبال چه چیزی هستی؟</h2></div>
-          <Link className="text-link" to="/offers">همه پیشنهادها <span aria-hidden="true">←</span></Link>
+      <section className="stitch-content stitch-how-strip" id="stitch-how-it-works">
+        <div><span>۱</span><strong>بسته را پیدا کن</strong><small>از میان پیشنهادهای فعال</small></div>
+        <div><span>۲</span><strong>رزرو و پرداخت</strong><small>با قیمت و زمان شفاف</small></div>
+        <div><span>۳</span><strong>حضوری تحویل بگیر</strong><small>با کد اختصاصی سفارش</small></div>
+      </section>
+
+      <section className="stitch-content stitch-category-section">
+        <div className="stitch-section-heading">
+          <div><p className="stitch-kicker">از کجا شروع کنیم؟</p><h2>امروز هوس چه چیزی کردی؟</h2></div>
+          <Link to="/offers" className="stitch-text-link">همهٔ بسته‌ها ←</Link>
         </div>
-        <div className="category-pills">
+        <div className="stitch-category-chips">
           {categories.map((category, index) => (
-            <button key={category.label} type="button" className={index === 0 ? "category-pill category-pill-active" : "category-pill"} onClick={() => onQuickSearch(category.query)}>
-              <span aria-hidden="true">{category.glyph}</span>{category.label}
+            <button type="button" key={category.label} className={index === 0 ? "stitch-category-chip is-active" : "stitch-category-chip"} onClick={() => onQuickSearch(category.query)}>
+              <span>{category.icon}</span>{category.label}
             </button>
           ))}
         </div>
       </section>
 
-      <section id="offers" className="section featured-section">
-        <div className="section-heading">
-          <div><p className="eyebrow">پیشنهادهای موجود در بازار</p><h2>بسته‌های سهمینو</h2><p className="section-subtitle">قیمت، موجودی و زمان تحویل را در هر کارت بررسی کن.</p></div>
-          <Link className="secondary-button compact" to="/offers">مشاهده همه پیشنهادها <span aria-hidden="true">←</span></Link>
+      <section className="stitch-content stitch-featured-section">
+        <div className="stitch-section-heading">
+          <div><p className="stitch-kicker">موجودی قابل‌رزرو</p><h2>بسته‌های شانس نزدیک شما</h2><p>موجودی، قیمت و بازهٔ دریافت هر پیشنهاد از اطلاعات ثبت‌شده توسط فروشنده می‌آید.</p></div>
+          <Link to="/offers" className="stitch-button stitch-button-outline">مشاهدهٔ همه</Link>
         </div>
 
-        {loading && (
-          <div className="offer-grid" aria-label="در حال بارگذاری">
-            {[1, 2, 3].map((item) => (
-              <div className="offer-card skeleton-card" key={item}><div className="skeleton skeleton-image" /><div className="offer-content"><div className="skeleton skeleton-line short" /><div className="skeleton skeleton-line" /><div className="skeleton skeleton-line price" /><div className="skeleton skeleton-button" /></div></div>
-            ))}
-          </div>
-        )}
-        {!loading && error && (
-          <div className="state-card error-state"><div className="state-icon">!</div><h3>پیشنهادهای امروز بارگذاری نشدند</h3><p>{error}</p><button className="secondary-button compact" type="button" onClick={onRetry}>تلاش دوباره</button></div>
-        )}
-        {!loading && !error && featuredOffers.length === 0 && (
-          <div className="state-card"><div className="state-icon" aria-hidden="true">🍽️</div><h3>در حال حاضر بستهٔ فعالی در این نمایش نیست</h3><p>همه پیشنهادها را بررسی کن یا بعداً دوباره سر بزن. موجودی در طول روز ممکن است تغییر کند.</p><Link className="primary-button" to="/offers">رفتن به بازار</Link></div>
-        )}
-        {!loading && !error && featuredOffers.length > 0 && <div className="offer-grid">{featuredOffers.map((offer) => <OfferCard key={offer.id} offer={offer} onSelect={onOffer} />)}</div>}
-        {!loading && !error && featuredOffers.length > 0 && <div className="section-cta"><Link className="primary-button" to="/offers">پیدا کردن بسته‌های بیشتر <span aria-hidden="true">←</span></Link></div>}
+        {loading && <div className="stitch-offer-grid" aria-label="در حال بارگذاری">{[1, 2, 3].map((item) => <div className="stitch-offer-skeleton" key={item}><span /><i /><i /><b /></div>)}</div>}
+        {!loading && error && <div className="stitch-state-card stitch-error-card" role="alert"><h3>پیشنهادهای امروز دریافت نشدند</h3><p>{error}</p><button className="stitch-button stitch-button-secondary" onClick={onRetry}>تلاش دوباره</button></div>}
+        {!loading && !error && featuredOffers.length === 0 && <div className="stitch-state-card"><span className="stitch-state-illustration">🍽️</span><h3>فعلاً بستهٔ فعالی برای نمایش نداریم</h3><p>ممکن است پیشنهادهای تازه در طول روز اضافه شوند. بعداً دوباره سر بزن.</p><Link to="/offers" className="stitch-button stitch-button-primary">رفتن به بازار</Link></div>}
+        {!loading && !error && featuredOffers.length > 0 && <div className="stitch-offer-grid">{featuredOffers.map((offer) => <OfferCard key={offer.id} offer={offer} onSelect={onOffer} />)}</div>}
+        {!loading && !error && featuredOffers.length > 0 && <div className="stitch-centered-cta"><Link to="/offers" className="stitch-button stitch-button-primary">کشف بسته‌های بیشتر <UiIcon name="arrow-left" size={16} /></Link></div>}
       </section>
 
-      <HowItWorks />
-
-      <section className="food-safety-callout page-content">
-        <div className="safety-symbol" aria-hidden="true">✓</div>
-        <div><p className="eyebrow">شفافیت و اعتماد</p><h2>مازاد بودن، به معنی تاریخ‌گذشته بودن نیست.</h2><p>پیش از رزرو، توضیحات فروشنده و بازهٔ تحویل را بخوان. دربارهٔ مواد تشکیل‌دهنده، آلرژن‌ها یا شرایط نگهداری که ثبت نشده‌اند، مستقیماً از فروشنده سؤال کن.</p></div>
-        <Link className="secondary-button compact" to="/safety">قوانین ایمنی غذا <span aria-hidden="true">←</span></Link>
+      <section className="stitch-content stitch-trust-panel">
+        <div className="stitch-trust-symbol"><UiIcon name="shield-check" size={30} /></div>
+        <div><p className="stitch-kicker">اعتماد و شفافیت</p><h2>مازاد بودن، به معنی تاریخ‌گذشته بودن نیست.</h2><p>پیش از رزرو، توضیحات فروشنده و زمان دریافت را بررسی کن. دربارهٔ ترکیبات، آلرژن‌ها یا شرایط نگهداری که ثبت نشده‌اند، مستقیم از فروشنده سؤال کن.</p><Link to="/safety" className="stitch-text-link">راهنمای ایمنی غذا ←</Link></div>
       </section>
 
-      <section className="merchant-cta page-content">
-        <div><p className="eyebrow">همکاری محلی</p><h2>صاحب کافه، رستوران یا نانوایی هستی؟</h2><p>بسته‌های مازادِ قابل‌مصرف را با موجودی و زمان دریافت شفاف معرفی کن.</p></div>
-        <Link className="primary-button" to="/for-restaurants">آشنایی با همکاری فروشندگان <span aria-hidden="true">←</span></Link>
+      <section className="stitch-content stitch-merchant-cta">
+        <div><p className="stitch-kicker">برای کسب‌وکارهای محلی</p><h2>مازاد امروزت می‌تواند سهم فردا باشد.</h2><p>با ثبت موجودی و زمان دریافت روشن، محصولات قابل‌مصرف روز را به مشتریان محله معرفی کن.</p></div>
+        <Link to="/for-restaurants" className="stitch-button stitch-button-accent">آشنایی با همکاری <UiIcon name="arrow-left" size={16} /></Link>
       </section>
 
       <MobileBottomNav cartCount={cartCount} userRole={user?.role || null} onCart={onCart} />
